@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Firepad</title>
+  <script src="https://cdn.firebase.com/v0/firebase.js"></script>
+
+  <link rel="stylesheet" href="codemirror/lib/codemirror.css" />
+  <script src="codemirror/lib/codemirror.js"></script>
+
+  <link rel="stylesheet" href="firepad.css" />
+  <script src="firepad.js"></script>
+</head>
+
+<body>
+
+  <div id="firepad"></div>
+  <script>
+    Firebase.enableLogging(true);
+
+    var mike = window.location.href.indexOf('#mike') >= 0;
+
+    var firepadRef = new Firebase('https://firepad-test.firebaseio-demo.com/');
+    var codeMirror = CodeMirror(document.getElementById('firepad'),
+        { lineNumbers: true, mode: 'javascript' });
+    var firepad;
+    if (mike) {
+      firepad = Firepad.fromCodeMirror(firepadRef, codeMirror, { userId: 'mike', userColor: "#f00" });
+    } else {
+      firepad = Firepad.fromCodeMirror(firepadRef, codeMirror, { userId: 'fred', userColor: "#0f0" });
+    }
+
+    firepad.on('ready', function() {
+      if (firepad.isHistoryEmpty()) {
+        firepad.setText('Hello world!');
+      }
+    });
+  </script>
+</body>
+</html>

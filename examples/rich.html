@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Firepad</title>
+  <link rel="stylesheet" href="codemirror/lib/codemirror.css" />
+  <script src="codemirror/lib/codemirror.js"></script>
+  <script src="codemirror/mode/javascript/javascript.js"></script>
+  <script src="https://cdn.firebase.com/v0/firebase.js"></script>
+  <script src="firepad.js"></script>
+  <style>
+    .CodeMirror {
+      height: 600px;
+      width: 800px;
+      border: 1px solid #cccccc;
+    }
+  </style>
+</head>
+
+<body>
+<h1>Firepad</h1>
+<div id="editor-wrapper"></div>
+
+<script>
+  var codeMirror = CodeMirror(document.getElementById('editor-wrapper'), {
+    lineNumbers: true,
+    lineWrapping: true,
+    mode: 'javascript'
+  });
+  codeMirror.focus();
+
+  var ref = new Firebase('https://rich.firebaseio-demo.com/demo');
+
+  var firepad = new Firepad.fromCodeMirror(ref, codeMirror);
+</script>
+</body>
+
+</html>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Firepad</title>
+  <link rel="stylesheet" href="codemirror/lib/codemirror.css" />
+  <link rel="stylesheet" href="firepad.css" />
+  <script src="codemirror/lib/codemirror.js"></script>
+  <script src="https://cdn.firebase.com/v0/firebase.js"></script>
+  <script src="firepad.js"></script>
+  <style>
+    body { font-family: sans-serif; }
+    h1 { font-size: 48px; }
+    #firepad {
+      width: 600px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+    #firepad .CodeMirror {
+      height: 400px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Firepad</h1>
+  <div id="firepad"></div>
+
+  <script>
+    var firepadRef = new Firebase('https://firepad.firebaseio-demo.com/demo2/richtext');
+    var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
+    var firepad = new Firepad.fromCodeMirror(firepadRef, codeMirror, { richTextToolbar: true, richTextShortcuts: true });
+  </script>
+</body>
+</html>
