@@ -2856,10 +2856,16 @@ ot.FirebaseAdapter = (function (global) {
   var TextOperation = global.ot ? global.ot.TextOperation : require('./text-operation');
   var utils = global.ot ? global.ot.utils : require('./utils');
 
+  // Save a checkpoint every 100 edits.
+  var CHECKPOINT_FREQUENCY = 5;
+
   function FirebaseAdapter (ref, userId, userColor) {
     this.ref_ = ref;
     this.ready_ = false;
-    this.docLength_ = 0;
+
+    // We store the current document state as a TextOperation so we can write checkpoints to Firebase occasionally.
+    // TODO: Consider more efficient ways to do this. (composing text operations is linear in the length of the document).
+    this.document_ = new TextOperation();
 
     // The next expected revision.
     this.revision_ = 0;
@@ -2900,6 +2906,55 @@ ot.FirebaseAdapter = (function (global) {
     this.initializeUserData_();
   };
 
+  FirebaseAdapter.prototype.isHistoryEmpty = function() {
+    assert(this.ready_, "Not ready yet.");
+    return this.revision_ === 0;
+  };
+
+  FirebaseAdapter.prototype.sendOperation = function (operation, cursor) {
+    var self = this;
+
+    // Sanity check that this operation is valid.
+    assert(this.document_.targetLength === operation.baseLength, "sendOperation() called with invalid operation.");
+
+    // Convert revision into an id that will sort properly lexicographically.
+    var revisionId = revisionToId(this.revision_);
+    this.ref_.child('history').child(revisionId).transaction(function(current) {
+      if (current === null) {
+        return { a: self.userId_, o: operation.toJSON() };
+      }
+    }, function(error, committed) {
+      if (error) {
+        console.error('Transaction failure!', error);
+        throw error;
+      }
+      if (committed) {
+        // We trigger the 'ack' when we get the child_added event for it.
+        self.sendCursor(cursor);
+      } else {
+        self.trigger('retry');
+      }
+    }, /*applyLocally=*/false);
+
+    this.sent_ = {id: revisionId, op: operation };
+  };
+
+  FirebaseAdapter.prototype.sendCursor = function (obj) {
+    this.userRef_.child('cursor').set(obj);
+    this.cursor_ = obj;
+  };
+
+  FirebaseAdapter.prototype.setColor = function(color) {
+    this.userRef_.child('color').set(color);
+    this.color_ = color;
+  };
+
+  FirebaseAdapter.prototype.registerCallbacks = function(callbacks) {
+    for (var eventType in callbacks) {
+      this.on(eventType, callbacks[eventType]);
+    }
+  };
+
   FirebaseAdapter.prototype.initializeUserData_ = function() {
     this.userRef_.child('cursor').onDisconnect().remove();
     this.userRef_.child('color').onDisconnect().remove();
@@ -2938,12 +2993,12 @@ ot.FirebaseAdapter = (function (global) {
     this.ref_.child('checkpoint').once('value', function(s) {
       var revision = s.child('rev').val(),  op = s.child('op').val();
       if (op != null && revision != null) {
-        self.pendingReceivedRevisions_[revision] = { o: TextOperation.fromJSON(op), a: 'checkpoint' };
+        self.pendingReceivedRevisions_[revisionToId(revision)] = { o: op, a: 'checkpoint' };
         self.checkpointRevision_ = revision;
-        self.monitorHistoryStartingAt_(revision);
+        self.monitorHistoryStartingAt_(self.checkpointRevision_ + 1);
       } else {
         self.checkpointRevision_ = 0;
-        self.monitorHistoryStartingAt_(0);
+        self.monitorHistoryStartingAt_(self.checkpointRevision_);
       }
     });
   };
@@ -2966,27 +3021,28 @@ ot.FirebaseAdapter = (function (global) {
   };
 
   FirebaseAdapter.prototype.handleInitialRevisions_ = function() {
-    assert(!this.ready_);
+    assert(!this.ready_, "Should not be called multiple times.");
 
     // Compose the checkpoint and all subsequent revisions into a single operation to apply at once.
     this.revision_ = this.checkpointRevision_;
     var revisionId = revisionToId(this.revision_), pending = this.pendingReceivedRevisions_;
-    var initialOp = new TextOperation();
     while (pending[revisionId]) {
-      var op = TextOperation.fromJSON(pending[revisionId].o);
+      var author = pending[revisionId].a,
+          op = TextOperation.fromJSON(pending[revisionId].o);
       delete pending[revisionId];
 
       // If a misbehaved client adds a bad operation, just ignore it.
-      if (initialOp.targetLength === op.baseLength) {
-        initialOp = initialOp.compose(op);
+      if (this.document_.targetLength !== op.baseLength) {
+        console.log('Invalid operation.', author, op);
+      } else {
+        this.document_ = this.document_.compose(op);
       }
 
       this.revision_++;
       revisionId = revisionToId(this.revision_);
     }
 
-    this.docLength_ = initialOp.targetLength;
-    this.trigger('operation', initialOp);
+    this.trigger('operation', this.document_);
 
     this.ready_ = true;
     this.trigger('ready');
@@ -3001,11 +3057,16 @@ ot.FirebaseAdapter = (function (global) {
       delete pending[revisionId];
       this.revision_++;
 
-      // If a misbehaved client adds a bad operation, just ignore it.
-      if (op.baseLength === this.docLength_) {
-        this.docLength_ = op.targetLength;
+      if (op.baseLength !== this.document_.targetLength) {
+        // If a misbehaved client adds a bad operation, just ignore it.
+        console.log('Invalid operation.', author, op);
+      } else {
+        this.document_ = this.document_.compose(op);
         if (this.sent_ && revisionId === this.sent_.id && this.sent_.op.equals(op) && author === this.userId_) {
           // Need to trigger the ack before handling any more operations.
+          if (this.revision_ % CHECKPOINT_FREQUENCY === 0) {
+            this.saveCheckpoint_();
+          }
           this.sent_ = null;
           this.trigger('ack');
         } else {
@@ -3017,54 +3078,11 @@ ot.FirebaseAdapter = (function (global) {
     }
   };
 
-  FirebaseAdapter.prototype.isHistoryEmpty = function() {
-    assert(this.ready_);
-    return this.revision_ === 0;
-  };
-
-  FirebaseAdapter.prototype.sendOperation = function (operation, cursor) {
-    var self = this;
-
-    // Sanity check that this operation is valid.
-    assert(this.docLength_ === operation.baseLength);
-
-    // Convert revision into an id that will sort properly lexicographically.
-    var revisionId = revisionToId(this.revision_);
-    this.ref_.child('history').child(revisionId).transaction(function(current) {
-      if (current === null) {
-        return { a: self.userId_, o: operation.toJSON() };
-      }
-    }, function(error, committed) {
-      if (error) {
-        console.error('Transaction failure!', error);
-        throw error;
-      }
-      if (committed) {
-        // We trigger the 'ack' when we get the child_added event for it.
-        self.sendCursor(cursor);
-      } else {
-        self.trigger('retry');
-      }
-    }, /*applyLocally=*/false);
-
-    this.sent_ = {id: revisionId, op: operation };
-  };
-
-  FirebaseAdapter.prototype.sendCursor = function (obj) {
-    this.userRef_.child('cursor').set(obj);
-    this.cursor_ = obj;
-  };
-
-  FirebaseAdapter.prototype.setColor = function(color) {
-    this.userRef_.child('color').set(color);
-    this.color_ = color;
-  };
-
-
-  FirebaseAdapter.prototype.registerCallbacks = function(callbacks) {
-    for (var eventType in callbacks) {
-      this.on(eventType, callbacks[eventType]);
-    }
+  FirebaseAdapter.prototype.saveCheckpoint_ = function() {
+    this.ref_.child('checkpoint').set({
+      op: this.document_.toJSON(),
+      rev: this.revision_ - 1
+    });
   };
 
   // Throws an error if the first argument is falsy. Useful for debugging.

@@ -9,28 +9,56 @@
   <script src="codemirror/lib/codemirror.js"></script>
   <script src="https://cdn.firebase.com/v0/firebase.js"></script>
   <script src="firepad.js"></script>
+  <script src="firepad-userlist.js"></script>
   <style>
     body { font-family: sans-serif; }
     h1 { font-size: 48px; }
-    #firepad {
-      width: 600px;
+    #wrapper {
       border: 1px solid #ccc;
       border-radius: 3px;
+      width: 800px;
+    }
+    #firepad {
+      float:left;
+      width: 600px;
     }
     #firepad .CodeMirror {
       height: 400px;
     }
+
+    #userlist {
+      border-left: 1px solid #ccc;
+      padding-left: 5px;
+      float:left;
+      width:194px;
+      height: 430px;
+    }
+
+    .firepad-userlist-color-indicator {
+      float: left;
+      width: 16px;
+      height: 16px;
+    }
+
+    .clear { clear: both; }
+
   </style>
 </head>
 
 <body>
   <h1>Firepad</h1>
-  <div id="firepad"></div>
-
+  <div id="wrapper">
+    <div id="firepad"></div>
+    <div id="userlist"></div>
+    <div class="clear"></div>
+  </div>
   <script>
     var firepadRef = new Firebase('https://firepad.firebaseio-demo.com/demo2/richtext');
     var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
-    var firepad = new Firepad.fromCodeMirror(firepadRef, codeMirror, { richTextToolbar: true, richTextShortcuts: true });
+    var userId = firepadRef.push().name(); // Just a random ID.
+    var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror, { richTextToolbar: true, richTextShortcuts: true, userId: userId});
+
+    var firepadUserList = FirepadUserList.fromDiv(firepadRef.child('users'), document.getElementById('userlist'), userId);
   </script>
 </body>
 </html>
