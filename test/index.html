@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <title>Firepad Tests</title>
+
+  <link rel="stylesheet" type="text/css" href="jasmine-1.3.1/jasmine.css">
+  <script type="text/javascript" src="jasmine-1.3.1/jasmine.js"></script>
+  <script type="text/javascript" src="jasmine-1.3.1/jasmine-html.js"></script>
+
+  <script type="text/javascript" src="codemirror/codemirror.js"></script>
+  <link rel="stylesheet" type="text/css" href="codemirror/codemirror.css">
+
+  <script src="firepad-debug.js"></script>
+
+  <script src="lib/helpers.js"></script>
+  <script src="lib/text-operation.spec.js"></script>
+  <script src="lib/cursor.spec.js"></script>
+  <script src="lib/wrapped-operation.spec.js"></script>
+  <script src="lib/undomanager.spec.js"></script>
+  <script src="lib/client.spec.js"></script>
+  <script src="lib/annotation-list.spec.js"></script>
+  <script src="lib/codemirror-adapter.spec.js"></script>
+
+  <script type="text/javascript">
+    (function() {
+      var jasmineEnv = jasmine.getEnv();
+      jasmineEnv.updateInterval = 1000;
+
+      var htmlReporter = new jasmine.HtmlReporter();
+      jasmineEnv.addReporter(htmlReporter);
+
+      jasmineEnv.specFilter = function(spec) {
+        return htmlReporter.specFilter(spec);
+      };
+
+      window.onload = function() {
+        jasmineEnv.execute();
+      };
+    })();
+  </script>
+</head>
+<body>
+</body>
+</html>
