@@ -3,35 +3,39 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>Firepad</title>
-  <link rel="stylesheet" href="codemirror/lib/codemirror.css" />
-  <link rel="stylesheet" href="firepad.css" />
+  <script src="https://cdn.firebase.com/v0/firebase.js"></script>
+ 
   <script src="codemirror/lib/codemirror.js"></script>
   <script src="codemirror/mode/javascript/javascript.js"></script>
-  <script src="https://cdn.firebase.com/v0/firebase.js"></script>
-  <script src="firepad.js"></script>
+  <link rel="stylesheet" href="codemirror/lib/codemirror.css" />
+  
+  <script src="../build/firepad.js"></script>
+  <link rel="stylesheet" href="../build/firepad.css" />
+
+  <script src="examples.js"></script>
 </head>
 
 <body>
-<h1>Firepad</h1>
-<div id="editor-wrapper"></div>
+  <div id="editor"></div>
 
-<script>
-  var codeMirror = CodeMirror(document.getElementById('editor-wrapper'), {
-    lineNumbers: true,
-    mode: 'javascript'
-  });
+  <script>
+    // var ref = new Firebase('<YOUR FIREBASE URL>');
+    var firepadRef = getExampleRef();
 
-  var ref = new Firebase('https://firepad.firebaseio-demo.com/code');
-  var firepad = Firepad.fromCodeMirror(ref, codeMirror);
+    var codeMirror = CodeMirror(document.getElementById('editor'), {
+      lineNumbers: true,
+      mode: 'javascript'
+    });
+    codeMirror.focus();
 
-  // Initialize Text if this is a brand-new Firepad.
-  firepad.on('ready', function() {
-    if (firepad.isHistoryEmpty()) {
-      firepad.setText('// Code Editing with Firepad!\nvar x = 3 + 4;\n');
-    }
-  });
-</script>
+    var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror);
+
+    firepad.on('ready', function() {
+      if (firepad.isHistoryEmpty()) {
+        firepad.setText('// Code Editing with Firepad!\nvar x = 3 + 4;\n');
+      }
+    });
+
+  </script>
 </body>
-
 </html>

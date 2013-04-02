@@ -1,22 +1,8 @@
-/*
- * Firepad beta
- *
- * Based on:
- *    /\
- *   /  \ ot 0.0.11
- *  /    \ http://operational-transformation.github.com
- *  \    /
- *   \  / (c) 2012-2013 Tim Baumann <tim@timbaumann.info> (http://timbaumann.info)
- *    \/ ot may be freely distributed under the MIT license.
- */
+var FirepadUserList = (function() {
+var firepad = firepad || { };
+firepad.utils = { };
 
-if (typeof ot === 'undefined') {
-  // Export for browsers
-  var ot = {};
-}
-ot.utils = { };
-
-ot.utils.makeEventEmitter = function(clazz, opt_allowedEVents) {
+firepad.utils.makeEventEmitter = function(clazz, opt_allowedEVents) {
   clazz.prototype.allowedEvents_ = opt_allowedEVents;
 
   clazz.prototype.on = function(eventType, callback, context) {
@@ -53,10 +39,10 @@ ot.utils.makeEventEmitter = function(clazz, opt_allowedEVents) {
   };
 };
 
-ot.utils.elt = function(tag, content, attrs) {
+firepad.utils.elt = function(tag, content, attrs) {
   var e = document.createElement(tag);
   if (typeof content === "string") {
-    ot.utils.setTextContent(e, content);
+    firepad.utils.setTextContent(e, content);
   } else if (content) {
     for (var i = 0; i < content.length; ++i) { e.appendChild(content[i]); }
   }
@@ -66,13 +52,13 @@ ot.utils.elt = function(tag, content, attrs) {
   return e;
 };
 
-ot.utils.setTextContent = function(e, str) {
+firepad.utils.setTextContent = function(e, str) {
   e.innerHTML = "";
   e.appendChild(document.createTextNode(str));
 };
 
 
-ot.utils.on = function(emitter, type, f) {
+firepad.utils.on = function(emitter, type, f) {
   if (emitter.addEventListener) {
     emitter.addEventListener(type, f, false);
   } else if (emitter.attachEvent) {
@@ -80,7 +66,7 @@ ot.utils.on = function(emitter, type, f) {
   }
 };
 
-ot.utils.off = function(emitter, type, f) {
+firepad.utils.off = function(emitter, type, f) {
   if (emitter.removeEventListener) {
     emitter.removeEventListener(type, f, false);
   } else if (emitter.detachEvent) {
@@ -88,7 +74,7 @@ ot.utils.off = function(emitter, type, f) {
   }
 };
 
-ot.utils.preventDefault = function(e) {
+firepad.utils.preventDefault = function(e) {
   if (e.preventDefault) {
     e.preventDefault();
   } else {
@@ -96,7 +82,7 @@ ot.utils.preventDefault = function(e) {
   }
 };
 
-ot.utils.stopPropagation = function(e) {
+firepad.utils.stopPropagation = function(e) {
   if (e.stopPropagation) {
     e.stopPropagation();
   } else {
@@ -104,27 +90,29 @@ ot.utils.stopPropagation = function(e) {
   }
 };
 
-ot.utils.stopEvent = function(e) {
-  ot.utils.preventDefault(e);
-  ot.utils.stopPropagation(e);
+firepad.utils.stopEvent = function(e) {
+  firepad.utils.preventDefault(e);
+  firepad.utils.stopPropagation(e);
 };
 
-ot.utils.stopEventAnd = function(fn) {
+firepad.utils.stopEventAnd = function(fn) {
   return function(e) {
     fn(e);
-    ot.utils.stopEvent(e);
+    firepad.utils.stopEvent(e);
     return false;
   };
 };
 
+firepad.utils.assert = function assert (b, msg) {
+  if (!b) {
+    throw new Error(msg || "assertion error");
+  }
+};
 
-// Export for CommonJS
-if (typeof module === 'object') {
-  module.exports = ot.utils;
-}
+var firepad = firepad || { };
 
-var FirepadUserList = (function(global) {
-  var utils = global.ot ? global.ot.utils : require('./utils');
+firepad.UserList = (function() {
+  var utils = firepad.utils;
 
   function FirepadUserList(ref, place, userId) {
     if (!(this instanceof FirepadUserList)) { return new FirepadUserList(ref, place, userId); }
@@ -239,9 +227,6 @@ var FirepadUserList = (function(global) {
   };
 
   return FirepadUserList;
-})(this);
+})();
 
-// Export for CommonJS
-if (typeof module === 'object') {
-  module.exports = FirepadUserList;
-}
+return firepad.UserList; })();
