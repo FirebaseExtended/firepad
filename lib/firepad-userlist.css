@@ -13,6 +13,12 @@
   color: #404040;
 }
 
+.firepad-userlist {
+  text-align: left;
+  font-family: 'Helvetica Neue', sans-serif;
+  line-height: normal;
+}
+
 .firepad-userlist-heading {
   margin: 20px 15px 0;
   font-size: 12px;

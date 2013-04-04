@@ -4,6 +4,11 @@
   position: relative;
 }
 
+.firepad {
+  text-align: left;
+  line-height: normal;
+}
+
 .firepad .CodeMirror {
   /* Use width / height of the firepad wrapper element. */
   position: absolute;
