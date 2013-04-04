@@ -1342,6 +1342,7 @@ firepad.FirebaseAdapter = (function (global) {
 
     // Convert revision into an id that will sort properly lexicographically.
     var revisionId = revisionToId(this.revision_);
+    this.sent_ = {id: revisionId, op: operation };
     this.ref_.child('history').child(revisionId).transaction(function(current) {
       if (current === null) {
         return { a: self.userId_, o: operation.toJSON() };
@@ -1358,8 +1359,6 @@ firepad.FirebaseAdapter = (function (global) {
         self.trigger('retry');
       }
     }, /*applyLocally=*/false);
-
-    this.sent_ = {id: revisionId, op: operation };
   };
 
   FirebaseAdapter.prototype.sendCursor = function (obj) {
@@ -1434,17 +1433,19 @@ firepad.FirebaseAdapter = (function (global) {
     var historyRef = this.ref_.child('history').startAt(null, revisionToId(revision));
     var self = this;
 
-    historyRef.on('child_added', function(revisionSnapshot) {
-      var revisionId = revisionSnapshot.name();
-      self.pendingReceivedRevisions_[revisionId] = revisionSnapshot.val();
-      if (self.ready_) {
-        self.handlePendingReceivedRevisions_();
-      }
-    });
+    setTimeout(function() {
+      historyRef.on('child_added', function(revisionSnapshot) {
+        var revisionId = revisionSnapshot.name();
+        self.pendingReceivedRevisions_[revisionId] = revisionSnapshot.val();
+        if (self.ready_) {
+          self.handlePendingReceivedRevisions_();
+        }
+      });
 
-    historyRef.once('value', function() {
-      self.handleInitialRevisions_();
-    });
+      historyRef.once('value', function() {
+        self.handleInitialRevisions_();
+      });
+    }, 0);
   };
 
   FirebaseAdapter.prototype.handleInitialRevisions_ = function() {
