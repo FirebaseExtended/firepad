@@ -50,10 +50,6 @@ module.exports = function (grunt) {
       "firepad-min-js": {
         src: "build/firepad.js",
         dest: "build/firepad-min.js"
-      },
-      "firepad-userlist-min-js": {
-        src: "build/extras/firepad-userlist.js",
-        dest: "build/extras/firepad-userlist-min.js"
       }
     },
     copy: {
