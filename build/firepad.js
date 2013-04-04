@@ -1305,9 +1305,12 @@ firepad.FirebaseAdapter = (function (global) {
       if (s.val() === true) { this.initializeUserData_(); }
     }, this);
 
-    this.monitorCursors_();
-
-    this.monitorHistory_();
+    var self = this;
+    // Avoid triggering any events until our callers have had a chance to attach their listeners.
+    setTimeout(function() {
+      self.monitorCursors_();
+      self.monitorHistory_();
+    }, 0);
   }
   utils.makeEventEmitter(FirebaseAdapter, ['ready', 'cursor', 'operation', 'ack', 'retry']);
 
@@ -1548,7 +1551,7 @@ firepad.RichTextToolbar = (function(global) {
     this.element_ = this.makeElement_();
   }
 
-  utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'heading']);
+  utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'font-size']);
 
   RichTextToolbar.prototype.element = function() { return this.element_; };
 
@@ -1560,48 +1563,52 @@ firepad.RichTextToolbar = (function(global) {
     utils.on(italic, 'click', utils.stopEventAnd(function() { self.trigger('italic'); }));
     var underline = utils.elt('a', 'U', { 'class': 'firepad-btn firepad-btn-underline' });
     utils.on(underline, 'click', utils.stopEventAnd(function() { self.trigger('underline'); }));
-    var heading = this.makeHeadingDropdown_();
+    var fontSize = this.makeFontSizeDropdown_();
 
     return utils.elt('div', [
-      bold, italic, underline, heading
+      utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [bold, italic, underline], { 'class': 'firepad-btn-group'})
     ], { class: 'firepad-toolbar' });
   };
 
-  RichTextToolbar.prototype.makeHeadingDropdown_ = function() {
+  RichTextToolbar.prototype.makeFontSizeDropdown_ = function() {
     var self = this;
-    var heading = utils.elt('a', 'Heading ▾', { 'class': 'firepad-btn firepad-dropdown' });
-    var headingList = utils.elt('ul', [ ], { 'class': 'firepad-dropdown-menu' });
-    heading.appendChild(headingList);
+    var button = utils.elt('a', 'Size ▾', { 'class': 'firepad-btn firepad-dropdown' });
+    var list = utils.elt('ul', [ ], { 'class': 'firepad-dropdown-menu' });
+    button.appendChild(list);
 
     var shown = false;
-    function toggleHeadingList() {
+    function toggleFontSizeList() {
       if (shown) {
-        headingList.style.display = '';
-        utils.off(document, 'click', toggleHeadingList);
+        list.style.display = '';
+        utils.off(document, 'click', toggleFontSizeList);
       } else {
-        headingList.style.display = 'block';
-        utils.on(document, 'click', toggleHeadingList);
+        list.style.display = 'block';
+        utils.on(document, 'click', toggleFontSizeList);
       }
       shown = !shown;
     }
 
-    function addHeading(name, level) {
+    function addSize(name, size) {
       var element = utils.elt('a', name);
       utils.on(element, 'click', utils.stopEventAnd(function() {
-        toggleHeadingList();
-        self.trigger('heading', level);
+        toggleFontSizeList();
+        self.trigger('font-size', size);
       }));
-      headingList.appendChild(element);
+      list.appendChild(element);
     }
 
-    addHeading('Normal', false);
-    addHeading('Heading 1', 1);
-    addHeading('Heading 2', 2);
-    addHeading('Heading 3', 3);
+    addSize('Default', false);
+    addSize('12', 12);
+    addSize('14', 14);
+    addSize('18', 18);
+    addSize('24', 24);
+    addSize('32', 32);
+    addSize('42', 42);
 
-    utils.on(heading, 'click', utils.stopEventAnd(toggleHeadingList));
+    utils.on(button, 'click', utils.stopEventAnd(toggleFontSizeList));
 
-    return heading;
+    return button;
   };
 
   return RichTextToolbar;
@@ -3161,12 +3168,12 @@ firepad.Firepad = (function(global) {
         Firepad.initializeKeyMap_();
       }
       this.codeMirror_.setOption('keyMap', 'richtext');
-      this.firepadWrapper_.setAttribute('class', 'firepad firepad-richtext');
+      this.firepadWrapper_.className += ' firepad-richtext';
     }
 
     if (this.getOption('richTextToolbar', false)) {
       this.addToolbar_();
-      this.firepadWrapper_.setAttribute('class', 'firepad firepad-richtext');
+      this.firepadWrapper_.className += ' firepad-richtext firepad-with-toolbar';
     }
 
     var userId = this.getOption('userId', ref.push().name());
@@ -3211,6 +3218,7 @@ firepad.Firepad = (function(global) {
           utils.assert(attrs[attr] === true);
           tag = attr;
         } else if (attr === 'h') {
+          // TODO: Font size.
           utils.assert (typeof attrs[attr] === 'number' && attrs[attr] >= 1 && attrs[attr] <= 3);
           tag = 'h' + attrs[attr];
         } else {
@@ -3223,9 +3231,6 @@ firepad.Firepad = (function(global) {
       html += prefix + this.textToHtml_(op.text) + suffix;
     }
 
-    // This is a hack, but since we're handling headings as inline elements instead of block elements, finesse
-    // the output to get rid of extra <br/> directly after a </hX>
-    html = html.replace(new RegExp('(</h[1-3]>)<br/>', 'g'), function(str, capture) { return capture; });
     return html;
   };
 
@@ -3262,8 +3267,8 @@ firepad.Firepad = (function(global) {
     this.codeMirror_.focus();
   };
 
-  Firepad.prototype.heading = function(h) {
-    this.richTextCodeMirror_.setAttribute('h', h);
+  Firepad.prototype.fontSize = function(size) {
+    this.richTextCodeMirror_.setAttribute('fs', size);
     this.codeMirror_.focus();
   };
 
@@ -3283,7 +3288,7 @@ firepad.Firepad = (function(global) {
     toolbar.on('bold', this.bold, this);
     toolbar.on('italic', this.italic, this);
     toolbar.on('underline', this.underline, this);
-    toolbar.on('heading', this.heading, this);
+    toolbar.on('font-size', this.fontSize, this);
 
     this.firepadWrapper_.insertBefore(toolbar.element(), this.firepadWrapper_.firstChild);
   };
@@ -3292,13 +3297,6 @@ firepad.Firepad = (function(global) {
     function bold(cm) { cm.firepad.bold(); }
     function italic(cm) { cm.firepad.italic(); }
     function underline(cm) { cm.firepad.underline(); }
-    function makeHeadingFunction(h) {
-      return function(cm) { cm.firepad.heading(h); };
-    }
-    var headingNone = makeHeadingFunction(false);
-    var heading1 = makeHeadingFunction(1);
-    var heading2 = makeHeadingFunction(2);
-    var heading3 = makeHeadingFunction(3);
 
     CodeMirror.keyMap["richtext"] = {
       "Ctrl-B": bold,
@@ -3307,14 +3305,6 @@ firepad.Firepad = (function(global) {
       "Cmd-I": italic,
       "Ctrl-U": underline,
       "Cmd-U": underline,
-      "Ctrl-0": headingNone,
-      "Cmd-0": headingNone,
-      "Ctrl-1": heading1,
-      "Cmd-1": heading1,
-      "Ctrl-2": heading2,
-      "Cmd-2": heading2,
-      "Ctrl-3": heading3,
-      "Cmd-3": heading3,
       fallthrough: ['default']
     };
   };

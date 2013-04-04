@@ -80,14 +80,28 @@
 }
 
 #firepad-container {
+  position: relative;
   margin: 20px auto;
   width: 960px;
-  height: 571px;
+  height: 570px;
   background: white;
   /* TODO: Tune these more? */
   -moz-box-shadow: 0 5px 25px #333;
   -webkit-box-shadow: 0 5px 25px #333;
   box-shadow: 0 5px 25px #333;
+}
+
+#firepad-container .firepad-userlist {
+  position: absolute;
+  height: 570px;
+  width: 175px;
+}
+
+#firepad-container .firepad {
+  position: absolute;
+  left: 175px;
+  width: 785px;
+  height: 570px;
 }
 
 #below-fold {

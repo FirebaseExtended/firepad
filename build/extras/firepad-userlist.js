@@ -167,17 +167,23 @@ firepad.UserList = (function() {
       colorDiv.style.backgroundColor = colorSnapshot.val();
     });
 
-    var nameInput = utils.elt('input', null, { type: 'text', 'class': 'firepad-userlist-name'} );
+    var nameInput = utils.elt('input', null, { type: 'text', 'class': 'firepad-userlist-name-input'} );
     nameInput.value = this.displayName_;
+
+    var nameHint = utils.elt('div', 'ENTER YOUR NAME', { 'class': 'firepad-userlist-name-hint'} );
+
     // Update Firebase when name changes.
     utils.on(nameInput, 'change', function(e) {
       var name = nameInput.value || "Guest " + Math.floor(Math.random() * 1000);
       myUserRef.child('name').onDisconnect().remove();
       myUserRef.child('name').set(name);
+      nameHint.style.display = 'none';
       utils.stopEvent(e);
     });
 
-    return utils.elt('div', [ colorDiv, nameInput ], { 'class': 'firepad-userlist-user' });
+    var nameDiv = utils.elt('div', [nameInput, nameHint]);
+
+    return utils.elt('div', [ colorDiv, nameDiv ], { 'class': 'firepad-userlist-user' });
   };
 
   FirepadUserList.prototype.makeUserEntriesForOthers_ = function() {
@@ -196,7 +202,7 @@ firepad.UserList = (function() {
       var colorDiv = utils.elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
       colorDiv.style.backgroundColor = userSnapshot.child('color').val();
 
-      var nameDiv = utils.elt('div', userSnapshot.child('name').val());
+      var nameDiv = utils.elt('div', userSnapshot.child('name').val(), { 'class': 'firepad-userlist-name' });
 
       var userDiv = utils.elt('div', [ colorDiv, nameDiv ], { 'class': 'firepad-userlist-user' });
       userId2Element[userId] = userDiv;
