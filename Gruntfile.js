@@ -33,17 +33,6 @@ module.exports = function (grunt) {
           "lib/firepad.js"
         ],
         "dest": "build/firepad.js"
-      },
-      "firepad-userlistjs": {
-        options: {
-          banner: "var FirepadUserList = (function() {\n",
-          footer: "\nreturn firepad.UserList; })();"
-        },
-        "src": [
-          "lib/utils.js",
-          "lib/user-list.js"
-        ],
-        "dest": "build/extras/firepad-userlist.js"
       }
     },
     uglify: {
@@ -53,15 +42,23 @@ module.exports = function (grunt) {
       }
     },
     copy: {
-      all: {
+      css: {
         files: [
           {
             src: 'lib/firepad.css',
             dest: 'build/firepad.css'
+          }
+        ]
+      },
+      toExamples: {
+        files: [
+          {
+            src: 'build/firepad.js',
+            dest: 'examples/firepad.js'
           },
           {
-            src: 'lib/firepad-userlist.css',
-            dest: 'build/extras/firepad-userlist.css'
+            src: 'build/firepad.css',
+            dest: 'examples/firepad.css'
           }
         ]
       }

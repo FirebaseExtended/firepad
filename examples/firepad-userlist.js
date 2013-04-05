@@ -1,8 +1,4 @@
-var firepad = firepad || { };
-
-firepad.UserList = (function() {
-  var utils = firepad.utils;
-
+var FirepadUserList = (function() {
   function FirepadUserList(ref, place, userId) {
     if (!(this instanceof FirepadUserList)) { return new FirepadUserList(ref, place, userId); }
 
@@ -26,9 +22,9 @@ firepad.UserList = (function() {
   FirepadUserList.fromDiv = FirepadUserList;
 
   FirepadUserList.prototype.makeUserList_ = function() {
-    return utils.elt('div', [
+    return elt('div', [
       this.makeHeading_(),
-      utils.elt('div', [
+      elt('div', [
         this.makeUserEntryForSelf_(),
         this.makeUserEntriesForOthers_()
       ], {'class': 'firepad-userlist-users' })
@@ -36,48 +32,48 @@ firepad.UserList = (function() {
   };
 
   FirepadUserList.prototype.makeHeading_ = function() {
-    var counterSpan = utils.elt('span', '0');
+    var counterSpan = elt('span', '0');
     this.ref_.on('value', function(usersSnapshot) {
-      utils.setTextContent(counterSpan, "" + usersSnapshot.numChildren());
+      setTextContent(counterSpan, "" + usersSnapshot.numChildren());
     });
 
-    return utils.elt('div', [
-      utils.elt('span', 'ONLINE ('),
+    return elt('div', [
+      elt('span', 'ONLINE ('),
       counterSpan,
-      utils.elt('span', ')')
+      elt('span', ')')
     ], { 'class': 'firepad-userlist-heading' });
   };
 
   FirepadUserList.prototype.makeUserEntryForSelf_ = function() {
     var myUserRef = this.ref_.child(this.userId_);
 
-    var colorDiv = utils.elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
+    var colorDiv = elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
     myUserRef.child('color').on('value', function(colorSnapshot) {
       colorDiv.style.backgroundColor = colorSnapshot.val();
     });
 
-    var nameInput = utils.elt('input', null, { type: 'text', 'class': 'firepad-userlist-name-input'} );
+    var nameInput = elt('input', null, { type: 'text', 'class': 'firepad-userlist-name-input'} );
     nameInput.value = this.displayName_;
 
-    var nameHint = utils.elt('div', 'ENTER YOUR NAME', { 'class': 'firepad-userlist-name-hint'} );
+    var nameHint = elt('div', 'ENTER YOUR NAME', { 'class': 'firepad-userlist-name-hint'} );
 
     // Update Firebase when name changes.
-    utils.on(nameInput, 'change', function(e) {
+    on(nameInput, 'change', function(e) {
       var name = nameInput.value || "Guest " + Math.floor(Math.random() * 1000);
       myUserRef.child('name').onDisconnect().remove();
       myUserRef.child('name').set(name);
       nameHint.style.display = 'none';
-      utils.stopEvent(e);
+      stopEvent(e);
     });
 
-    var nameDiv = utils.elt('div', [nameInput, nameHint]);
+    var nameDiv = elt('div', [nameInput, nameHint]);
 
-    return utils.elt('div', [ colorDiv, nameDiv ], { 'class': 'firepad-userlist-user' });
+    return elt('div', [ colorDiv, nameDiv ], { 'class': 'firepad-userlist-user' });
   };
 
   FirepadUserList.prototype.makeUserEntriesForOthers_ = function() {
     var self = this;
-    var userList = utils.elt('div');
+    var userList = elt('div');
     var userId2Element = { };
 
     function updateChild(userSnapshot, prevChildName) {
@@ -88,12 +84,12 @@ firepad.UserList = (function() {
         delete userId2Element[userId];
       }
 
-      var colorDiv = utils.elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
+      var colorDiv = elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
       colorDiv.style.backgroundColor = userSnapshot.child('color').val();
 
-      var nameDiv = utils.elt('div', userSnapshot.child('name').val(), { 'class': 'firepad-userlist-name' });
+      var nameDiv = elt('div', userSnapshot.child('name').val(), { 'class': 'firepad-userlist-name' });
 
-      var userDiv = utils.elt('div', [ colorDiv, nameDiv ], { 'class': 'firepad-userlist-user' });
+      var userDiv = elt('div', [ colorDiv, nameDiv ], { 'class': 'firepad-userlist-user' });
       userId2Element[userId] = userDiv;
 
       if (userId === self.userId_) {
@@ -120,6 +116,62 @@ firepad.UserList = (function() {
 
     return userList;
   };
+
+  /** DOM helpers */
+  function elt(tag, content, attrs) {
+    var e = document.createElement(tag);
+    if (typeof content === "string") {
+      setTextContent(e, content);
+    } else if (content) {
+      for (var i = 0; i < content.length; ++i) { e.appendChild(content[i]); }
+    }
+    for(var attr in (attrs || { })) {
+      e.setAttribute(attr, attrs[attr]);
+    }
+    return e;
+  }
+
+  function setTextContent(e, str) {
+    e.innerHTML = "";
+    e.appendChild(document.createTextNode(str));
+  }
+
+  function on(emitter, type, f) {
+    if (emitter.addEventListener) {
+      emitter.addEventListener(type, f, false);
+    } else if (emitter.attachEvent) {
+      emitter.attachEvent("on" + type, f);
+    }
+  }
+
+  function off(emitter, type, f) {
+    if (emitter.removeEventListener) {
+      emitter.removeEventListener(type, f, false);
+    } else if (emitter.detachEvent) {
+      emitter.detachEvent("on" + type, f);
+    }
+  }
+
+  function preventDefault(e) {
+    if (e.preventDefault) {
+      e.preventDefault();
+    } else {
+      e.returnValue = false;
+    }
+  }
+
+  function stopPropagation(e) {
+    if (e.stopPropagation) {
+      e.stopPropagation();
+    } else {
+      e.cancelBubble = true;
+    }
+  }
+
+  function stopEvent(e) {
+    preventDefault(e);
+    stopPropagation(e);
+  }
 
   return FirepadUserList;
 })();
