@@ -62,13 +62,29 @@ module.exports = function (grunt) {
           }
         ]
       }
+    },
+    compress: {
+      zip: {
+        options: {
+          archive: 'build/firepad.zip',
+        },
+        files: [
+          {
+            cwd: 'build/',
+            expand: true,
+            src: ['firepad.js', 'firepad.css', 'firepad-min.js' ],
+            dest: './'
+          }
+        ]
+      }
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-compress');
 
-  grunt.registerTask('default', ['concat', 'uglify', 'copy']);
+  grunt.registerTask('default', ['concat', 'uglify', 'copy', 'compress']);
 };
 
