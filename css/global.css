@@ -202,11 +202,11 @@ pre.prettyprint {
 /************************************************/
 /* index.html specific styles. */
 /************************************************/
-.home #top-content {
+.home-page #top-content {
   height: 890px;
 }
 
-.home .bottom-content {
+.home-page .bottom-content {
   padding: 40px 70px;
 }
 
@@ -317,4 +317,94 @@ pre.prettyprint {
   font-size: 36px;
   color: #535353;
   padding-bottom: 15px;
+}
+
+
+/************************************************/
+/* examples/ specific styles. */
+/************************************************/
+.examples-page #top-content {
+  height: 800px;
+}
+
+.examples-page .bottom-content {
+  padding: 16px 0 30px;
+}
+
+#view-source {
+  position: absolute;
+  right: -3px;
+  top: 140px;
+}
+
+#example-container {
+  position: absolute;
+  border: none;
+  left: 0;
+  top: 190px;
+  width: 960px;
+  height: 570px;
+  background: white;
+  /* TODO: Tune these more? */
+  -moz-box-shadow: 0 5px 25px #333;
+  -webkit-box-shadow: 0 5px 25px #333;
+  box-shadow: 0 5px 25px #333;
+}
+
+.example {
+  float: left;
+  position: relative;
+  padding: 15px 20px;
+  margin-left: 8px;
+  width: 258px;
+  height: 105px;
+  border: 1px solid #fff;
+  color: #5e5e5e;
+  font-size: 13px;
+}
+
+.example-title {
+  color: #535353;
+  font-size: 36px;
+  margin-bottom: 5px;
+}
+
+.example a {
+  color: #eb8717;
+}
+
+.example-see-it {
+  position: absolute;
+  display: block;
+  left: 20px;
+  bottom: 20px;
+}
+
+.example-view-source {
+  position: absolute;
+  display: none;
+  right: 20px;
+  bottom: 20px;
+}
+
+.selected .example-view-source {
+  display: block;
+}
+
+.example.selected {
+  background-color: #f4f4f4;
+  border: 1px solid #d1d1d1;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+
+  -webkit-box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.12);
+  -moz-box-shadow:    0px 2px 10px rgba(0, 0, 0, 0.12);
+  box-shadow:         0px 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+#page-links .selected {
+  text-decoration: none;
+  font-weight: bold;
+  cursor: default;
 }
