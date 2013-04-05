@@ -2,7 +2,7 @@ var examples = {
   code: {
     linkId: "code-link", // Refers to the link at the top of the page (not all examples have this).
     title: "Code",
-    description: "Uses CodeMirror's javascript mode to build a collaborative JavaScript code editor.",
+    description: "Typical code setup (line numbers, JavaScript syntax highlighting, etc.)",
     src: "code.html"
   },
   richtext: {
@@ -11,6 +11,11 @@ var examples = {
     description: "Typical rich-text setup (toolbar, keyboard shortcuts, line wrap, etc.)",
     src: "richtext.html"
   },
+  userlist: {
+    title: "Userlist",
+    description: "Firepad integrated with an example user list.",
+    src: "userlist.html"
+  }
 };
 
 var GITHUB_BASE_URL = 'https://github.com/firebase/firepad/blob/gh-pages/examples/';
