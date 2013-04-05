@@ -2,6 +2,7 @@
 <html>
 
 <head>
+  <title>Firepad</title>
   <meta charset="utf-8" />
   <script src="https://cdn.firebase.com/v0/firebase.js"></script>
 
@@ -15,30 +16,29 @@
   <link rel="stylesheet" href="build/extras/firepad-userlist.css" />
 
   <link rel="stylesheet" href="css/global.css" />
-  <link rel="stylesheet" href="css/index.css" />
 </head>
 
-<body>
+<body class="home">
   <a href="https://github.com/firebase/firepad">
     <img style="position: absolute; top: 0; left: 0; border: 0; z-index: 1;" src="images/fork_on_github.png" alt="Fork me on GitHub">
   </a>
-  <div id="above-fold">
-    <div class="above-fold-shadow"></div>
-    <div id="above-fold-bg-tile">
+  <div id="top">
+    <div id="top-shadow"></div>
+    <div id="top-bg-tile">
       <div id="fork-on-github"></div>
-      <div id="above-fold-content">
+      <div id="top-content">
         <div id="header-links" class="clearfix">
-          <a href="index.html">Home</a>
+          <a href="./">Home</a>
           <a href="examples/">Examples</a>
           <a href="docs/">Documentation</a>
-          <a href="demo.html">Demo</a>
+          <a href="demo/">Demo</a>
         </div>
-        <div id="page-title-container" class="clearfix">
-          <div id="page-title">Introducing</div>
-          <div id="logo"></div>
+        <div id="home-title-container" class="clearfix">
+          <div id="home-title">Introducing</div>
+          <div id="home-logo"></div>
         </div>
-        <div id="page-subtitle">Open source collaborative text editing</div>
-        <a href="https://github.com/firebase/firepad" id="download-on-github"><img src="images/download.png"></a>
+        <div id="home-subtitle">Open source collaborative text editing</div>
+        <a href="https://github.com/firebase/firepad" id="home-download-on-github"><img src="images/download.png"></a>
         <div id="firepad-container">
           <div id="firepad-userlist"></div>
           <div id="firepad"></div>
@@ -47,9 +47,9 @@
     </div>
   </div>
 
-  <div id="below-fold">
-    <div id="below-fold-container">
-      <div class="below-fold-content">
+  <div id="bottom">
+    <div id="bottom-container">
+      <div class="bottom-content">
         <div id="uses" class="clearfix">
           <div class="uses-col clearfix">
             <div class="title">Usage Examples</div>
@@ -94,7 +94,7 @@
           </div>
         </div>
       </div>
-      <div class="below-fold-content separator">
+      <div class="bottom-content separator">
         <div id="faq" class="clearfix">
           <div class="faq-col">
             <div class="faq-question">
@@ -126,7 +126,7 @@
     <div id="footer">
       <div id="footer-links">
         <a href="index.html">Home</a>
-        <a href="index.html">GitHub Project</a>
+        <a href="https://github.com/firebase/firepad">GitHub Project</a>
         <a href="mailto:firepad@firebase.com">Contact</a>
       </div>
       <div id="powered-by-firebase">

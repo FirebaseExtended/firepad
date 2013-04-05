@@ -1,50 +1,48 @@
 <!doctype html>
-<html xmlns="http://www.w3.org/1999/html">
+<html>
+
 <head>
   <meta charset="utf-8" />
-  <title>Firepad</title>
+  <title>Firepad - Documentation</title>
+
+  <link rel="stylesheet" href="../css/global.css" />
   <link href="prettify.css" type="text/css" rel="stylesheet" />
   <script type="text/javascript" src="prettify.js"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      background-color: #eee;
-    }
-
-    .content {
-      padding: 15px;
-      margin: 15px auto 15px auto;
-      width: 800px;
-      background-color: #fff;
-    }
-
-    .signupLink {
-      text-align: center;
-      font-size: 115%;
-    }
-
-    h2 {
-      border-bottom: 1px solid black;
-    }
-
-    .code {
-      font-family: monospace;
-    }
-
-    pre.prettyprint {
-      border: none;
-      margin-top: 0;
-    }
-  </style>
 </head>
 
 <body onload="prettyPrint();">
-  <div class="content">
-    <h2>Prerequisites</h2>
-    <p>Firepad uses <a href="https://www.firebase.com/">Firebase</a> for its real-time data synchronization and
-    <a href="http://www.codemirror.net/">CodeMirror</a> as the underlying text editor (though we'd love to add
-    support for other editors).  So to get started, you'll need to include Firebase, CodeMirror, and Firepad.</p>
-    <pre class="prettyprint">
+  <a href="https://github.com/firebase/firepad">
+    <img style="position: absolute; top: 0; left: 0; border: 0; z-index: 1;" src="../images/fork_on_github.png" alt="Fork me on GitHub">
+  </a>
+  <div id="top">
+    <div id="top-shadow"></div>
+    <div id="top-bg-tile">
+      <div id="fork-on-github"></div>
+      <div id="top-content">
+        <div id="header-links" class="clearfix">
+          <a href="../">Home</a>
+          <a href="../examples/">Examples</a>
+          <a href="../docs/">Documentation</a>
+          <a href="../demo/">Demo</a>
+        </div>
+        <div id="logo-small"></div>
+        <div id="page-title">Documentation</div>
+        <div id="page-links">
+          <a href="#">Embedding Guide</a> | <a href="#">Firepad API</a> | <a href="#">Extending Firepad</a>
+        </div>
+        <a href="https://github.com/firebase/firepad" id="download-on-github"><img src="../images/download.png"></a>
+      </div>
+    </div>
+  </div>
+
+  <div id="bottom">
+    <div id="bottom-container">
+      <div class="bottom-content">
+        <h1>Embedding Guide</h1>
+        <p>Firepad uses <a href="https://www.firebase.com/">Firebase</a> for its real-time data synchronization and
+        <a href="http://www.codemirror.net/">CodeMirror</a> as the underlying text editor (though we'd love to add
+        support for other editors).  So to get started, you'll need to include Firebase, CodeMirror, and Firepad.</p>
+        <pre class="prettyprint">
   &lt;script src=&quot;https://cdn.firebase.com/v0/firebase.js&quot;&gt;&lt;/script&gt;
 
   &lt;!-- Can download from http://codemirror.net/codemirror.zip --&gt;
@@ -53,17 +51,16 @@
 
   &lt;link rel=&quot;stylesheet&quot; href=&quot;firepad.css&quot; /&gt;
   &lt;script src=&quot;firepad.js&quot;&gt;&lt;/script&gt;
-    </pre>
+        </pre>
 
-    <p>You'll also need a <a href="https://www.firebase.com/">Firebase</a> account, which will be used to store and synchronize your firepad contents:</p>
-    <div class="signupLink"><a href="https://www.firebase.com/signup/">Create a Free Firebase Account</a></div>
+        <p>You'll also need a <a href="https://www.firebase.com/">Firebase</a> account, which will be used to store and synchronize your firepad contents:</p>
+        <div><a href="https://www.firebase.com/signup/">Create a Free Firebase Account</a></div>
 
-    <h2>Initialization</h2>
-    <p>As mentioned, currently Firepad uses CodeMirror for its text editor, so you'll need to create a CodeMirror instance
-    first.  Here are a couple typical setups:</p>
+        <p>As mentioned, currently Firepad uses CodeMirror for its text editor, so you'll need to create a CodeMirror instance
+        first.  Here are a couple typical setups:</p>
 
-    <b>Rich-Text Editing</b>
-    <pre class="prettyprint">
+        <b>Rich-Text Editing</b>
+        <pre class="prettyprint">
   &lt;div id=&quot;firepad&quot;&gt;&lt;/div&gt;
   &lt;script&gt;
     var firepadRef = new Firebase('&lt;FIREBASE URL&gt;');
@@ -71,10 +68,10 @@
     var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
         { richTextShortcuts: true, richTextToolbar: true });
   &lt;/script&gt;
-    </pre>
+        </pre>
 
-    <b>Code Editing</b>
-    <pre class="prettyprint">
+        <b>Code Editing</b>
+        <pre class="prettyprint">
   &lt;div id=&quot;firepad&quot;&gt;&lt;/div&gt;
   &lt;script&gt;
     var firepadRef = new Firebase('&lt;FIREBASE URL&gt;');
@@ -82,38 +79,51 @@
         { lineNumbers: true, mode: 'javascript' });
     var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror);
   &lt;/script&gt;
-    </pre>
+        </pre>
 
-    <p>Replace <span class="code">&lt;FIREBASE_URL&gt;</span> with any location in your Firebase.  You can
-    trivially store multiple firepads in your Firebase by just giving them each a unique URL (e.g.
-    <span class="code">https://firebase-account.firebaseio.com/firepads/0</span>,
-    <span class="code">https://firebase-account.firebaseio.com/firepads/1</span>, etc.)</p>
-    <p>Check out <a href="http://codemirror.net/">codemirror.net</a> for details on CodeMirror's API.</p>
+        <p>Replace <span class="code">&lt;FIREBASE_URL&gt;</span> with any location in your Firebase.  You can
+        trivially store multiple firepads in your Firebase by just giving them each a unique URL (e.g.
+        <span class="code">https://firebase-account.firebaseio.com/firepads/0</span>,
+        <span class="code">https://firebase-account.firebaseio.com/firepads/1</span>, etc.)</p>
+        <p>Check out <a href="http://codemirror.net/">codemirror.net</a> for details on CodeMirror's API.</p>
 
-    <b>Available Options</b>
-    <ul>
-      <li><b>richTextToolbar</b> [default: false] - Adds a toolbar with buttons for bold, italic, etc.</li>
-      <li><b>richTextShortcuts</b> [default: false] - Maps Ctrl-B to bold, etc.</li>
-      <li><b>userId</b> [default: random] - The user ID for the person editing.</li>
-      <li><b>userColor</b> [default: generated from userId] - A css color (e.g. "#ccc") for this user's cursor.</li>
-    </ul>
+        <b>Available Options</b>
+        <ul>
+          <li><b>richTextToolbar</b> [default: false] - Adds a toolbar with buttons for bold, italic, etc.</li>
+          <li><b>richTextShortcuts</b> [default: false] - Maps Ctrl-B to bold, etc.</li>
+          <li><b>userId</b> [default: random] - The user ID for the person editing.</li>
+          <li><b>userColor</b> [default: generated from userId] - A css color (e.g. "#ccc") for this user's cursor.</li>
+        </ul>
+      </div>
+      <div class="bottom-content separator">
+        <h1>Firepad API</h1>
+        <b>Events</b><br/>
+        There is presently only one event, 'ready' which fires once Firepad has retrieved the initial editor contents.  You
+        must wait for this event to fire before calling any methods.
 
-    <h2>Firepad API</h2>
-    <b>Events</b><br/>
-    There is presently only one event, 'ready' which fires once Firepad has retrieved the initial editor contents.  You
-    must wait for this event to fire before calling any methods.
-
-    <pre class="prettyprint">
+        <pre class="prettyprint">
   firepad.on('ready', function() {
     // firepad is ready.
   });</pre>
 
-    <b>Methods</b><br/>
-    <span class="code">firepad.getText()</span> - Returns the current contents of Firepad as a string.<br/>
-    <span class="code">firepad.setText(text)</span> - Sets the contents of Firepad as a string.<br/>
-    <span class="code">firepad.getHtml()</span> - Gets the contents of Firepad as a string containing html tags.<br/>
-    <span class="code">firepad.setHtml(html)</span> - Sets the contents of Firepad as a string containing html tags.<br/>
-    <span class="code">firepad.isHistoryEmpty()</span> - Returns true if the Firepad has never had any content.<br/>
+        <b>Methods</b><br/>
+        <span class="code">firepad.getText()</span> - Returns the current contents of Firepad as a string.<br/>
+        <span class="code">firepad.setText(text)</span> - Sets the contents of Firepad as a string.<br/>
+        <span class="code">firepad.getHtml()</span> - Gets the contents of Firepad as a string containing html tags.<br/>
+        <span class="code">firepad.setHtml(html)</span> - Sets the contents of Firepad as a string containing html tags.<br/>
+        <span class="code">firepad.isHistoryEmpty()</span> - Returns true if the Firepad has never had any content.<br/>
+      </div>
+    </div>
+    <div id="footer">
+      <div id="footer-links">
+        <a href="../index.html">Home</a>
+        <a href="https://github.com/firebase/firepad">GitHub Project</a>
+        <a href="mailto:firepad@firebase.com">Contact</a>
+      </div>
+      <div id="powered-by-firebase">
+        <a href="https://www.firebase.com/"><img src="../images/powered_by_firebase.png" width="193" height="51"></a>
+      </div>
+    </div>
   </div>
 </body>
 </html>
