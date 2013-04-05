@@ -28,7 +28,9 @@
         <div id="logo-small"></div>
         <div id="page-title">Documentation</div>
         <div id="page-links">
-          <a href="#">Embedding Guide</a> | <a href="#">Firepad API</a> | <a href="#">Extending Firepad</a>
+          <a href="#embedding">Embedding Guide</a> |
+          <a href="#api">Firepad API</a> |
+          <a href="#extending">Extending Firepad</a>
         </div>
         <a href="https://github.com/firebase/firepad" id="download-on-github"><img src="../images/download.png"></a>
       </div>
@@ -38,6 +40,7 @@
   <div id="bottom">
     <div id="bottom-container">
       <div class="bottom-content">
+        <a name="embedding"></a>
         <h1>Embedding Guide</h1>
         <p>Firepad uses <a href="https://www.firebase.com/">Firebase</a> for its real-time data synchronization and
         <a href="http://www.codemirror.net/">CodeMirror</a> as the underlying text editor (though we'd love to add
@@ -49,6 +52,7 @@
   &lt;link rel=&quot;stylesheet&quot; href=&quot;codemirror.css&quot; /&gt;
   &lt;script src=&quot;codemirror.js&quot;&gt;&lt;/script&gt;
 
+  &lt;!-- Can download from http://www.firepad.io/firepad.zip --&gt;
   &lt;link rel=&quot;stylesheet&quot; href=&quot;firepad.css&quot; /&gt;
   &lt;script src=&quot;firepad.js&quot;&gt;&lt;/script&gt;
         </pre>
@@ -96,6 +100,7 @@
         </ul>
       </div>
       <div class="bottom-content separator">
+        <a name="api"></a>
         <h1>Firepad API</h1>
         <b>Events</b><br/>
         There is presently only one event, 'ready' which fires once Firepad has retrieved the initial editor contents.  You
@@ -113,7 +118,10 @@
         <span class="code">firepad.setHtml(html)</span> - Sets the contents of Firepad as a string containing html tags.<br/>
         <span class="code">firepad.isHistoryEmpty()</span> - Returns true if the Firepad has never had any content.<br/>
       </div>
-    </div>
+      <div class="bottom-content separator">
+        <a name="extending"></a>
+        <h1>Extending Firepad</h1>
+      </div>
     <div id="footer">
       <div id="footer-links">
         <a href="../index.html">Home</a>
