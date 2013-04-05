@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Firepad Demo</title>
+
+  <script src="https://cdn.firebase.com/v0/firebase.js"></script>
+
+  <script src="../examples/codemirror/lib/codemirror.js"></script>
+  <link rel="stylesheet" href="../examples/codemirror/lib/codemirror.css" />
+
+  <script src="../build/firepad.js"></script>
+  <link rel="stylesheet" href="../build/firepad.css" />
+
+  <script src="../build/extras/firepad-userlist.js"></script>
+  <link rel="stylesheet" href="../build/extras/firepad-userlist.css" />
+
+  <link rel="stylesheet" href="../css/demo.css" />
+  <script src="../js/jquery-1.9.1.min.js"></script>
+</head>
+
+<body>
+  <div id="top">
+    <div id="top-bg-tile">
+      <div id="top-content">
+        <div id="firepad-demo"></div>
+        <a href="./" id="create-pad" class="sprite-btn"></a>
+        <div id="firepad-container">
+          <div id="firepad-userlist"></div>
+          <div id="firepad"></div>
+        </div>
+        <div id="share-box">
+          <div id="share-with-friends">Share with Friends</div>
+          <div id="share-features">
+            <input type="text" readonly="readonly" id="url" />
+            <a href="#" onclick="alert('this needs to be a real like button.');">[Like]</a>
+            <a href="#" onclick="alert('this needs to be a real tweet button.');">[Tweet]</a>
+          </div>
+        </div>
+        <div id="divider"></div>
+        <div id="description">Firepad is an open source collaborative text editor you can add to <b>your</b> own website.
+          <div id="learn-more"><a href="http://www.firepad.io/">Learn More &gt;</a></div>
+        </div>
+        <a href="../" id="powered-by-firebase"></a>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript" src="../js/demo.js"></script>
+</body>
+</html>

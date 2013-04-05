@@ -202,12 +202,12 @@ pre.prettyprint {
 /************************************************/
 /* index.html specific styles. */
 /************************************************/
-.home .bottom-content {
-  padding: 40px 70px;
-}
-
 .home #top-content {
   height: 890px;
+}
+
+.home .bottom-content {
+  padding: 40px 70px;
 }
 
 #home-title-container {

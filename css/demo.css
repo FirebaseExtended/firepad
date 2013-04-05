@@ -1,0 +1,160 @@
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  font-family: "Helvetica Neue", sans-serif;
+  min-width: 1020px;
+  min-height: 400px;
+}
+
+.sprite-btn {
+  display: inline-block;
+  text-decoration: none;
+  text-indent: -999999px;
+  vertical-align: middle;
+}
+
+#top {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  color: white;
+  background-color: #fff; /* layer fill content */
+  background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEwMCAxMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjxsaW5lYXJHcmFkaWVudCBpZD0iaGF0MCIgZ3JhZGllbnRVbml0cz0ib2JqZWN0Qm91bmRpbmdCb3giIHgxPSIxNC42NjMwOTkyNDgxNzQxJSIgeTE9Ii04LjgxMDQ3ODg5MTEyMDQ1JSIgeDI9Ijg1LjMzNjkwMDc1MTgyNTklIiB5Mj0iMTA4LjgxMDQ3ODg5MTEyJSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmMTY1MjEiIHN0b3Atb3BhY2l0eT0iMSIvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmYxMDAiIHN0b3Atb3BhY2l0eT0iMSIvPgogICA8L2xpbmVhckdyYWRpZW50PgoKPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9InVybCgjaGF0MCkiIC8+Cjwvc3ZnPg==); /* gradient overlay */
+  background-image: -moz-linear-gradient(301deg, #f16521 0%, #fff100 100%); /* gradient overlay */
+  background-image: -o-linear-gradient(301deg, #f16521 0%, #fff100 100%); /* gradient overlay */
+  background-image: -webkit-linear-gradient(301deg, #f16521 0%, #fff100 100%); /* gradient overlay */
+  background-image: linear-gradient(149deg, #f16521 0%, #fff100 100%); /* gradient overlay */
+}
+
+#top-bg-tile {
+  background-image: url('../images/pixelbg.png');
+  width: 100%;
+  height: 100%;
+}
+
+#firepad-demo {
+  position: absolute;
+  left: 30px;
+  top: 40px;
+  background-image: url('../images/firepad-demo.png');
+  width: 174px;
+  height: 38px;
+}
+
+#create-pad {
+  position: absolute;
+  background-image: url('../images/create-pad.png');
+  width: 190px;
+  height: 41px;
+  right: 30px;
+  top: 40px;
+}
+
+#create-pad:active {
+  background-image: url('../images/create-pad-pressed.png');
+}
+
+#firepad-container {
+  position: absolute;
+  left: 30px;
+  top: 80px;
+  right: 30px;
+  bottom: 125px;
+  background: white;
+  /* TODO: Tune these more? */
+  -moz-box-shadow: 0 5px 25px #333;
+  -webkit-box-shadow: 0 5px 25px #333;
+  box-shadow: 0 5px 25px #333;
+}
+
+#firepad-container .firepad-userlist {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 175px;
+  height: auto;
+}
+
+#firepad-container .firepad {
+  position: absolute;
+  left: 175px;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+}
+
+#share-box {
+  position: absolute;
+  left: 30px;
+  bottom: 40px;
+  width: 540px;
+  height: 56px;
+}
+
+#share-with-friends {
+  font-size: 24px;
+  color: white;
+}
+
+#share-features {
+  height: 35px;
+}
+
+#url {
+  width: 250px;
+  height: 30px;
+  border: 1px solid #a5a5a5;
+}
+
+#divider {
+  position: absolute;
+  bottom: 30px;
+  right: 435px;
+  width: 0;
+  height: 80px;
+  border-left: 1px solid #74651b;
+  border-right: 1px solid #f4e084;
+}
+
+#description {
+  position: absolute;
+  bottom: 30px;
+  right: 40px;
+  width: 380px;
+  height: 80px;
+  font-size: 18px;
+  color: #282828;
+}
+
+#learn-more {
+  margin-top: 10px;
+}
+
+#learn-more a {
+  color: #dc4700;
+}
+
+#powered-by-firebase {
+  position: absolute;
+  right: 40px;
+  bottom: 30px;
+  width: 129px;
+  height: 34px;
+  background-image: url('../images/powered-by-firebase-dim.png');
+}
+
+#url {
+  width: 340px;
+  font-size: 14px;
+  color: #a6a6a6;
+  text-align: center;
+  cursor: pointer;
+}
