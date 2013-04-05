@@ -139,7 +139,9 @@ pre.prettyprint {
 }
 
 .bottom-content {
-  padding: 30px 90px;
+  padding: 30px 90px 0;
+  color: #5e5e5e;
+  margin-bottom: 40px;
 }
 
 .bottom-content h1 {
@@ -150,12 +152,6 @@ pre.prettyprint {
 }
 
 .bottom-content h2 {
-}
-
-.bottom-content p {
-  color: #5e5e5e;
-  margin-top: 5px;
-  margin-bottom: 10px;
 }
 
 .bottom-content.separator {
@@ -207,7 +203,7 @@ pre.prettyprint {
 }
 
 .home-page .bottom-content {
-  padding: 40px 70px;
+  padding: 40px 70px 0;
 }
 
 #home-title-container {
@@ -266,30 +262,34 @@ pre.prettyprint {
   height: 570px;
 }
 
-#uses .title {
+.uses-title {
   font-size: 36px;
   color: #535353;
   padding-bottom: 25px;
 }
 
-#uses .icon {
+.use-icon {
   float: left;
   width: 80px;
   height: 80px;
 }
 
-#uses .text {
+.use-text {
   float: left;
   width: 220px;
-  height: 150px;
+  margin-bottom: 25px;
 }
 
-#uses .use-title {
+.use-link {
+  display: block;
   font-size: 18px;
   font-weight: bold;
   color: #333;
-  text-decoration: underline;
-  padding-bottom: 10px;
+  padding-bottom: 5px;
+}
+
+.use-link:hover {
+  color: #eb8717;
 }
 
 .uses-col {
@@ -328,7 +328,7 @@ pre.prettyprint {
 }
 
 .examples-page .bottom-content {
-  padding: 16px 0 30px;
+  padding: 16px 0 0;
 }
 
 #view-source {
