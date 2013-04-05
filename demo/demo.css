@@ -108,12 +108,6 @@ body {
   height: 35px;
 }
 
-#url {
-  width: 250px;
-  height: 30px;
-  border: 1px solid #a5a5a5;
-}
-
 #divider {
   position: absolute;
   bottom: 30px;
@@ -152,7 +146,9 @@ body {
 }
 
 #url {
-  width: 340px;
+  width: 280px;
+  height: 30px;
+  border: 1px solid #a5a5a5;
   font-size: 14px;
   color: #a6a6a6;
   text-align: center;
