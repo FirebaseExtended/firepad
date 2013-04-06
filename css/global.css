@@ -399,6 +399,10 @@ pre.prettyprint {
   cursor: default;
 }
 
+#page-links a:hover {
+  color: #f9e701;
+}
+
 /************************************************/
 /* docs/ specific styles */
 /************************************************/

@@ -65,6 +65,8 @@ To customize the size / position of the firepad or customize its look and feel, 
     }
 {% endhighlight %}
 
+The toolbar and other aspects can also be customized.  Take a look at firepad.css for a starting point.
+
 <div class="emphasis-box">Firepad is also great for editing markdown, code, and just about anything else.
 Check out the <a href="../examples/">examples page</a> for more embedding examples.</div>
 
