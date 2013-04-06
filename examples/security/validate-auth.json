@@ -1,0 +1,28 @@
+/* Example assumes your firepad is at the root of your firebase. */
+
+{
+  "rules": {
+    /* Can read everything as long as you're authenticated. */
+    ".read": "auth != null",
+
+    "history": {
+      "$revision": {
+        /* Prevent overwriting revisions. */
+        ".validate": "data.val() === null",
+
+        /* Allow writing a revision as long as you're writing your auth.id as the 'a' field. */
+        ".write": "newData.child('a').val() === auth.id"
+      }
+    },
+    "users": {
+      "$userid": {
+        /* You may freely modify your own user info. */
+        ".write": "$userid === auth.id"
+      }
+    },
+    "checkpoint": {
+      /* May write a checkpoint as long as you're writing your auth.id as the 'a' field. */
+      ".write": "newData.child('a').val() === auth.id"
+    }
+  }
+}
