@@ -415,10 +415,34 @@ pre.prettyprint {
   border-top: 1px solid #e0e0e0;
 }
 
+#docs-content p {
+  margin: 0 0 10px;
+}
 
 #docs-content h1 {
   font-size: 36px;
   color: #535353;
   margin-top: 0;
   margin-bottom: 5px;
+}
+
+#docs-content h2 {
+  margin-bottom: 0;
+  font-size: 19px;
+}
+
+#docs-content a {
+  color: #eb8717;
+}
+
+#docs-content .emphasis-box {
+  border: 1px solid #e5a165;
+  background: #ffbf86;
+  padding: 10px 90px;
+  color: #000;
+  font-size: 16px;
+}
+
+#docs-content .emphasis-box a {
+  color: #dc4700;
 }
