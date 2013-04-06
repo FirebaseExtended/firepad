@@ -144,16 +144,6 @@ pre.prettyprint {
   margin-bottom: 40px;
 }
 
-.bottom-content h1 {
-  font-size: 36px;
-  color: #535353;
-  margin-top: 0;
-  margin-bottom: 5px;
-}
-
-.bottom-content h2 {
-}
-
 .bottom-content.separator {
   margin-top: 40px;
   border-top: 1px solid #e0e0e0;
@@ -407,4 +397,28 @@ pre.prettyprint {
   text-decoration: none;
   font-weight: bold;
   cursor: default;
+}
+
+/************************************************/
+/* docs/ specific styles */
+/************************************************/
+#docs-content {
+  padding: 30px 90px 0;
+  color: #5e5e5e;
+  margin-bottom: 40px;
+}
+
+.docs-separator {
+  height: 0;
+  margin-top: 40px;
+  margin-bottom: 30px;
+  border-top: 1px solid #e0e0e0;
+}
+
+
+#docs-content h1 {
+  font-size: 36px;
+  color: #535353;
+  margin-top: 0;
+  margin-bottom: 5px;
 }
