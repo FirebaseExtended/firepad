@@ -27,7 +27,7 @@ module.exports = function (grunt) {
           "lib/undo-manager.js",
           "lib/client.js",
           "lib/editor-client.js",
-          "lib/codemirror-adapter.js",
+          /*"lib/codemirror-adapter.js",*/
           "lib/rich-text-codemirror.js",
           "lib/rich-text-codemirror-adapter.js",
           "lib/firepad.js"
