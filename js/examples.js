@@ -1,15 +1,15 @@
 var examples = {
-  code: {
-    linkId: "code-link", // Refers to the link at the top of the page (not all examples have this).
-    title: "Code",
-    description: "Typical code setup (line numbers, JavaScript syntax highlighting, etc.)",
-    src: "code.html"
-  },
   richtext: {
     linkId: "rich-text-link", // Refers to the link at the top of the page (not all examples have this).
     title: "Rich-Text",
     description: "Typical rich-text setup (toolbar, keyboard shortcuts, line wrap, etc.)",
     src: "richtext.html"
+  },
+  code: {
+    linkId: "code-link", // Refers to the link at the top of the page (not all examples have this).
+    title: "Code",
+    description: "Typical code setup (line numbers, JavaScript syntax highlighting, etc.)",
+    src: "code.html"
   },
   userlist: {
     title: "Userlist",
@@ -86,7 +86,7 @@ function createExample(example) {
 
 function loadExample(example, id) {
   if (!example || !(example in examples)) {
-    example = 'code';
+    example = 'richtext';
   }
 
   var info = examples[example];
