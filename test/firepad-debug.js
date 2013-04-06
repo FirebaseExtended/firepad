@@ -18,5 +18,4 @@ load('../lib/undo-manager.js');
 load('../lib/codemirror-adapter.js');
 load('../lib/rich-text-codemirror-adapter.js');
 load('../lib/rich-text-toolbar.js');
-load('../lib/user-list.js');
 load('../lib/firepad.js');

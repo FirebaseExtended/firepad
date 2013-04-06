@@ -6,7 +6,7 @@
   <title>Collaborative editing with CodeMirror</title>
   <link rel="stylesheet" href="codemirror/lib/codemirror.css" />
   <script src="codemirror/lib/codemirror.js"></script>
-  <script src="https://cdn.firebase.com/v0/firebase-debug.js"></script>
+  <script src="https://cdn.firebase.com/v0/firebase.js"></script>
   <script src="firepad.js"></script>
   <style>
     .CodeMirror pre {
@@ -28,7 +28,7 @@
   <span id="hammeringText" style="display: none;">Hammering!</span>
 
   <script>
-    Firebase.enableLogging(true);
+    //Firebase.enableLogging(true);
     var firepadRef = new Firebase('https://firepad.firebaseio.com/hammer');
 
     var editorWrapper = document.getElementById('editor-wrapper');
