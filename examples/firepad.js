@@ -65,17 +65,17 @@ firepad.utils.setTextContent = function(e, str) {
 };
 
 
-firepad.utils.on = function(emitter, type, f) {
+firepad.utils.on = function(emitter, type, f, capture) {
   if (emitter.addEventListener) {
-    emitter.addEventListener(type, f, false);
+    emitter.addEventListener(type, f, capture || false);
   } else if (emitter.attachEvent) {
     emitter.attachEvent("on" + type, f);
   }
 };
 
-firepad.utils.off = function(emitter, type, f) {
+firepad.utils.off = function(emitter, type, f, capture) {
   if (emitter.removeEventListener) {
-    emitter.removeEventListener(type, f, false);
+    emitter.removeEventListener(type, f, capture || false);
   } else if (emitter.detachEvent) {
     emitter.detachEvent("on" + type, f);
   }
@@ -113,6 +113,16 @@ firepad.utils.stopEventAnd = function(fn) {
 firepad.utils.assert = function assert (b, msg) {
   if (!b) {
     throw new Error(msg || "assertion error");
+  }
+};
+
+firepad.utils.log = function() {
+  if (typeof console !== 'undefined' && typeof console.log !== 'undefined') {
+    var args = ['Firepad:'];
+    for(var i = 0; i < arguments.length; i++) {
+      args.push(arguments[i]);
+    }
+    console.log.apply(console, args);
   }
 };
 
@@ -1358,7 +1368,7 @@ firepad.FirebaseAdapter = (function (global) {
               }, 0);
             }
           } else {
-            console.error('Transaction failure!', error);
+            utils.log('Transaction failure!', error);
             throw error;
           }
         } else if (committed) {
@@ -1471,7 +1481,7 @@ firepad.FirebaseAdapter = (function (global) {
 
       // If a misbehaved client adds a bad operation, just ignore it.
       if (this.document_.targetLength !== op.baseLength) {
-        console.log('Invalid operation.', revisionId, author, op);
+        utils.log('Invalid operation.', revisionId, author, op);
       } else {
         this.document_ = this.document_.compose(op);
       }
@@ -1498,7 +1508,7 @@ firepad.FirebaseAdapter = (function (global) {
 
       if (op.baseLength !== this.document_.targetLength) {
         // If a misbehaved client adds a bad operation, just ignore it.
-        console.log('Invalid operation.', revisionId, author, op);
+        utils.log('Invalid operation.', revisionId, author, op);
       } else {
         this.document_ = this.document_.compose(op);
         if (this.sent_ && revisionId === this.sent_.id) {
@@ -1586,7 +1596,7 @@ firepad.RichTextToolbar = (function(global) {
     this.element_ = this.makeElement_();
   }
 
-  utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'font-size']);
+  utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'font', 'font-size', 'color']);
 
   RichTextToolbar.prototype.element = function() { return this.element_; };
 
@@ -1598,50 +1608,112 @@ firepad.RichTextToolbar = (function(global) {
     utils.on(italic, 'click', utils.stopEventAnd(function() { self.trigger('italic'); }));
     var underline = utils.elt('a', 'U', { 'class': 'firepad-btn firepad-btn-underline' });
     utils.on(underline, 'click', utils.stopEventAnd(function() { self.trigger('underline'); }));
-    var fontSize = this.makeFontSizeDropdown_();
 
-    return utils.elt('div', [
+    var font = this.makeFontDropdown_();
+    var fontSize = this.makeFontSizeDropdown_();
+    var color = this.makeColorDropdown_();
+
+    var toolbar = utils.elt('div', [
+      utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [bold, italic, underline], { 'class': 'firepad-btn-group'})
     ], { class: 'firepad-toolbar' });
+
+    return toolbar;
+  };
+
+  RichTextToolbar.prototype.makeFontDropdown_ = function() {
+    // NOTE: There must be matching .css styles in firepad.css.
+    var fonts = ['Arial', 'Comic Sans MS', 'Courier New', 'Impact', 'Times New Roman', 'Verdana'];
+
+    var items = [];
+    for(var i = 0; i < fonts.length; i++) {
+      var content = utils.elt('span', fonts[i]);
+      content.setAttribute('style', 'font-family:' + fonts[i]);
+      items.push({ content: content, value: fonts[i] });
+    }
+    return this.makeDropdown_('Font', 'font', items);
   };
 
   RichTextToolbar.prototype.makeFontSizeDropdown_ = function() {
+    // NOTE: There must be matching .css styles in firepad.css.
+    var sizes = [9, 10, 12, 14, 18, 24, 32, 42];
+
+    var items = [];
+    for(var i = 0; i < sizes.length; i++) {
+      var content = utils.elt('span', sizes[i].toString());
+      content.setAttribute('style', 'font-size:' + sizes[i] + 'px; line-height:' + (sizes[i]-6) + 'px;');
+      items.push({ content: content, value: sizes[i] });
+    }
+    return this.makeDropdown_('Size', 'font-size', items);
+  };
+
+  RichTextToolbar.prototype.makeColorDropdown_ = function() {
+    // NOTE: There must be matching .css styles in firepad.css.
+    var colors = ['black', 'red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'grey'];
+
+    var items = [];
+    for(var i = 0; i < colors.length; i++) {
+      var content = utils.elt('div');
+      content.className = 'firepad-color-dropdown-item';
+      content.setAttribute('style', 'background-color:' + colors[i]);
+      items.push({ content: content, value: colors[i] });
+    }
+    return this.makeDropdown_('Color', 'color', items);
+  };
+
+  RichTextToolbar.prototype.makeDropdown_ = function(title, eventName, items) {
     var self = this;
-    var button = utils.elt('a', 'Size ▾', { 'class': 'firepad-btn firepad-dropdown' });
+    var button = utils.elt('a', title + ' ▾', { 'class': 'firepad-btn firepad-dropdown' });
     var list = utils.elt('ul', [ ], { 'class': 'firepad-dropdown-menu' });
     button.appendChild(list);
 
-    var shown = false;
-    function toggleFontSizeList() {
-      if (shown) {
-        list.style.display = '';
-        utils.off(document, 'click', toggleFontSizeList);
-      } else {
+    var isShown = false;
+    function showDropdown() {
+      if (!isShown) {
         list.style.display = 'block';
-        utils.on(document, 'click', toggleFontSizeList);
+        utils.on(document, 'click', hideDropdown, /*capture=*/true);
+        isShown = true;
       }
-      shown = !shown;
     }
 
-    function addSize(name, size) {
-      var element = utils.elt('a', name);
+    var justDismissed = false;
+    function hideDropdown() {
+      if (isShown) {
+        list.style.display = '';
+        utils.off(document, 'click', hideDropdown, /*capture=*/true);
+        isShown = false;
+      }
+      // HACK so we can avoid re-showing the dropdown if you click on the dropdown header to dismiss it.
+      justDismissed = true;
+      setTimeout(function() { justDismissed = false; }, 0);
+    }
+
+    function addItem(content, value) {
+      if (typeof content !== 'object') {
+        content = document.createTextNode(String(content));
+      }
+      var element = utils.elt('a', [content]);
+
       utils.on(element, 'click', utils.stopEventAnd(function() {
-        toggleFontSizeList();
-        self.trigger('font-size', size);
+        hideDropdown();
+        self.trigger(eventName, value);
       }));
+
       list.appendChild(element);
     }
 
-    addSize('Default', false);
-    addSize('12', 12);
-    addSize('14', 14);
-    addSize('18', 18);
-    addSize('24', 24);
-    addSize('32', 32);
-    addSize('42', 42);
+    for(var i = 0; i < items.length; i++) {
+      var content = items[i].content, value = items[i].value;
+      addItem(content, value);
+    }
 
-    utils.on(button, 'click', utils.stopEventAnd(toggleFontSizeList));
+    utils.on(button, 'click', utils.stopEventAnd(function() {
+      if (!justDismissed) {
+        showDropdown();
+      }
+    }));
 
     return button;
   };
@@ -2372,7 +2444,8 @@ firepad.RichTextCodeMirror = (function () {
         var val = annotation.attributes[attr];
         className += ' ' + (this.options_['cssPrefix'] || RichTextClassPrefixDefault) + attr;
         if (val !== true) {
-          className += val;
+          val = val.toString().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+          className += '-' + val;
         }
       }
 
@@ -3003,6 +3076,16 @@ firepad.Firepad = (function(global) {
     this.codeMirror_.focus();
   };
 
+  Firepad.prototype.font = function(font) {
+    this.richTextCodeMirror_.setAttribute('f', font);
+    this.codeMirror_.focus();
+  };
+
+  Firepad.prototype.color = function(color) {
+    this.richTextCodeMirror_.setAttribute('c', color);
+    this.codeMirror_.focus();
+  };
+
   Firepad.prototype.getOption = function(option, def) {
     return (option in this.options_) ? this.options_[option] : def;
   };
@@ -3020,6 +3103,8 @@ firepad.Firepad = (function(global) {
     toolbar.on('italic', this.italic, this);
     toolbar.on('underline', this.underline, this);
     toolbar.on('font-size', this.fontSize, this);
+    toolbar.on('font', this.font, this);
+    toolbar.on('color', this.color, this);
 
     this.firepadWrapper_.insertBefore(toolbar.element(), this.firepadWrapper_.firstChild);
   };
