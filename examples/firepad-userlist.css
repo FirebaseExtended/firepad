@@ -27,14 +27,19 @@
 }
 
 .firepad-userlist-users {
-  margin: 0 15px;
+  position: absolute;
+  left: 15px;
+  right: 15px;
+  top: 38px;
+  bottom: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .firepad-userlist-user {
   position: relative;
-  margin: 3px 0px;
+  margin: 3px 0;
   height: 32px;
-  line-height: 32px;
   border-bottom: 1px solid #c9c9c9;
   padding-bottom: 5px;
 }
@@ -63,6 +68,7 @@
   position: absolute;
   left: 38px;
   top: 23px;
+  width: 300px; /* I'd rather it clip than wrap. */
   font-size: 10px;
   line-height: 11px;
 }
