@@ -1427,10 +1427,10 @@ firepad.FirebaseAdapter = (function (global) {
     var self = this;
     // Get the latest checkpoint as a starting point so we don't have to re-play entire history.
     this.ref_.child('checkpoint').once('value', function(s) {
-      var revision = s.child('rev').val(),  op = s.child('op').val();
-      if (op != null && revision != null) {
-        self.pendingReceivedRevisions_[revisionToId(revision)] = { o: op, a: 'checkpoint' };
-        self.checkpointRevision_ = revision;
+      var revisionId = s.child('id').val(),  op = s.child('o').val(), author = s.child('a').val();
+      if (op != null && revisionId != null && author !== null) {
+        self.pendingReceivedRevisions_[revisionId] = { o: op, a: author };
+        self.checkpointRevision_ = revisionFromId(revisionId);
         self.monitorHistoryStartingAt_(self.checkpointRevision_ + 1);
       } else {
         self.checkpointRevision_ = 0;
@@ -1504,7 +1504,7 @@ firepad.FirebaseAdapter = (function (global) {
         if (this.sent_ && revisionId === this.sent_.id) {
           // We have an outstanding change at this revision id.
           if (this.sent_.op.equals(op) && author === this.userId_) {
-            // Our op succeeded.
+            // This is our change; it succeeded.
             if (this.revision_ % CHECKPOINT_FREQUENCY === 0) {
               this.saveCheckpoint_();
             }
@@ -1532,8 +1532,8 @@ firepad.FirebaseAdapter = (function (global) {
   FirebaseAdapter.prototype.saveCheckpoint_ = function() {
     this.ref_.child('checkpoint').set({
       a: this.userId_,
-      op: this.document_.toJSON(),
-      rev: this.revision_ - 1
+      o: this.document_.toJSON(),
+      id: revisionToId(this.revision_ - 1) // use the id for the revision we just wrote.
     });
   };
 
@@ -1562,6 +1562,16 @@ firepad.FirebaseAdapter = (function (global) {
     // Prefix with length (starting at 'A' for length 1) to ensure the id's sort lexicographically.
     var prefix = characters[str.length + 9];
     return prefix + str;
+  }
+
+  function revisionFromId(revisionId) {
+    assert (revisionId.length > 0 && revisionId[0] === characters[revisionId.length + 8]);
+    var revision = 0;
+    for(var i = 1; i < revisionId.length; i++) {
+      revision *= characters.length;
+      revision += characters.indexOf(revisionId[i]);
+    }
+    return revision;
   }
 
   return FirebaseAdapter;
@@ -2893,6 +2903,9 @@ firepad.Firepad = (function(global) {
       this.addToolbar_();
       this.firepadWrapper_.className += ' firepad-richtext firepad-with-toolbar';
     }
+
+    // Now that we've mucked with CodeMirror, refresh it.
+    this.codeMirror_.refresh();
 
     var userId = this.getOption('userId', ref.push().name());
     var userColor = this.getOption('userColor', colorFromUserId(userId));
