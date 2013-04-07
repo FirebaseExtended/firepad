@@ -17,8 +17,8 @@ support for other editors in the future).
 
 Before getting started, you'll need to:
 
-- Download Firepad
-- Download CodeMirror
+- <a href="http://www.firepad.io/firepad.zip">Download Firepad</a>
+- <a href="http://codemirror.net/" target="_blank">Download CodeMirror</a>
 - <a href="https://www.firebase.com/signup/" target="_blank">Create a Firebase account</a> (it's free)
 
 ## Adding Dependencies
@@ -53,8 +53,8 @@ for rich-text editing:
     </script>
 {% endhighlight %}
 
-Replace `<FIREBASE_URL>` with any location in your Firebase.  You can easily store multiple
-Firepads in your Firebase by just giving them each a unique URL
+Make sure to replace `<FIREBASE_URL>` with a Firebase location. Note that you can easily store multiple
+Firepads in your Firebase by giving them each a unique URL
 (e.g. `https://<YOUR FIREBASE>/firepads/<unique id>`).
 
 ## Customizing Your Editor
