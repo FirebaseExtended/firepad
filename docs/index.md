@@ -3,30 +3,39 @@ layout: docs
 permalink: index.html
 ---
 
+<a name="getting_started"> </a>
 
-<a name="embedding"> </a>
-# Embedding Guide
-Firepad uses [Firebase](https://www.firebase.com/) for its real-time data synchronization and
+# Getting Started
+
+Firepad was designed to be embedded inside larger applications. Here we'll explain how to do this.
+
+### Prerequisites
+
+Firepad uses [Firebase](https://www.firebase.com/) for real-time data synchronization and
 [CodeMirror](http://www.codemirror.net/) as the underlying text editor (though we'd love to add
-support for other editors).  So to get started, you'll need to include Firebase, CodeMirror, and
-Firepad.
+support for other editors in the future).
+
+You'll need to create a Firebase account so that Firepad has a place to store your data. You can 
+<a href="https://www.firebase.com/signup/" target="_blank">create an account here</a> (it's free).
+
+### Adding Dependencies
+
+Include Firebase, CodeMirror, and Firepad in the &lt;head&gt; section of your page.
 
 {% highlight html %}
     <script src="https://cdn.firebase.com/v0/firebase.js"></script>
 
-    <!-- Can download from http://codemirror.net/codemirror.zip -->
+    <!-- Download from http://codemirror.net/codemirror.zip -->
     <link rel="stylesheet" href="codemirror.css" />
     <script src="codemirror.js"></script>
 
-    <!-- Can download from http://www.firepad.io/firepad.zip -->
+    <!-- Download from http://www.firepad.io/firepad.zip -->
     <link rel="stylesheet" href="firepad.css" />
     <script src="firepad.js"></script>
 {% endhighlight %}
 
-You'll also need a [Firebase](https://www.firebase.com/) account, which will be used to store and
- synchronize your firepad contents:
 
-<a href="https://www.firebase.com/signup/" target="_blank">Create your Free Firebase Account</a>
+### Initializing Firepad
 
 To create a firepad, you must initialize Firebase, CodeMirror, and then Firepad.  Here is a typical setup
 for rich-text editing:
