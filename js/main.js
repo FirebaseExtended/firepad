@@ -1,6 +1,15 @@
-// TODO: Sharding.
-var firepadRef = new Firebase('https://firepad.firebaseio.com/home/');
+var ROOMS = 20;
 
+var room = Number(window.location.hash.replace(/#/g, ''));
+if (!(room >= 1 && room <= ROOMS)) {
+  room = Math.floor(Math.random() * ROOMS);
+}
+
+window.location = window.location.toString().replace(/#.*/, '') + '#' + room;
+
+var NAMESPACES = 15;
+var firebaseUrl = 'https://firebase-firepad' + (room % NAMESPACES) + '.firebaseio.com/' + room;
+var firepadRef = new Firebase(firebaseUrl);
 var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
 
 var userId = firepadRef.push().name(); // Just a random ID.
