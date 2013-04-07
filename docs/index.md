@@ -9,18 +9,19 @@ permalink: index.html
 
 Firepad was designed to be embedded inside larger applications. Here we'll explain how to do this.
 
-### Prerequisites
+## Prerequisites
 
 Firepad uses [Firebase](https://www.firebase.com/) for real-time data synchronization and storage, and it uses
 [CodeMirror](http://www.codemirror.net/) as the underlying text editor (though we'd love to add
 support for other editors in the future).
 
 Before getting started, you'll need to:
--Download Firepad
--Download CodeMirror
--<a href="https://www.firebase.com/signup/" target="_blank">Create a Firebase account</a> (it's free)
 
-### Adding Dependencies
+- Download Firepad
+- Download CodeMirror
+- <a href="https://www.firebase.com/signup/" target="_blank">Create a Firebase account</a> (it's free)
+
+## Adding Dependencies
 
 Include Firebase, CodeMirror, and Firepad in the &lt;head&gt; section of your page.
 
@@ -37,7 +38,7 @@ Include Firebase, CodeMirror, and Firepad in the &lt;head&gt; section of your pa
 {% endhighlight %}
 
 
-### Initializing Firepad
+## Initializing Firepad
 
 To create a Firepad, you must initialize Firebase, CodeMirror, and then Firepad.  Here is a typical setup
 for rich-text editing:
@@ -56,7 +57,7 @@ Replace `<FIREBASE_URL>` with any location in your Firebase.  You can easily sto
 Firepads in your Firebase by just giving them each a unique URL
 (e.g. `https://<YOUR FIREBASE>/firepads/<unique id>`).
 
-### Customizing Your Editor
+## Customizing Your Editor
 
 See the API section below for details on `Firepad.fromCodeMirror()` and the methods / events
 it provides.  And check out [codemirror.net](http://codemirror.net/) for details on CodeMirror's API

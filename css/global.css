@@ -27,10 +27,6 @@ a img {
   border-style: none;
 }
 
-h3 {
-  margin-top: 40px;
-}
-
 /************************************************/
 /* Top of page (the orange fiery part) */
 /************************************************/
@@ -460,11 +456,12 @@ h3 {
   font-size: 36px;
   color: #535353;
   margin-top: 0;
-  margin-bottom: 5px;
+  margin-bottom: 15px;
 }
 
 #docs-content h2 {
-  margin-bottom: 0;
+  margin-top: 30px;
+  margin-bottom: 10px;
   font-size: 19px;
 }
 
