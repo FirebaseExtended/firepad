@@ -26,8 +26,12 @@ a img {
   border-style: none;
 }
 
+h1 {
+  margin-bottom: 15px;
+}
+
 h3 {
-  margin-top: 40px;
+  margin-top: 35px;
 }
 
 /************************************************/

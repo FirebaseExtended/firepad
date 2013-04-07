@@ -16,9 +16,10 @@ Firepad uses [Firebase](https://www.firebase.com/) for real-time data synchroniz
 support for other editors in the future).
 
 Before getting started, you'll need to:
--Download Firepad
--Download CodeMirror
--<a href="https://www.firebase.com/signup/" target="_blank">Create a Firebase account</a> (it's free)
+
+- Download Firepad
+- Download CodeMirror
+- <a href="https://www.firebase.com/signup/" target="_blank">Create a Firebase account</a> (it's free)
 
 ### Adding Dependencies
 
