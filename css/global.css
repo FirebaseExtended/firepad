@@ -23,6 +23,13 @@ pre.prettyprint {
   margin-top: 0;
 }
 
+a img {
+  border-style: none;
+}
+
+h3 {
+  margin-top: 40px;
+}
 
 /************************************************/
 /* Top of page (the orange fiery part) */
@@ -324,15 +331,15 @@ pre.prettyprint {
 }
 
 .faq-question {
-  margin-bottom: 40px;
-  font-size: 13px;
+  margin-bottom: 35px;
+  font-size: 14px;
   color: #5e5e5e;
 }
 
 .faq-title {
   font-size: 32px;
   color: #535353;
-  padding-bottom: 15px;
+  padding-bottom: 10px;
 }
 
 

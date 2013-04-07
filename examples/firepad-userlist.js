@@ -63,6 +63,7 @@ var FirepadUserList = (function() {
       myUserRef.child('name').onDisconnect().remove();
       myUserRef.child('name').set(name);
       nameHint.style.display = 'none';
+      nameInput.blur();
       stopEvent(e);
     });
 
