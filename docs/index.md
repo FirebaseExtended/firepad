@@ -90,23 +90,29 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 
 
 # Firepad API
-## Constructor
-{% highlight javascript %}
-    var firepad = Firepad.fromCodeMirror(firebaseRef, codeMirror, options)
-{% endhighlight %}
 
-Available Options:
+## Constructing a Firepad
 
-* `richTextToolbar` (default: false) - Adds a toolbar with buttons for bold, italic, etc.
-* `richTextShortcuts` (default: false) - Maps Ctrl-B to bold, etc.
-* `userId` (default: random) - The user ID for the person editing.
-* `userColor` (default: generated from userId) - A css color (e.g. "#ccc") for this user's cursor.
+`Firepad.fromCodeMirror(firebaseRef, codeMirror, options)`
 
+>Creates a new Firepad from the specified CodeMirror instance, using the specified Firebase location to store data. The
+>options hash can be used to customize behavior.
+>
+>Available Options:
+>
+>* `richTextToolbar` (default: false) - Adds a toolbar with buttons for bold, italic, etc.
+>* `richTextShortcuts` (default: false) - Maps Ctrl-B to bold, etc.
+>* `userId` (default: random) - The user ID for the person editing.
+>* `userColor` (default: generated from userId) - A css color (e.g. "#ccc") for this user's cursor.
 
-## Events
-There is presently only one event, 'ready' which fires once Firepad has retrieved the initial editor contents.  You
-must wait for this event to fire before calling any other methods.  You can subscribe with `.on()` and unsubscribe
-with `.off()`.
+## Firepad Methods
+
+`firepad.on(eventType, callback);`
+
+>Attaches a callback for the given event type. 
+>
+>There is presently only one event, 'ready' which fires once Firepad has retrieved the initial editor contents.  You
+>must wait for this event to fire before calling any other methods. 
 
 {% highlight javascript %}
     firepad.on('ready', function() {
@@ -114,7 +120,10 @@ with `.off()`.
     });
 {% endhighlight %}
 
-## Methods
+`firepad.off()`
+
+>??????
+
 `firepad.getText()`
 > Returns the current contents of Firepad as a string.
 
@@ -128,17 +137,16 @@ with `.off()`.
 > Returns true if the Firepad has never had any content.  Useful for doing first-time initialization.
 
 
-
 <div class="docs-separator"> </div>
 <a name="firebase"> </a>
 # Firebase Data
-Firepad uses [Firebase](https://www.firebase.com/) for its data storage and synchronization.  This means
+Firepad uses [Firebase](https://www.firebase.com/) for its data storage and synchronization. This means
 you don't need to run any server code and you benefit from all the features of Firebase
-(first-class data security, data accessibility, automatic scaling, etc.).  It also means you own all of
+(first-class data security, data accessibility, automatic scaling, etc.). It also means you own all of
 the data and can interact with it in a variety of ways.
 
 ## Data Structure
-The basic data structure used by Firepad is currently as follows:
+Firepad stores your data at the Firebase location you specify using the following data structure:
 
 * `users/`
     * `<user id>/` - You can specify this when initializing Firepad, else it will be random.
@@ -154,22 +162,25 @@ The basic data structure used by Firepad is currently as follows:
     * `rev` - revision at the time the checkpoint was taken.
     * `op/` - array of operations that made up the document at that revision.
 
-See the code or view the data in Forge (just enter your Firebase URL in a browser) for more details.
+You may find it useful to interact directly with the Firebase data when building related features on your site. For
+example, the user list shown in the Firepad examples monitors the user data stored by Firepad and even adds its own
+`name` data when you pick a username. 
+See the code or view the data in Forge (just enter your Firebase URL in a browser) for more details. 
 
 ## Security
 To lock down your Firepad data, you can use Firebase's builtin
 [Security features](https://www.firebase.com/docs/security-quickstart.html).  For some example
-security rules, see [here](https://github.com/firebase/firepad/tree/master/examples/security).
+security rules, see these [example rules on Github](https://github.com/firebase/firepad/tree/master/examples/security).
 
 
 <div class="docs-separator"> </div>
 <a name="extending"> </a>
 # Extending Firepad
-Firepad is an open source project and is meant to be extended and customized.  We'd love for the community
-to help add support for more editors, extend the rich text capabilities, etc.  If you want to take the plunge,
+Firepad is an open source project and is meant to be extended and customized. We'd love for the community
+to help add support for more editors, extend the rich text capabilities, etc. If you want to take the plunge,
 read on!
 
-## Getting Started
+## Setting Up Your Environment
 Before you get started, you'll need [node.js](http://nodejs.org/) installed, since Firepad uses
 [grunt](http://gruntjs.com/) to automate some build tasks (generating firepad.js, minifying it, etc.).
 Then you can simply clone the repo, install the necessary node modules, and run grunt:
