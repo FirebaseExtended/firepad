@@ -116,6 +116,16 @@ firepad.utils.assert = function assert (b, msg) {
   }
 };
 
+firepad.utils.log = function() {
+  if (typeof console !== 'undefined' && typeof console.log !== 'undefined') {
+    var args = ['Firepad:'];
+    for(var i = 0; i < arguments.length; i++) {
+      args.push(arguments[i]);
+    }
+    console.log.apply(console, args);
+  }
+};
+
 var firepad = firepad || { };
 firepad.Span = (function () {
   function Span(pos, length) {
@@ -1358,7 +1368,7 @@ firepad.FirebaseAdapter = (function (global) {
               }, 0);
             }
           } else {
-            console.error('Transaction failure!', error);
+            utils.log('Transaction failure!', error);
             throw error;
           }
         } else if (committed) {
@@ -1471,7 +1481,7 @@ firepad.FirebaseAdapter = (function (global) {
 
       // If a misbehaved client adds a bad operation, just ignore it.
       if (this.document_.targetLength !== op.baseLength) {
-        console.log('Invalid operation.', revisionId, author, op);
+        utils.log('Invalid operation.', revisionId, author, op);
       } else {
         this.document_ = this.document_.compose(op);
       }
@@ -1498,7 +1508,7 @@ firepad.FirebaseAdapter = (function (global) {
 
       if (op.baseLength !== this.document_.targetLength) {
         // If a misbehaved client adds a bad operation, just ignore it.
-        console.log('Invalid operation.', revisionId, author, op);
+        utils.log('Invalid operation.', revisionId, author, op);
       } else {
         this.document_ = this.document_.compose(op);
         if (this.sent_ && revisionId === this.sent_.id) {
