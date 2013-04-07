@@ -17,6 +17,8 @@
 
   <link rel="stylesheet" href="css/global.css" />
 
+  <link href="images/favicon.ico" rel="shortcut icon" />
+
   <script>
     if (typeof localStorage === 'undefined' || localStorage.getItem('password') !== 'firebase') {
       var password = prompt('Password?');
@@ -32,7 +34,7 @@
 </head>
 
 <body class="home-page">
-  <a href="https://github.com/firebase/firepad">
+  <a href="https://github.com/firebase/firepad" target="_blank">
     <img style="position: absolute; top: 0; left: 0; border: 0; z-index: 1;" src="images/fork_on_github.png" alt="Fork me on GitHub">
   </a>
   <div id="top">
@@ -43,14 +45,14 @@
           <a href="./">Home</a>
           <a href="examples/">Examples</a>
           <a href="docs/">Documentation</a>
-          <a href="http://demo.firepad.io/" target="_blank">Demo</a>
+          <a href="http://demo.firepad.io/" target="_blank">Private FirePad</a>
         </div>
         <div id="home-title-container" class="clearfix">
           <div id="home-title">Introducing</div>
           <div id="home-logo"></div>
         </div>
         <div id="home-subtitle">Open source collaborative text editing</div>
-        <a href="https://github.com/firebase/firepad" id="home-download-on-github"><img src="images/download.png"></a>
+        <a href="https://github.com/firebase/firepad" target="_blank" id="home-download-on-github"><img src="images/download.png"></a>
         <div id="firepad-container">
           <div id="firepad-userlist"></div>
           <div id="firepad"></div>
@@ -82,7 +84,7 @@
             <div class="clearfix">
               <div class="use-icon"></div>
               <div class="use-text">
-                <a href="./examples/" class="use-link">And More...</a>
+                <a href="./examples/" class="use-link">...and more!</a>
                 Firepad is extremely flexible and can be customized in a variety of ways.
               </div>
             </div>
@@ -92,7 +94,7 @@
             <div class="clearfix">
               <!--<div class="use-icon"><img src="images/user_socrates.png"></div>-->
               <div class="use-text">
-                <a href="http://socrates.io/" class="use-link" target="_blank">socrates.io</a>
+                <a href="http://socrates.io/" class="use-link" target="_blank">Socrates.io</a>
                 A collaborative Markdown editor and previewer.
               </div>
             </div>
@@ -137,12 +139,13 @@
     </div>
     <div id="footer">
       <div id="footer-links">
-        <a href="index.html">Home</a>
-        <a href="https://github.com/firebase/firepad">GitHub Project</a>
-        <a href="mailto:firepad@firebase.com">Contact</a>
+        <a href="examples/">Examples</a>
+        <a href="docs/">Docs</a>
+        <a href="https://github.com/firebase/firepad" target="_blank">GitHub Project</a>
+        <a href="mailto:firepad@firebase.com?subject=[FirePad Question]" target="_blank">Contact</a>
       </div>
       <div id="powered-by-firebase">
-        <a href="https://www.firebase.com/"><img src="images/powered-by-firebase-dim.png"></a>
+        <a href="https://www.firebase.com?utm_source=firepad&utm_medium=exampleapp" target="_blank"><img src="images/powered-by-firebase-dim.png"></a>
       </div>
     </div>
   </div>
