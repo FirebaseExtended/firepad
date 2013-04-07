@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Firepad</title>
+  <title>Firepad, an open source collaborative editor</title>
   <meta charset="utf-8" />
   <script src="https://cdn.firebase.com/v0/firebase.js"></script>
 
@@ -45,11 +45,10 @@
           <a href="./">Home</a>
           <a href="examples/">Examples</a>
           <a href="docs/">Documentation</a>
-          <a href="http://demo.firepad.io/" target="_blank">Private FirePad</a>
+          <a href="http://demo.firepad.io/" target="_blank">Private Firepad</a>
         </div>
         <div id="home-title-container" class="clearfix">
-          <div id="home-title">Introducing</div>
-          <div id="home-logo"></div>
+            <img src="images/firepad_logo.png" alt="Firepad Logo" />
         </div>
         <div id="home-subtitle">Open source collaborative text editing</div>
         <a href="https://github.com/firebase/firepad" target="_blank" id="home-download-on-github"><img src="images/download.png"></a>
@@ -63,10 +62,27 @@
 
   <div id="bottom">
     <div id="bottom-container">
-      <div class="bottom-content">
+      <div class="social-container clearfix">
+        <ul class="social-buttons">
+          <li>
+            <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=firebase&repo=firepad&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="100px" height="20px"></iframe>
+          </li>
+          <li>
+            <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=firebase&repo=firepad&type=fork&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="102px" height="20px"></iframe>
+          </li>
+          <li class="follow-btn">
+            <a href="https://twitter.com/firepad" class="twitter-follow-button" data-link-color="#0069D6" data-show-count="true">Follow @Firepad</a>
+          </li>
+          <li class="tweet-btn">
+            <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.firepad.io" data-count="horizontal" data-via="Firepad" data-related="Firebase:Data Layer Behind Firepad">Tweet</a>
+          </li>
+        </ul>
+      </div>
+        <div class="bottom-title">Bring your app to life</div>
+      <div class="bottom-content" id="first-bc">
         <div id="uses" class="clearfix">
           <div class="uses-col clearfix">
-            <div class="uses-title">Usage Examples</div>
+            <div class="uses-title">Use Firepad for:</div>
             <div class="clearfix">
               <div class="use-icon"><img src="images/use_richtext.png"></div>
               <div class="use-text">
@@ -84,25 +100,25 @@
             <div class="clearfix">
               <div class="use-icon" style="margin-top: 21px;"><img src="images/use_ellipsis.png"></div>
               <div class="use-text">
-                <a href="./examples/" class="use-link">...and more!</a>
-                Extend Firebase through its API or by contributing to the MIT licensed Github project.
+                <a href="./examples/" class="use-link">and more!</a>
+                Extend Firebase through its API or by contributing to the MIT licensed GitHub project.
               </div>
             </div>
           </div>
           <div class="uses-col clearfix">
-            <div class="uses-title">Real-world Uses</div>
-            <div class="clearfix">
-              <div class="use-icon"><img src="images/user_socrates.png"></div>
-              <div class="use-text">
-                <a href="http://socrates.io/" class="use-link" target="_blank">Socrates.io</a>
-                A collaborative Markdown editor and previewer.
-              </div>
-            </div>
+            <div class="uses-title">Built with Firepad:</div>
             <div class="clearfix">
               <div class="use-icon" style="margin-top: 9px;"><img src="images/user_stash.png"></div>
               <div class="use-text">
                 <a href="#" class="use-link" target="_blank">Stash Plugin from Atlassian</a>
                 Pair programming for the enterprise.
+              </div>
+            </div>
+            <div class="clearfix">
+              <div class="use-icon"><img src="images/user_socrates.png"></div>
+              <div class="use-text">
+                <a href="http://socrates.io/" class="use-link" target="_blank">Socrates.io</a>
+                A collaborative Markdown editor and previewer.
               </div>
             </div>
           </div>
@@ -150,6 +166,8 @@
     </div>
   </div>
 
+  <!-- JavaScript -->
+  <script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
   <script type="text/javascript" src="js/main.js"></script>
 </body>
 </html>

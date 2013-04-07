@@ -5,6 +5,7 @@ body {
   margin: 0;
   font-family: "Helvetica Neue", sans-serif;
   min-width: 1020px;
+  background-color: #f4f4f4;
 }
 
 .clearfix:after {
@@ -99,7 +100,7 @@ pre.prettyprint {
 #header-links {
   padding-top: 15px;
   text-align: right;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 #header-links a {
@@ -118,6 +119,31 @@ pre.prettyprint {
   color: #f9e701;
 }
 
+
+/************************************************/
+/* Social sharing buttons */
+/************************************************/
+.social-container {
+  padding: 10px 0;
+  color: #5e5e5e;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f7f7f7;
+}
+.social-buttons {
+  margin-top: 2px;
+  margin-left: 0;
+  margin-bottom: 0;
+  padding-left: 0;
+  list-style: none;
+}
+.social-buttons li {
+  display: inline-block;
+  padding: 5px 8px;
+  line-height: 1;
+  *display: inline;
+  *zoom: 1;
+}
 
 /************************************************/
 /* Stuff below-the-fold (the white part) */
@@ -148,7 +174,6 @@ pre.prettyprint {
   margin-top: 40px;
   border-top: 1px solid #e0e0e0;
 }
-
 
 /************************************************/
 /* Footer */
@@ -189,7 +214,7 @@ pre.prettyprint {
 /* index.html specific styles. */
 /************************************************/
 .home-page #top-content {
-  height: 890px;
+  height: 920px;
 }
 
 .home-page .bottom-content {
@@ -197,9 +222,7 @@ pre.prettyprint {
 }
 
 #home-title-container {
-  display: inline-block;
-  margin: 25px auto 0 auto;
-  font-size: 72px;
+  margin: 45px auto 0 auto;
 }
 
 #home-title {
@@ -207,24 +230,14 @@ pre.prettyprint {
   text-shadow: 0 0 10px #555;
 }
 
-#home-logo {
-  float:left;
-  background: url('../images/logo-big.png') no-repeat bottom;
-  width: 261px;
-  height: 68px;
-  padding-top: 8px;
-  padding-left: 30px;
-}
-
 #home-subtitle {
-  margin-top: 5px;
-  font-size: 36px;
+  font-size: 42px;
   text-align: center;
   text-shadow: 0 0 7px #555;
 }
 
 #home-download-on-github {
-  padding-top: 15px;
+  padding: 25px 0 10px;
   display: inline-block;
   border: 0;
 }
@@ -235,7 +248,6 @@ pre.prettyprint {
   width: 960px;
   height: 570px;
   background: white;
-  /* TODO: Tune these more? */
   -moz-box-shadow: 0 5px 25px #333;
   -webkit-box-shadow: 0 5px 25px #333;
   box-shadow: 0 5px 25px #333;
@@ -254,8 +266,18 @@ pre.prettyprint {
   height: 570px;
 }
 
+#first-bc {
+  padding-top: 28px;
+}
+.bottom-title {
+  font-size: 42px;
+  color: #333;
+  text-align: center;
+  padding: 30px 0 0;
+}
+
 .uses-title {
-  font-size: 36px;
+  font-size: 32px;
   color: #535353;
   padding-bottom: 25px;
 }
@@ -308,7 +330,7 @@ pre.prettyprint {
 }
 
 .faq-title {
-  font-size: 36px;
+  font-size: 32px;
   color: #535353;
   padding-bottom: 15px;
 }
@@ -318,7 +340,7 @@ pre.prettyprint {
 /* examples/ specific styles. */
 /************************************************/
 .examples-page #top-content {
-  height: 800px;
+  height: 150px;
 }
 
 .examples-page .bottom-content {
