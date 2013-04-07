@@ -22,6 +22,9 @@ pre.prettyprint {
   margin-top: 0;
 }
 
+a img {
+  border-style: none;
+}
 
 /************************************************/
 /* Top of page (the orange fiery part) */
