@@ -123,7 +123,6 @@ pre.prettyprint {
 /* Stuff below-the-fold (the white part) */
 /************************************************/
 #bottom {
-  border-top: 1px solid black;
   background-color: #f4f4f4;
 }
 
@@ -133,9 +132,10 @@ pre.prettyprint {
   background-color: white;
   margin: 0 auto;
   width: 960px;
-  -moz-box-shadow: 0 3px 3px #888;
-  -webkit-box-shadow: 0 3px 3px #888;
-  box-shadow: 0 3px 3px #888;
+  -moz-box-shadow: 0 0 6px 1px #bbb;
+  -webkit-box-shadow: 0 0 6px 1px #bbb;
+  box-shadow: 0 0 6px 1px #bbb;
+  z-index: 1;
 }
 
 .bottom-content {
@@ -167,7 +167,7 @@ pre.prettyprint {
 
 #powered-by-firebase {
   position: absolute;
-  top: 10px;
+  top: 16px;
   right: 10px;
 }
 
@@ -204,6 +204,7 @@ pre.prettyprint {
 
 #home-title {
   float:left;
+  text-shadow: 0 0 10px #555;
 }
 
 #home-logo {
@@ -219,6 +220,7 @@ pre.prettyprint {
   margin-top: 5px;
   font-size: 36px;
   text-align: center;
+  text-shadow: 0 0 7px #555;
 }
 
 #home-download-on-github {
@@ -266,7 +268,7 @@ pre.prettyprint {
 
 .use-text {
   float: left;
-  width: 220px;
+  width: 240px;
   margin-bottom: 25px;
 }
 
@@ -276,15 +278,17 @@ pre.prettyprint {
   font-weight: bold;
   color: #333;
   padding-bottom: 5px;
+  text-decoration: none;
 }
 
 .use-link:hover {
   color: #eb8717;
+  text-decoration: underline;
 }
 
 .uses-col {
   float: left;
-  width: 305px;
+  width: 325px;
   margin-left: 70px;
 }
 
@@ -298,15 +302,15 @@ pre.prettyprint {
 }
 
 .faq-question {
-  margin-bottom: 40px;
-  font-size: 13px;
+  margin-bottom: 35px;
+  font-size: 14px;
   color: #5e5e5e;
 }
 
 .faq-title {
-  font-size: 36px;
+  font-size: 30px;
   color: #535353;
-  padding-bottom: 15px;
+  padding-bottom: 10px;
 }
 
 

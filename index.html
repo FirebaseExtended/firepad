@@ -17,6 +17,8 @@
 
   <link rel="stylesheet" href="css/global.css" />
 
+  <link href="images/favicon.ico" rel="shortcut icon" />
+
   <script>
     if (typeof localStorage === 'undefined' || localStorage.getItem('password') !== 'firebase') {
       var password = prompt('Password?');
@@ -32,7 +34,7 @@
 </head>
 
 <body class="home-page">
-  <a href="https://github.com/firebase/firepad">
+  <a href="https://github.com/firebase/firepad" target="_blank">
     <img style="position: absolute; top: 0; left: 0; border: 0; z-index: 1;" src="images/fork_on_github.png" alt="Fork me on GitHub">
   </a>
   <div id="top">
@@ -43,14 +45,14 @@
           <a href="./">Home</a>
           <a href="examples/">Examples</a>
           <a href="docs/">Documentation</a>
-          <a href="http://demo.firepad.io/" target="_blank">Demo</a>
+          <a href="http://demo.firepad.io/" target="_blank">Private FirePad</a>
         </div>
         <div id="home-title-container" class="clearfix">
           <div id="home-title">Introducing</div>
           <div id="home-logo"></div>
         </div>
         <div id="home-subtitle">Open source collaborative text editing</div>
-        <a href="https://github.com/firebase/firepad" id="home-download-on-github"><img src="images/download.png"></a>
+        <a href="https://github.com/firebase/firepad" target="_blank" id="home-download-on-github"><img src="images/download.png"></a>
         <div id="firepad-container">
           <div id="firepad-userlist"></div>
           <div id="firepad"></div>
@@ -69,38 +71,38 @@
               <div class="use-icon"><img src="images/use_richtext.png"></div>
               <div class="use-text">
                 <a href="./examples/#richtext" class="use-link">Rich Text Editing</a>
-                Supports basic rich-text features, with more coming soon!
+                Enable synchronous rich-text document editing.
               </div>
             </div>
             <div class="clearfix">
               <div class="use-icon"><img src="images/use_coding.png"></div>
               <div class="use-text">
                 <a href="./examples/#code" class="use-link">Code Editing</a>
-                Firepad is perfect for creating a rich collaborative coding experience.
+                Create a collaborative coding experience.
               </div>
             </div>
             <div class="clearfix">
-              <div class="use-icon"></div>
+              <div class="use-icon" style="margin-top: 21px;"><img src="images/use_ellipsis.png"></div>
               <div class="use-text">
-                <a href="./examples/" class="use-link">And More...</a>
-                Firepad is extremely flexible and can be customized in a variety of ways.
+                <a href="./examples/" class="use-link">...and more!</a>
+                Extend Firebase through its API or by contributing to the MIT licensed Github project.
               </div>
             </div>
           </div>
           <div class="uses-col clearfix">
             <div class="uses-title">Real-world Uses</div>
             <div class="clearfix">
-              <!--<div class="use-icon"><img src="images/user_socrates.png"></div>-->
+              <div class="use-icon"><img src="images/user_socrates.png"></div>
               <div class="use-text">
-                <a href="http://socrates.io/" class="use-link" target="_blank">socrates.io</a>
+                <a href="http://socrates.io/" class="use-link" target="_blank">Socrates.io</a>
                 A collaborative Markdown editor and previewer.
               </div>
             </div>
             <div class="clearfix">
-              <!--<div class="use-icon"></div>-->
+              <div class="use-icon" style="margin-top: 9px;"><img src="images/user_stash.png"></div>
               <div class="use-text">
-                <a href="#" class="use-link" target="_blank">Atlassian Plugin</a>
-                What goes here?
+                <a href="#" class="use-link" target="_blank">Stash Plugin from Atlassian</a>
+                Pair programming for the enterprise.
               </div>
             </div>
           </div>
@@ -111,25 +113,45 @@
           <div class="faq-col">
             <div class="faq-question">
               <div class="faq-title">What is Firepad?</div>
-              Freegan before they sold out mumblecore, cardigan swag VHS yr laborum id iphone readymade non gastropub semiotics. Freegan before they sold out mumblecore, cardigan swag VHS yr laborum id iphone readymade non gastropub semiotics.
+              Firebase is an open source collaborative text editor. It provides true collaborative editing,
+              complete with intelligent <a href="http://en.wikipedia.org/wiki/Operational_transformation">operational transform</a>-based merging and conflict resolution. Some of
+              its features include cursor position synchronization, undo / redo, text highlighting,
+              user attribution, presence detection, and version checkpointing.
             </div>
             <div class="faq-question">
-              <div class="faq-title">This question wraps 2 lines</div>
-              Freegan before they sold out mumblecore, cardigan swag VHS yr laborum id iphone readymade non gastropub semiotics. Freegan before they sold out mumblecore, cardigan swag VHS yr laborum id iphone readymade non gastropub semiotics.
+              <div class="faq-title">What can I do with Firepad?</div>
+              You can build any application that requires collaborative editing of text documents.
+              Firepad supports both rich text and code editing out-of-the-box, and it's easy to extends for other use cases.
             </div>
             <div class="faq-question">
-              <div class="faq-title">What is Firepad?</div>
-              Freegan before they sold out mumblecore, cardigan swag VHS yr laborum id iphone readymade non gastropub semiotics. Freegan before they sold out mumblecore, cardigan swag VHS yr laborum id iphone readymade non gastropub semiotics.
+              <div class="faq-title">How is Firepad different than other collaborative text editors?</div>
+              Most collaborative text editors require special code to run on a server, making them
+              impractical to use if you're not already using the right server stack. Firepad has no
+              server dependencies and instead relies on <a href="https://www.firebase.com">Firebase</a> for real-time data synchronization.
+              This means that it's easy to add Firepad to any application, even static websites.
+              All you need to do is drop in the JavaScript file and go.
             </div>
           </div>
           <div class="faq-col">
             <div class="faq-question">
-              <div class="faq-title">What can I do with it?</div>
-              Freegan before they sold out mumblecore, cardigan swag VHS yr laborum id iphone readymade non gastropub semiotics. Freegan before they sold out mumblecore, cardigan swag VHS yr laborum id iphone readymade non gastropub semiotics. Freegan before they sold out mumblecore, cardigan swag VHS yr laborum id iphone readymade non gastropub semiotics. Freegan before they sold out mumblecore, cardigan swag VHS yr laborum id iphone readymade non gastropub semiotics. Freegan before they sold out mumblecore, cardigan swag VHS yr laborum id iphone readymade non gastropub semiotics. Freegan before they sold out mumblecore, cardigan swag VHS yr laborum id iphone readymade non gastropub semiotics.
+              <div class="faq-title">What technologies does Firepad use?</div>
+              Firepad uses the powerful <a href="http://codemirror.net">CodeMirror</a> editor to render documents, and its operational transform
+              code borrows from <a href="https://github.com/Operational-Transformation/ot.js/">ot.js</a>. Behind the scenes, Firepad uses <a href="https://www.firebase.com">Firebase</a> for cloud data storage
+              and synchronization.
             </div>
             <div class="faq-question">
-              <div class="faq-title">This is a fourth question?</div>
-              Freegan before they sold out mumblecore, cardigan swag VHS yr laborum id iphone readymade non gastropub semiotics. Freegan before they sold out mumblecore, cardigan swag VHS yr laborum id iphone readymade non gastropub semiotics.
+              <div class="faq-title">Who's behind Firepad?</div>
+              Firepad was built by <a href="https://twitter.com/mikelehen">Michael Lehenbauer</a> and the team at Firebase. We'd love the community to
+              support the project too and hope you'll join the effort. <a href="https://github.com/firebase/firepad">Star us on Github</a> and send
+              over a pull request when you have things to contribute!
+            </div>
+            <div class="faq-question">
+              <div class="faq-title">How is Firepad Licensed?</div>
+              The MIT License.
+            </div>
+            <div class="faq-question">
+              <div class="faq-title">What browsers does Firepad support?</div>
+              All modern browsers: Chrome, Safari, Opera 11+, IE8+, Firefox 3.6+
             </div>
           </div>
         </div>
@@ -137,12 +159,13 @@
     </div>
     <div id="footer">
       <div id="footer-links">
-        <a href="index.html">Home</a>
-        <a href="https://github.com/firebase/firepad">GitHub Project</a>
-        <a href="mailto:firepad@firebase.com">Contact</a>
+        <a href="examples/">Examples</a>
+        <a href="docs/">Docs</a>
+        <a href="https://github.com/firebase/firepad" target="_blank">GitHub Project</a>
+        <a href="mailto:firepad@firebase.com?subject=[FirePad Question]" target="_blank">Contact</a>
       </div>
       <div id="powered-by-firebase">
-        <a href="https://www.firebase.com/"><img src="images/powered-by-firebase-dim.png"></a>
+        <a href="https://www.firebase.com?utm_source=firepad&utm_medium=exampleapp" target="_blank"><img src="images/powered-by-firebase-dim.png"></a>
       </div>
     </div>
   </div>
