@@ -60,7 +60,7 @@ Firepads in your Firebase by giving them each a unique URL
 ## Customizing Your Editor
 
 See the API section below for details on `Firepad.fromCodeMirror()` and the methods / events
-it provides.  And check out [codemirror.net](http://codemirror.net/) for details on CodeMirror's API
+it provides.  You can check out [codemirror.net](http://codemirror.net/) for details on CodeMirror's API
 (for turning on/off line numbers, line wrapping, code syntax highlighting, etc.).
 
 To customize the size / position of the Firepad or customize its look and feel, you can use CSS:
@@ -95,7 +95,7 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 
 `Firepad.fromCodeMirror(firebaseRef, codeMirror, options)`
 
->Creates a new Firepad from the specified CodeMirror instance, using the specified Firebase location to store data. The
+>Creates a new Firepad from the specified CodeMirror instance using the specified Firebase location to store data. The
 >options hash can be used to customize behavior.
 >
 >Available Options:
@@ -189,6 +189,7 @@ Then you can simply clone the repo, install the necessary node modules, and run 
     git clone https://github.com/firebase/firepad.git
     cd firepad
     npm install
+    npm install -g grunt-cli
     grunt
 {% endhighlight %}
 
@@ -211,7 +212,7 @@ To get started, here are some highlights of the directory structure and notable 
 * `test/` - Jasmine tests for Firepad (many of these were borrowed from ot.js).
 
 ## Firepad Website
-The website is checked into the [gh-pages](https://github.com/firebase/firepad/tree/gh-pages)
+This website is checked into the [gh-pages](https://github.com/firebase/firepad/tree/gh-pages)
 branch of the Firepad repository.  Most of it is static HTML, but the docs page is generated from
 Markdown using jekyll.
 
