@@ -41,7 +41,7 @@ body {
 #firepad-demo {
   position: absolute;
   left: 30px;
-  top: 40px;
+  top: 30px;
   background-image: url('http://www.firepad.io/images/firepad-demo.png');
   width: 174px;
   height: 38px;
@@ -53,7 +53,7 @@ body {
   width: 190px;
   height: 41px;
   right: 30px;
-  top: 40px;
+  top: 27px;
 }
 
 #create-pad:active {
@@ -103,25 +103,20 @@ body {
 #share-with-friends {
   font-size: 24px;
   color: white;
+  text-shadow: 0 0 3px #555;
 }
 
 #share-features {
   height: 35px;
 }
 
-#divider {
-  position: absolute;
-  bottom: 30px;
-  right: 435px;
-  width: 0;
-  height: 80px;
-  border-left: 1px solid #74651b;
-  border-right: 1px solid #f4e084;
+#share-features tr {
+  margin-right: 10px;
 }
 
 #description {
   position: absolute;
-  bottom: 30px;
+  bottom: 20px;
   right: 40px;
   width: 380px;
   height: 80px;
@@ -140,7 +135,7 @@ body {
 #powered-by-firebase {
   position: absolute;
   right: 40px;
-  bottom: 30px;
+  bottom: 15px;
   width: 129px;
   height: 34px;
   background-image: url('http://www.firepad.io/images/powered-by-firebase-dim.png');
