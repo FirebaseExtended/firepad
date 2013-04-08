@@ -2,6 +2,7 @@ var ROOMS = 20;
 var firepad = null, codeMirror = null, userList = null;
 
 function joinFirepadForHash() {
+  console.log(firepad);
   if (firepad) {
     // Clean up.
     firepad.dispose();
