@@ -41,7 +41,7 @@ body {
 #firepad-demo {
   position: absolute;
   left: 30px;
-  top: 40px;
+  top: 30px;
   background-image: url('http://www.firepad.io/images/firepad-demo.png');
   width: 174px;
   height: 38px;
@@ -53,7 +53,7 @@ body {
   width: 190px;
   height: 41px;
   right: 30px;
-  top: 40px;
+  top: 27px;
 }
 
 #create-pad:active {
@@ -108,6 +108,10 @@ body {
 
 #share-features {
   height: 35px;
+}
+
+#share-features tr {
+  margin-right: 10px;
 }
 
 #description {
