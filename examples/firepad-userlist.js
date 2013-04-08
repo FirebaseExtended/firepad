@@ -103,7 +103,7 @@ var FirepadUserList = (function() {
 
       var color = userSnapshot.child('color').val();
       if (typeof color !== 'string' || !color.match(/^#[a-fA-F0-9]{3,6}$/)) {
-        color = "#ffb;"
+        color = "#ffb"
       }
 
       var colorDiv = elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
