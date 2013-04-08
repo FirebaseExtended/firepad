@@ -143,6 +143,11 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 `firebase.setUserColor(color)`
 > Sets the color (as a css color, e.g. "#333") to use for this user's cursor.
 
+`firepad.dispose()`
+> Cleans everything up (clears presence data, DOM elements, etc.) and returns CodeMirror
+  to its original state.
+
+
 <div class="docs-separator"> </div>
 <a name="firebase"> </a>
 # Firebase Data

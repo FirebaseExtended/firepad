@@ -1333,8 +1333,12 @@ firepad.FirebaseAdapter = (function (global) {
   }
   utils.makeEventEmitter(FirebaseAdapter, ['ready', 'cursor', 'operation', 'ack', 'retry']);
 
-  FirebaseAdapter.prototype.detach = function() {
+  FirebaseAdapter.prototype.dispose = function() {
     this.removeFirebaseCallbacks_();
+
+    this.userRef_.child('cursor').remove();
+    this.userRef_.child('color').remove();
+
     this.ref_ = null;
     this.document_ = null;
     this.zombie_ = true;
@@ -3062,8 +3066,8 @@ firepad.Firepad = (function(global) {
   // For readability, this is the primary "constructor", even though right now they're just aliases for Firepad.
   Firepad.fromCodeMirror = Firepad;
 
-  Firepad.prototype.detach = function() {
-    this.zombie_ = true; // We've been detached.  No longer valid to do anything.
+  Firepad.prototype.dispose = function() {
+    this.zombie_ = true; // We've been disposed.  No longer valid to do anything.
 
     // Unwrap CodeMirror.
     var cmWrapper = this.codeMirror_.getWrapperElement();
@@ -3076,7 +3080,7 @@ firepad.Firepad = (function(global) {
       this.codeMirror_.setOption('keyMap', 'default');
     }
 
-    this.firebaseAdapter_.detach();
+    this.firebaseAdapter_.dispose();
     this.cmAdapter_.detach();
     this.richTextCodeMirror_.detach();
   };
@@ -3185,7 +3189,7 @@ firepad.Firepad = (function(global) {
       throw new Error('You must wait for the "ready" event before calling ' + funcName + '.');
     }
     if (this.zombie_) {
-      throw new Error('You can\'t use a Firepad after calling detach()!');
+      throw new Error('You can\'t use a Firepad after calling dispose()!');
     }
   };
 

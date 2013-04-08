@@ -24,8 +24,9 @@ var FirepadUserList = (function() {
   // This is the primary "constructor" for symmetry with Firepad.
   FirepadUserList.fromDiv = FirepadUserList;
 
-  FirepadUserList.prototype.detach = function() {
+  FirepadUserList.prototype.dispose = function() {
     this.removeFirebaseCallbacks_();
+    this.ref_.child(this.userId_).child('name').remove();
 
     this.place_.removeChild(this.userList_);
   };
