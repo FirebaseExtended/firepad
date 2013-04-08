@@ -1322,14 +1322,23 @@ firepad.FirebaseAdapter = (function (global) {
 
     // Avoid triggering any events until our callers have had a chance to attach their listeners.
     setTimeout(function() {
-      self.monitorCursors_();
       self.monitorHistory_();
     }, 0);
+
+    // Once we're initialized, start tracking users' cursors.
+    this.on('ready', function() {
+      self.monitorCursors_();
+    });
+
   }
   utils.makeEventEmitter(FirebaseAdapter, ['ready', 'cursor', 'operation', 'ack', 'retry']);
 
-  FirebaseAdapter.prototype.detach = function() {
+  FirebaseAdapter.prototype.dispose = function() {
     this.removeFirebaseCallbacks_();
+
+    this.userRef_.child('cursor').remove();
+    this.userRef_.child('color').remove();
+
     this.ref_ = null;
     this.document_ = null;
     this.zombie_ = true;
@@ -1435,7 +1444,7 @@ firepad.FirebaseAdapter = (function (global) {
     this.firebaseOn_(usersRef, 'child_added', childChanged);
     this.firebaseOn_(usersRef, 'child_changed', childChanged);
 
-    this.firebaseOff_(usersRef, 'child_removed', function(childSnap) {
+    this.firebaseOn_(usersRef, 'child_removed', function(childSnap) {
       var userId = childSnap.name();
       self.firebaseOff_(childSnap.ref(), 'value', user2Callback[userId]);
       self.trigger('cursor', userId, null);
@@ -3035,6 +3044,8 @@ firepad.Firepad = (function(global) {
       this.firepadWrapper_.className += ' firepad-richtext firepad-with-toolbar';
     }
 
+    this.addPoweredByLogo_();
+
     // Now that we've mucked with CodeMirror, refresh it.
     this.codeMirror_.refresh();
 
@@ -3057,8 +3068,8 @@ firepad.Firepad = (function(global) {
   // For readability, this is the primary "constructor", even though right now they're just aliases for Firepad.
   Firepad.fromCodeMirror = Firepad;
 
-  Firepad.prototype.detach = function() {
-    this.zombie_ = true; // We've been detached.  No longer valid to do anything.
+  Firepad.prototype.dispose = function() {
+    this.zombie_ = true; // We've been disposed.  No longer valid to do anything.
 
     // Unwrap CodeMirror.
     var cmWrapper = this.codeMirror_.getWrapperElement();
@@ -3071,9 +3082,17 @@ firepad.Firepad = (function(global) {
       this.codeMirror_.setOption('keyMap', 'default');
     }
 
-    this.firebaseAdapter_.detach();
+    this.firebaseAdapter_.dispose();
     this.cmAdapter_.detach();
     this.richTextCodeMirror_.detach();
+  };
+
+  Firepad.prototype.setUserId = function(userId) {
+    this.firebaseAdapter_.setUserId(userId);
+  };
+
+  Firepad.prototype.setUserColor = function(color) {
+    this.firebaseAdapter_.setColor(color);
   };
 
   Firepad.prototype.getText = function() {
@@ -3172,7 +3191,7 @@ firepad.Firepad = (function(global) {
       throw new Error('You must wait for the "ready" event before calling ' + funcName + '.');
     }
     if (this.zombie_) {
-      throw new Error('You can\'t use a Firepad after calling detach()!');
+      throw new Error('You can\'t use a Firepad after calling dispose()!');
     }
   };
 
@@ -3187,6 +3206,13 @@ firepad.Firepad = (function(global) {
     toolbar.on('color', this.color, this);
 
     this.firepadWrapper_.insertBefore(toolbar.element(), this.firepadWrapper_.firstChild);
+  };
+
+  Firepad.prototype.addPoweredByLogo_ = function() {
+    var poweredBy = utils.elt('a', null, { class: 'powered-by-firepad'} );
+    poweredBy.setAttribute('href', 'http://www.firepad.io/');
+    poweredBy.setAttribute('target', '_blank');
+    this.firepadWrapper_.appendChild(poweredBy)
   };
 
   Firepad.initializeKeyMap_ = function() {

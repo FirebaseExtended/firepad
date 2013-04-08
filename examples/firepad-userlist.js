@@ -24,8 +24,9 @@ var FirepadUserList = (function() {
   // This is the primary "constructor" for symmetry with Firepad.
   FirepadUserList.fromDiv = FirepadUserList;
 
-  FirepadUserList.prototype.detach = function() {
+  FirepadUserList.prototype.dispose = function() {
     this.removeFirebaseCallbacks_();
+    this.ref_.child(this.userId_).child('name').remove();
 
     this.place_.removeChild(this.userList_);
   };
@@ -97,7 +98,7 @@ var FirepadUserList = (function() {
       var colorDiv = elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
       colorDiv.style.backgroundColor = userSnapshot.child('color').val();
 
-      var nameDiv = elt('div', userSnapshot.child('name').val(), { 'class': 'firepad-userlist-name' });
+      var nameDiv = elt('div', userSnapshot.child('name').val() || 'Guest', { 'class': 'firepad-userlist-name' });
 
       var userDiv = elt('div', [ colorDiv, nameDiv ], { 'class': 'firepad-userlist-user' });
       userId2Element[userId] = userDiv;
