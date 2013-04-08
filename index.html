@@ -5,21 +5,11 @@
   <title>Firepad, an open source collaborative editor</title>
   <meta name="description" content="An open source collaborative text editor. Share documents and see changes occur in real-time." />
   <meta charset="utf-8" />
-  <script src="https://cdn.firebase.com/v0/firebase.js"></script>
-
-  <script src="examples/codemirror/lib/codemirror.js"></script>
   <link rel="stylesheet" href="examples/codemirror/lib/codemirror.css" />
-
-  <script src="examples/firepad.js"></script>
   <link rel="stylesheet" href="examples/firepad.css" />
-
-  <script src="examples/firepad-userlist.js"></script>
   <link rel="stylesheet" href="examples/firepad-userlist.css" />
-
   <link rel="stylesheet" href="css/global.css" />
-
   <link href="images/favicon.ico" rel="shortcut icon" />
-
   <script>
     if (typeof localStorage === 'undefined' || localStorage.getItem('password') !== 'firebase') {
       var password = prompt('Password?');
@@ -188,6 +178,11 @@
 
   <!-- JavaScript -->
   <script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+  <script src="js/jquery-1.9.1.min.js"></script>
+  <script src="https://cdn.firebase.com/v0/firebase.js"></script>
+  <script src="examples/codemirror/lib/codemirror.js"></script>
+  <script src="examples/firepad.js"></script>
+  <script src="examples/firepad-userlist.js"></script>
   <script type="text/javascript" src="js/main.js"></script>
 </body>
 </html>
