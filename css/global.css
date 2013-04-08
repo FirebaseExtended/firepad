@@ -208,7 +208,7 @@ a img {
   display: inline-block;
   margin: 0 20px;
   text-decoration: none;
-  color: #fff;
+  color: #fcfcfc;
 }
 
 #page-links a {
@@ -218,6 +218,11 @@ a img {
 #header-links a:hover {
   text-decoration: underline;
   color: #f9e701;
+}
+
+#header-links a.selected {
+  text-decoration: none;
+  color: #fff;
 }
 
 
@@ -468,9 +473,12 @@ a img {
 
 .example-container {
   width: 700px;
-  height: 200px;
+  height: 290px;
   background: white;
   border: 1px solid #777;
+  -webkit-box-shadow: 0 2px 5px rgba(0,0,0,.11);
+  -moz-box-shadow: 0 2px 5px rgba(0,0,0,.11);
+  box-shadow: 0 2px 5px rgba(0,0,0,.11);
 }
 
 .example-view-source {
