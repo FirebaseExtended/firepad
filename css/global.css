@@ -245,10 +245,14 @@ a img {
 }
 .social-buttons li {
   display: inline-block;
-  padding: 5px 8px;
+  padding: 6px 8px 5px;
   line-height: 1;
   *display: inline;
   *zoom: 1;
+}
+.fb-btn {
+  position: relative;
+  top: -2px;
 }
 
 /************************************************/
@@ -450,7 +454,6 @@ a img {
 .faq-question span {
   line-height: 1.3em;
 }
-
 
 /************************************************/
 /* examples/ specific styles. */

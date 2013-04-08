@@ -61,11 +61,14 @@
           <li>
             <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=firebase&repo=firepad&type=fork&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="102px" height="20px"></iframe>
           </li>
-          <li class="follow-btn">
+<!--          <li class="follow-btn">
             <a href="https://twitter.com/firepadHQ" class="twitter-follow-button" data-link-color="#0069D6" data-show-count="true">Follow @FirepadHQ</a>
-          </li>
+          </li>  -->
           <li class="tweet-btn">
             <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.firepad.io" data-count="horizontal" data-via="FirepadHQ" data-related="Firebase:Data Layer Behind Firepad">Tweet</a>
+          </li>
+          <li class="fb-btn">
+            <div class="fb-like" data-href="http://www.firepad.io" data-send="false" data-layout="button_count" data-width="200" data-show-faces="false"></div>
           </li>
         </ul>
       </div>
@@ -187,6 +190,14 @@
 
   <!-- JavaScript -->
   <script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+  <div id="fb-root"></div>
+  <script>(function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));</script>
   <script src="js/jquery-1.9.1.min.js"></script>
   <script src="https://cdn.firebase.com/v0/firebase.js"></script>
   <script src="examples/codemirror/lib/codemirror.js"></script>
