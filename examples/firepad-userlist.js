@@ -4,10 +4,12 @@ var FirepadUserList = (function() {
 
     this.ref_ = ref;
     this.userId_ = userId;
+    this.place_ = place;
+    this.firebaseCallbacks_ = [];
 
     var self = this;
     this.displayName_ = 'Guest ' + Math.floor(Math.random() * 1000);
-    ref.root().child('.info/connected').on('value', function(s) {
+    this.firebaseOn_(ref.root().child('.info/connected'), 'value', function(s) {
       if (s.val() === true && self.displayName_) {
         var nameRef = ref.child(self.userId_).child('name');
         nameRef.onDisconnect().remove();
@@ -15,11 +17,19 @@ var FirepadUserList = (function() {
       }
     });
 
-    place.appendChild(this.makeUserList_());
+    this.userList_ = this.makeUserList_()
+    place.appendChild(this.userList_);
   }
 
   // This is the primary "constructor" for symmetry with Firepad.
   FirepadUserList.fromDiv = FirepadUserList;
+
+  FirepadUserList.prototype.dispose = function() {
+    this.removeFirebaseCallbacks_();
+    this.ref_.child(this.userId_).child('name').remove();
+
+    this.place_.removeChild(this.userList_);
+  };
 
   FirepadUserList.prototype.makeUserList_ = function() {
     return elt('div', [
@@ -33,7 +43,7 @@ var FirepadUserList = (function() {
 
   FirepadUserList.prototype.makeHeading_ = function() {
     var counterSpan = elt('span', '0');
-    this.ref_.on('value', function(usersSnapshot) {
+    this.firebaseOn_(this.ref_, 'value', function(usersSnapshot) {
       setTextContent(counterSpan, "" + usersSnapshot.numChildren());
     });
 
@@ -48,7 +58,7 @@ var FirepadUserList = (function() {
     var myUserRef = this.ref_.child(this.userId_);
 
     var colorDiv = elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
-    myUserRef.child('color').on('value', function(colorSnapshot) {
+    this.firebaseOn_(myUserRef.child('color'), 'value', function(colorSnapshot) {
       colorDiv.style.backgroundColor = colorSnapshot.val();
     });
 
@@ -88,7 +98,7 @@ var FirepadUserList = (function() {
       var colorDiv = elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
       colorDiv.style.backgroundColor = userSnapshot.child('color').val();
 
-      var nameDiv = elt('div', userSnapshot.child('name').val(), { 'class': 'firepad-userlist-name' });
+      var nameDiv = elt('div', userSnapshot.child('name').val() || 'Guest', { 'class': 'firepad-userlist-name' });
 
       var userDiv = elt('div', [ colorDiv, nameDiv ], { 'class': 'firepad-userlist-user' });
       userId2Element[userId] = userDiv;
@@ -103,10 +113,10 @@ var FirepadUserList = (function() {
       userList.insertBefore(userDiv, nextElement);
     }
 
-    this.ref_.on('child_added', updateChild);
-    this.ref_.on('child_changed', updateChild);
-    this.ref_.on('child_moved', updateChild);
-    this.ref_.on('child_removed', function(removedSnapshot) {
+    this.firebaseOn_(this.ref_, 'child_added', updateChild);
+    this.firebaseOn_(this.ref_, 'child_changed', updateChild);
+    this.firebaseOn_(this.ref_, 'child_moved', updateChild);
+    this.firebaseOn_(this.ref_, 'child_removed', function(removedSnapshot) {
       var userId = removedSnapshot.name();
       var div = userId2Element[userId];
       if (div) {
@@ -117,6 +127,32 @@ var FirepadUserList = (function() {
 
     return userList;
   };
+
+  FirepadUserList.prototype.firebaseOn_ = function(ref, eventType, callback, context) {
+    this.firebaseCallbacks_.push({ref: ref, eventType: eventType, callback: callback, context: context });
+    ref.on(eventType, callback, context);
+    return callback;
+  };
+
+  FirepadUserList.prototype.firebaseOff_ = function(ref, eventType, callback, context) {
+    ref.off(eventType, callback, context);
+    for(var i = 0; i < this.firebaseCallbacks_.length; i++) {
+      var l = this.firebaseCallbacks_[i];
+      if (l.ref === ref && l.eventType === eventType && l.callback === callback && l.context === context) {
+        this.firebaseCallbacks_.splice(i, 1);
+        break;
+      }
+    }
+  };
+
+  FirepadUserList.prototype.removeFirebaseCallbacks_ = function() {
+    for(var i = 0; i < this.firebaseCallbacks_.length; i++) {
+      var l = this.firebaseCallbacks_[i];
+      l.ref.off(l.eventType, l.callback, l.context);
+    }
+    this.firebaseCallbacks_ = [];
+  };
+
 
   /** DOM helpers */
   function elt(tag, content, attrs) {
