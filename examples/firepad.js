@@ -1329,7 +1329,6 @@ firepad.FirebaseAdapter = (function (global) {
     this.on('ready', function() {
       self.monitorCursors_();
     });
-
   }
   utils.makeEventEmitter(FirebaseAdapter, ['ready', 'cursor', 'operation', 'ack', 'retry']);
 
@@ -3269,7 +3268,7 @@ firepad.Firepad = (function(global) {
     }
     var hue = a/360;
 
-    return hsl2hex(hue, 0.75, 0.5);
+    return hsl2hex(hue, 1, 0.85);
   }
 
   function rgb2hex (r, g, b) {
