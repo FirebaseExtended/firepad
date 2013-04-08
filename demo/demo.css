@@ -103,6 +103,7 @@ body {
 #share-with-friends {
   font-size: 24px;
   color: white;
+  text-shadow: 0 0 3px #555;
 }
 
 #share-features {
