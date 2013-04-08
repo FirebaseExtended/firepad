@@ -3081,6 +3081,14 @@ firepad.Firepad = (function(global) {
     this.richTextCodeMirror_.detach();
   };
 
+  Firepad.prototype.setUserId = function(userId) {
+    this.firebaseAdapter_.setUserId(userId);
+  };
+
+  Firepad.prototype.setUserColor = function(color) {
+    this.firebaseAdapter_.setColor(color);
+  };
+
   Firepad.prototype.getText = function() {
     this.assertReady_('getText');
     return this.codeMirror_.getValue();
