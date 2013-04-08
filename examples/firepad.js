@@ -1329,7 +1329,6 @@ firepad.FirebaseAdapter = (function (global) {
     this.on('ready', function() {
       self.monitorCursors_();
     });
-
   }
   utils.makeEventEmitter(FirebaseAdapter, ['ready', 'cursor', 'operation', 'ack', 'retry']);
 
