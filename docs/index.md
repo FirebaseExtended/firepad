@@ -7,13 +7,14 @@ permalink: index.html
 
 # Getting Started
 
-Firepad was designed to be embedded inside larger applications. Here we'll explain how to do this.
+Firepad was designed to be embedded inside larger applications. Since it uses [Firebase](https://www.firebase.com/) as a backend it
+requires no server-side code and can be added to any web app simply by including the JavaScript files.
+Here we'll explain how to do this.
 
 ## Prerequisites
 
-Firepad uses [Firebase](https://www.firebase.com/) for real-time data synchronization and storage, and it uses
-[CodeMirror](http://www.codemirror.net/) as the underlying text editor (though we'd love to add
-support for other editors in the future).
+Firepad uses [CodeMirror](http://www.codemirror.net/) as the underlying text editor (though we'd love to add
+support for other editors in the future), and it uses Firebase for data storage and synchronization.
 
 Before getting started, you'll need to:
 
