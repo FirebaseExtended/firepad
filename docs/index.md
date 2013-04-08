@@ -121,9 +121,9 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
     });
 {% endhighlight %}
 
-`firepad.off()`
+`firepad.off(eventType, callback)`
 
->??????
+> Removes the specified callback for the specified event type.
 
 `firepad.getText()`
 > Returns the current contents of Firepad as a string.
@@ -137,6 +137,11 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 `firepad.isHistoryEmpty()`
 > Returns true if the Firepad has never had any content.  Useful for doing first-time initialization.
 
+`firepad.setUserId(userId)`
+> Sets the user id to use for writing operations and storing cursor data.
+
+`firebase.setUserColor(color)`
+> Sets the color (as a css color, e.g. "#333") to use for this user's cursor.
 
 <div class="docs-separator"> </div>
 <a name="firebase"> </a>
