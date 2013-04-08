@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <title>Firepad - Examples</title>
+  <link rel="stylesheet" href="http://twitter.github.io/bootstrap/assets/css/bootstrap.css" />
   <link rel="stylesheet" href="../css/global.css" />
 </head>
 
@@ -30,19 +31,42 @@
     </div>
   </div>
 
-  <div id="bottom">
-    <div id="bottom-container">
-      <div id="example-list" class="bottom-content clearfix"></div>
-      <!--
-      <div id="page-links">
-        <a href="#" id="rich-text-link">Rich Text Editor</a> |
-        <a href="#" id="code-link">Code Editor</a> |
-        See More Below...
-      </div>
-      <a href="#" id="view-source" target="_blank"><img src="../images/view-source.png"></a>
-      <iframe id="example-container" src="richtext.html"></iframe>
-      -->
+  <div class="container" id="examples-container">
+    <div class="row">
+    <div class="span3 examples-sidebar">
+      <ul class="nav nav-list examples-sidenav">
+        <li><a href="#rich-text"><i class="icon-chevron-right"></i> Rich Text</a></li>
+        <li><a href="#code"><i class="icon-chevron-right"></i> Code Editing</a></li>
+        <li><a href="#user-list"><i class="icon-chevron-right"></i> User List</a></li>
+      </ul>
     </div>
+    <div class="span9">
+      <section id="rich-text">
+        <div class="uses-title example-title">1. Rich Text
+          <a href="#" class="example-view-source" target="_blank"><img src="../images/view-source.png"></a>
+        </div>
+        <p>Use Firepad's rich text features for collaborative blogging, note taking, and proofreading and much more!</p>
+        <iframe class="example-container" src="richtext.html"></iframe>
+      </section>
+
+      <section id="code">
+        <div class="uses-title example-title">2. Code Editing
+          <a href="#" class="example-view-source" target="_blank"><img src="../images/view-source.png"></a>
+        </div>
+        <iframe class="example-container" src="code.html"></iframe>
+      </section>
+
+      <section id="user-list">
+        <div class="uses-title example-title">3. User List
+          <a href="#" class="example-view-source" target="_blank"><img src="../images/view-source.png"></a>
+        </div>
+        <iframe class="example-container" src="userlist.html"></iframe>
+      </section>
+    </div>
+  </div>
+  </div>
+
+  <div id="footer-wrap">
     <div id="footer">
       <div id="footer-links">
         <a href="../index.html">Home</a>
@@ -51,7 +75,8 @@
         <a href="mailto:firepad@firebase.com?subject=[FirePad Question]" target="_blank">Contact</a>
       </div>
       <div id="powered-by-firebase">
-        <a href="https://www.firebase.com?utm_source=firepad&utm_medium=exampleapp" target="_blank"><img src="../images/powered-by-firebase-dim.png"></a>
+        <a href="https://www.firebase.com?utm_source=firepad&utm_medium=exampleapp" target="_blank"><img
+          src="../images/powered-by-firebase-dim.png"></a>
       </div>
     </div>
   </div>
