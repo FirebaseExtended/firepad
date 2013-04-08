@@ -135,7 +135,7 @@ body {
 #powered-by-firebase {
   position: absolute;
   right: 40px;
-  bottom: 30px;
+  bottom: 15px;
   width: 129px;
   height: 34px;
   background-image: url('http://www.firepad.io/images/powered-by-firebase-dim.png');
