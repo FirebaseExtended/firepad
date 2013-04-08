@@ -5,8 +5,8 @@ function joinFirepadForHash() {
   console.log(firepad);
   if (firepad) {
     // Clean up.
-    firepad.detach();
-    userList.detach();
+    firepad.dispose();
+    userList.dispose();
     $('.CodeMirror').remove();
   }
 
@@ -31,4 +31,6 @@ function joinFirepadForHash() {
 }
 
 joinFirepadForHash();
-$(window).on('hashchange', joinFirepadForHash);
+setTimeout(function() {
+  $(window).on('hashchange', joinFirepadForHash);
+},0);
