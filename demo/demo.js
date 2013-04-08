@@ -3,8 +3,8 @@ var firepad = null, userList = null, codeMirror = null;
 function joinFirepadForHash() {
   if (firepad) {
     // Clean up.
-    firepad.detach();
-    userList.detach();
+    firepad.dispose();
+    userList.dispose();
     $('.CodeMirror').remove();
   }
 
@@ -47,4 +47,6 @@ function randomString(length) {
 }
 
 joinFirepadForHash();
-$(window).on('hashchange', joinFirepadForHash);
+setTimeout(function() {
+  $(window).on('hashchange', joinFirepadForHash);
+},0);
