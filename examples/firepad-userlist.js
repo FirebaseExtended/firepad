@@ -107,7 +107,7 @@ var FirepadUserList = (function() {
       }
 
       var colorDiv = elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
-      colorDiv.style.backgroundColor = userSnapshot.child('color').val();
+      colorDiv.style.backgroundColor = color;
 
       var nameDiv = elt('div', name || 'Guest', { 'class': 'firepad-userlist-name' });
 
