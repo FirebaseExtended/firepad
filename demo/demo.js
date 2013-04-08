@@ -1,4 +1,4 @@
-var firepad, userList, codeMirror;
+var firepad = null, userList = null, codeMirror = null;
 
 function joinFirepadForHash() {
   if (firepad) {

@@ -1,5 +1,5 @@
 var ROOMS = 20;
-var firepad, codeMirror, userList;
+var firepad = null, codeMirror = null, userList = null;
 
 function joinFirepadForHash() {
   if (firepad) {
