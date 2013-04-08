@@ -98,12 +98,12 @@ var FirepadUserList = (function() {
         delete userId2Element[userId];
       }
       var name = userSnapshot.child('name').val();
-      if (typeof name !== 'string') { name = ''; }
+      if (typeof name !== 'string') { name = 'Guest'; }
       name = name.substring(0, 20);
 
       var color = userSnapshot.child('color').val();
       if (typeof color !== 'string' || !color.match(/^#[a-fA-F0-9]{3,6}$/)) {
-        return;
+        color = "#ffb"
       }
 
       var colorDiv = elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
