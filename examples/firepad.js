@@ -1292,9 +1292,11 @@ firepad.FirebaseAdapter = (function (global) {
   function FirebaseAdapter (ref, userId, userColor) {
     this.ref_ = ref;
     this.ready_ = false;
+    this.firebaseCallbacks_ = [];
+    this.zombie_ = false;
 
     // We store the current document state as a TextOperation so we can write checkpoints to Firebase occasionally.
-    // TODO: Consider more efficient ways to do this. (composing text operations is linear in the length of the document).
+    // TODO: Consider more efficient ways to do this. (composing text operations is ~linear in the length of the document).
     this.document_ = new TextOperation();
 
     // The next expected revision.
@@ -1311,11 +1313,13 @@ firepad.FirebaseAdapter = (function (global) {
     this.setUserId(userId);
     this.setColor(userColor);
 
-    ref.root().child('.info/connected').on('value', function(s) {
-      if (s.val() === true) { this.initializeUserData_(); }
+    var self = this;
+    this.firebaseOn_(ref.root().child('.info/connected'), 'value', function(snapshot) {
+      if (snapshot.val() === true) {
+        self.initializeUserData_();
+      }
     }, this);
 
-    var self = this;
     // Avoid triggering any events until our callers have had a chance to attach their listeners.
     setTimeout(function() {
       self.monitorCursors_();
@@ -1323,6 +1327,13 @@ firepad.FirebaseAdapter = (function (global) {
     }, 0);
   }
   utils.makeEventEmitter(FirebaseAdapter, ['ready', 'cursor', 'operation', 'ack', 'retry']);
+
+  FirebaseAdapter.prototype.detach = function() {
+    this.removeFirebaseCallbacks_();
+    this.ref_ = null;
+    this.document_ = null;
+    this.zombie_ = true;
+  };
 
   FirebaseAdapter.prototype.setUserId = function(userId) {
     if (this.userRef_) {
@@ -1413,22 +1424,20 @@ firepad.FirebaseAdapter = (function (global) {
     var usersRef = this.ref_.child('users'), self = this;
     var user2Callback = { };
 
-    usersRef.on('child_added', function(childSnap) {
+    function childChanged(childSnap) {
       var userId = childSnap.name();
       if (userId !== self.userId_) {
-        // Monitor other users' cursors.
-        user2Callback[userId] = function(userSnap) {
-          var userData = userSnap.val() || { };
-          self.trigger('cursor', userId, userData.cursor, userData.color);
-        };
-        // Since we're monitoring the whole node, this may be a little noisy, but that's okay.
-        childSnap.ref().on('value', user2Callback[userId]);
+        var userData = childSnap.val();
+        self.trigger('cursor', userId, userData.cursor, userData.color);
       }
-    });
+    }
 
-    usersRef.on('child_removed', function(childSnap) {
+    this.firebaseOn_(usersRef, 'child_added', childChanged);
+    this.firebaseOn_(usersRef, 'child_changed', childChanged);
+
+    this.firebaseOff_(usersRef, 'child_removed', function(childSnap) {
       var userId = childSnap.name();
-      childSnap.ref().off('value', user2Callback[userId]);
+      self.firebaseOff_(childSnap.ref(), 'value', user2Callback[userId]);
       self.trigger('cursor', userId, null);
     });
   };
@@ -1437,6 +1446,7 @@ firepad.FirebaseAdapter = (function (global) {
     var self = this;
     // Get the latest checkpoint as a starting point so we don't have to re-play entire history.
     this.ref_.child('checkpoint').once('value', function(s) {
+      if (self.zombie_) { return; } // just in case we were cleaned up before we got the checkpoint data.
       var revisionId = s.child('id').val(),  op = s.child('o').val(), author = s.child('a').val();
       if (op != null && revisionId != null && author !== null) {
         self.pendingReceivedRevisions_[revisionId] = { o: op, a: author };
@@ -1454,7 +1464,7 @@ firepad.FirebaseAdapter = (function (global) {
     var self = this;
 
     setTimeout(function() {
-      historyRef.on('child_added', function(revisionSnapshot) {
+      self.firebaseOn_(historyRef, 'child_added', function(revisionSnapshot) {
         var revisionId = revisionSnapshot.name();
         self.pendingReceivedRevisions_[revisionId] = revisionSnapshot.val();
         if (self.ready_) {
@@ -1545,6 +1555,31 @@ firepad.FirebaseAdapter = (function (global) {
       o: this.document_.toJSON(),
       id: revisionToId(this.revision_ - 1) // use the id for the revision we just wrote.
     });
+  };
+
+  FirebaseAdapter.prototype.firebaseOn_ = function(ref, eventType, callback, context) {
+    this.firebaseCallbacks_.push({ref: ref, eventType: eventType, callback: callback, context: context });
+    ref.on(eventType, callback, context);
+    return callback;
+  };
+
+  FirebaseAdapter.prototype.firebaseOff_ = function(ref, eventType, callback, context) {
+    ref.off(eventType, callback, context);
+    for(var i = 0; i < this.firebaseCallbacks_.length; i++) {
+      var l = this.firebaseCallbacks_[i];
+      if (l.ref === ref && l.eventType === eventType && l.callback === callback && l.context === context) {
+        this.firebaseCallbacks_.splice(i, 1);
+        break;
+      }
+    }
+  };
+
+  FirebaseAdapter.prototype.removeFirebaseCallbacks_ = function() {
+    for(var i = 0; i < this.firebaseCallbacks_.length; i++) {
+      var l = this.firebaseCallbacks_[i];
+      l.ref.off(l.eventType, l.callback, l.context);
+    }
+    this.firebaseCallbacks_ = [];
   };
 
   // Throws an error if the first argument is falsy. Useful for debugging.
@@ -2280,6 +2315,7 @@ firepad.RichTextCodeMirror = (function () {
   function RichTextCodeMirror(codeMirror, options) {
     this.codeMirror = codeMirror;
     this.options_ = options || { };
+    this.currentAttributes_ = {};
 
     var self = this;
     this.annotationList_ = new AnnotationList(
@@ -2288,24 +2324,21 @@ firepad.RichTextCodeMirror = (function () {
     // Ensure annotationList is in sync with any existing codemirror contents.
     this.initAnnotationList_();
 
-    this.codeMirror.on('change', function(cm, change) {
-      self.onCodeMirrorChange_(change);
-    });
+    bind(this, 'onCodeMirrorChange_');
+    bind(this, 'onCursorActivity_');
 
-    this.currentAttributes_ = {};
-    this.codeMirror.on('cursorActivity', function() {
-      self.updateCurrentAttributes_();
-    });
+    this.codeMirror.on('change', this.onCodeMirrorChange_);
+    this.codeMirror.on('cursorActivity', this.onCursorActivity_);
 
     this.changeId_ = 0;
     this.outstandingChanges_ = { };
   }
-
   utils.makeEventEmitter(RichTextCodeMirror, ['change', 'attributesChange']);
 
-  RichTextCodeMirror.prototype.emptySelection_ = function() {
-    var start = this.codeMirror.getCursor('start'), end = this.codeMirror.getCursor('end');
-    return (start.line === end.line && start.ch === end.ch);
+  RichTextCodeMirror.prototype.detach = function() {
+    this.codeMirror.off('change', this.onCodeMirrorChange_);
+    this.codeMirror.off('cursorActivity', this.onCursorActivity_);
+    this.clearAnnotations_();
   };
 
   RichTextCodeMirror.prototype.toggleAttribute = function(attribute) {
@@ -2459,7 +2492,12 @@ firepad.RichTextCodeMirror = (function () {
     }
   };
 
-  RichTextCodeMirror.prototype.onCodeMirrorChange_ = function(change) {
+  RichTextCodeMirror.prototype.emptySelection_ = function() {
+    var start = this.codeMirror.getCursor('start'), end = this.codeMirror.getCursor('end');
+    return (start.line === end.line && start.ch === end.ch);
+  };
+
+  RichTextCodeMirror.prototype.onCodeMirrorChange_ = function(cm, change) {
     var newChangeList = { }, newChange = newChangeList;
     var changeOffset = 0;
     // TODO: This is wrong.  It only works if the changes are in order by where they occur in the text.
@@ -2509,6 +2547,10 @@ firepad.RichTextCodeMirror = (function () {
     }
   };
 
+  RichTextCodeMirror.prototype.onCursorActivity_ = function() {
+    this.updateCurrentAttributes_();
+  };
+
   RichTextCodeMirror.prototype.getCurrentAttributes_ = function() {
     if (!this.currentAttributes_) {
       this.updateCurrentAttributes_();
@@ -2532,6 +2574,12 @@ firepad.RichTextCodeMirror = (function () {
         this.currentAttributes_[attr] = spans[0].annotation.attributes[attr];
       }
     }
+  };
+
+  RichTextCodeMirror.prototype.clearAnnotations_ = function() {
+    this.annotationList_.updateSpan(new Span(0, this.end()), function(annotation, length) {
+      return new RichTextAnnotation({ });
+    });
   };
 
   /**
@@ -2568,6 +2616,16 @@ firepad.RichTextCodeMirror = (function () {
       return false;
     }
     return true;
+  }
+
+  // Bind a method to an object, so it doesn't matter whether you call
+  // object.method() directly or pass object.method as a reference to another
+  // function.
+  function bind (obj, method) {
+    var fn = obj[method];
+    obj[method] = function () {
+      fn.apply(obj, arguments);
+    };
   }
 
   return RichTextCodeMirror;
@@ -2985,8 +3043,8 @@ firepad.Firepad = (function(global) {
 
     this.richTextCodeMirror_ = new RichTextCodeMirror(this.codeMirror_, { cssPrefix: 'firepad-' });
     this.firebaseAdapter_ = new FirebaseAdapter(ref, userId, userColor);
-    var cmAdapter = new RichTextCodeMirrorAdapter(this.richTextCodeMirror_);
-    var client = new EditorClient(this.firebaseAdapter_, cmAdapter);
+    this.cmAdapter_ = new RichTextCodeMirrorAdapter(this.richTextCodeMirror_);
+    this.client_ = new EditorClient(this.firebaseAdapter_, this.cmAdapter_);
 
     var self = this;
     this.firebaseAdapter_.on('ready', function() {
@@ -2998,6 +3056,25 @@ firepad.Firepad = (function(global) {
 
   // For readability, this is the primary "constructor", even though right now they're just aliases for Firepad.
   Firepad.fromCodeMirror = Firepad;
+
+  Firepad.prototype.detach = function() {
+    this.zombie_ = true; // We've been detached.  No longer valid to do anything.
+
+    // Unwrap CodeMirror.
+    var cmWrapper = this.codeMirror_.getWrapperElement();
+    this.firepadWrapper_.removeChild(cmWrapper);
+    this.firepadWrapper_.parentNode.replaceChild(cmWrapper, this.firepadWrapper_);
+
+    this.codeMirror_.firepad = null;
+
+    if (this.codeMirror_.getOption('keyMap') === 'richtext') {
+      this.codeMirror_.setOption('keyMap', 'default');
+    }
+
+    this.firebaseAdapter_.detach();
+    this.cmAdapter_.detach();
+    this.richTextCodeMirror_.detach();
+  };
 
   Firepad.prototype.getText = function() {
     this.assertReady_('getText');
@@ -3093,6 +3170,9 @@ firepad.Firepad = (function(global) {
   Firepad.prototype.assertReady_ = function(funcName) {
     if (!this.ready_) {
       throw new Error('You must wait for the "ready" event before calling ' + funcName + '.');
+    }
+    if (this.zombie_) {
+      throw new Error('You can\'t use a Firepad after calling detach()!');
     }
   };
 

@@ -69,7 +69,7 @@
   left: 38px;
   top: 23px;
   width: 300px; /* I'd rather it clip than wrap. */
-  font-size: 10px;
+  font-size: 9px;
   line-height: 11px;
 }
 
