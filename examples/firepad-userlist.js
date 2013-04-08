@@ -59,7 +59,10 @@ var FirepadUserList = (function() {
 
     var colorDiv = elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
     this.firebaseOn_(myUserRef.child('color'), 'value', function(colorSnapshot) {
-      colorDiv.style.backgroundColor = colorSnapshot.val();
+      var color = colorSnapshot.val();
+      if (color.match(/^#[a-fA-F0-9]{3,6}$/)) {
+        colorDiv.style.backgroundColor = color;
+      }
     });
 
     var nameInput = elt('input', null, { type: 'text', 'class': 'firepad-userlist-name-input'} );
@@ -94,11 +97,19 @@ var FirepadUserList = (function() {
         userList.removeChild(div);
         delete userId2Element[userId];
       }
+      var name = userSnapshot.child('name').val();
+      if (typeof name !== 'string') { name = ''; }
+      name = name.substring(0, 20);
+
+      var color = userSnapshot.child('color').val();
+      if (typeof color !== 'string' || !color.match(/^#[a-fA-F0-9]{3,6}$/)) {
+        return;
+      }
 
       var colorDiv = elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
       colorDiv.style.backgroundColor = userSnapshot.child('color').val();
 
-      var nameDiv = elt('div', userSnapshot.child('name').val() || 'Guest', { 'class': 'firepad-userlist-name' });
+      var nameDiv = elt('div', name || 'Guest', { 'class': 'firepad-userlist-name' });
 
       var userDiv = elt('div', [ colorDiv, nameDiv ], { 'class': 'firepad-userlist-user' });
       userId2Element[userId] = userDiv;
