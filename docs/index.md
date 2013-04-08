@@ -7,13 +7,14 @@ permalink: index.html
 
 # Getting Started
 
-Firepad was designed to be embedded inside larger applications. Here we'll explain how to do this.
+Firepad was designed to be embedded inside larger applications. Since it uses [Firebase](https://www.firebase.com/) as a backend it
+requires no server-side code and can be added to any web app simply by including the JavaScript files.
+Here we'll explain how to do this.
 
 ## Prerequisites
 
-Firepad uses [Firebase](https://www.firebase.com/) for real-time data synchronization and storage, and it uses
-[CodeMirror](http://www.codemirror.net/) as the underlying text editor (though we'd love to add
-support for other editors in the future).
+Firepad uses [CodeMirror](http://www.codemirror.net/) as the underlying text editor (though we'd love to add
+support for other editors in the future), and it uses Firebase for data storage and synchronization.
 
 Before getting started, you'll need to:
 
@@ -60,7 +61,7 @@ Firepads in your Firebase by giving them each a unique URL
 ## Customizing Your Editor
 
 See the API section below for details on `Firepad.fromCodeMirror()` and the methods / events
-it provides.  And check out [codemirror.net](http://codemirror.net/) for details on CodeMirror's API
+it provides.  You can check out [codemirror.net](http://codemirror.net/) for details on CodeMirror's API
 (for turning on/off line numbers, line wrapping, code syntax highlighting, etc.).
 
 To customize the size / position of the Firepad or customize its look and feel, you can use CSS:
@@ -95,7 +96,7 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 
 `Firepad.fromCodeMirror(firebaseRef, codeMirror, options)`
 
->Creates a new Firepad from the specified CodeMirror instance, using the specified Firebase location to store data. The
+>Creates a new Firepad from the specified CodeMirror instance using the specified Firebase location to store data. The
 >options hash can be used to customize behavior.
 >
 >Available Options:
@@ -189,6 +190,7 @@ Then you can simply clone the repo, install the necessary node modules, and run 
     git clone https://github.com/firebase/firepad.git
     cd firepad
     npm install
+    npm install -g grunt-cli
     grunt
 {% endhighlight %}
 
@@ -211,7 +213,7 @@ To get started, here are some highlights of the directory structure and notable 
 * `test/` - Jasmine tests for Firepad (many of these were borrowed from ot.js).
 
 ## Firepad Website
-The website is checked into the [gh-pages](https://github.com/firebase/firepad/tree/gh-pages)
+This website is checked into the [gh-pages](https://github.com/firebase/firepad/tree/gh-pages)
 branch of the Firepad repository.  Most of it is static HTML, but the docs page is generated from
 Markdown using jekyll.
 
