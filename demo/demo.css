@@ -109,19 +109,9 @@ body {
   height: 35px;
 }
 
-#divider {
-  position: absolute;
-  bottom: 30px;
-  right: 435px;
-  width: 0;
-  height: 80px;
-  border-left: 1px solid #74651b;
-  border-right: 1px solid #f4e084;
-}
-
 #description {
   position: absolute;
-  bottom: 30px;
+  bottom: 20px;
   right: 40px;
   width: 380px;
   height: 80px;
