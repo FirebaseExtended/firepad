@@ -71,6 +71,7 @@ body {
   height: 150px;
   width: 150px;
   z-index: 10;
+  display: none;
 }
 
 #my-pads-list a {
@@ -80,9 +81,11 @@ body {
   padding: 5px 10px;
   cursor: pointer;
   cursor: hand;
+  width: 100%;
+  display: inline-block;
 }
 
-#my-pads-list div:hover {
+#my-pads-list a:hover {
   text-decoration: underline;
   color: #eb8717;
 }
