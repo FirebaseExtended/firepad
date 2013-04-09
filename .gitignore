@@ -1,6 +1,6 @@
 .idea
 *.iml
-*swp
+*sw?
 node_modules
 
 # So I can blindly copy over the whole examples directory from master.
