@@ -7,7 +7,7 @@ permalink: index.html
 
 # 1. Getting Started
 
-Firepad was designed to be embedded inside larger applications. Since it uses [Firebase](https://www.firebase.com/) as a backend it
+Firepad was designed to be embedded inside larger applications. Since it uses [Firebase](https://www.firebase.com/?utm_source=docs&utm_medium=email&utm_campaign=firepad) as a backend it
 requires no server-side code and can be added to any web app simply by including the JavaScript files.
 Here we'll explain how to do this.
 
@@ -20,7 +20,7 @@ Before getting started, you'll need to:
 
 - <a href="http://www.firepad.io/firepad.zip">Download Firepad</a>
 - <a href="http://codemirror.net/" target="_blank">Download CodeMirror</a>
-- <a href="https://www.firebase.com/signup/" target="_blank">Create a Firebase account</a> (it's free)
+- <a href="https://www.firebase.com/signup/?utm_source=docs&utm_medium=email&utm_campaign=firepad" target="_blank">Create a Firebase account</a> (it's free)
 
 ## Adding Dependencies
 
@@ -148,8 +148,9 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 
 
 <a name="firebase"> </a>
+
 # 3. Firebase Data
-Firepad uses [Firebase](https://www.firebase.com/) for its data storage and synchronization. This means
+Firepad uses [Firebase](https://www.firebase.com/?utm_source=docs&utm_medium=email&utm_campaign=firepad) for its data storage and synchronization. This means
 you don't need to run any server code and you benefit from all the features of Firebase
 (first-class data security, data accessibility, automatic scaling, etc.). It also means you own all of
 the data and can interact with it in a variety of ways.
@@ -178,7 +179,7 @@ See the code or view the data in Forge (just enter your Firebase URL in a browse
 
 ## Security
 To lock down your Firepad data, you can use Firebase's builtin
-[Security features](https://www.firebase.com/docs/security-quickstart.html).  For some example
+[Security features](https://www.firebase.com/docs/security-quickstart.html?utm_source=docs&utm_medium=email&utm_campaign=firepad).  For some example
 security rules, see these [example rules on Github](https://github.com/firebase/firepad/tree/master/examples/security).
 
 
