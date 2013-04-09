@@ -24,6 +24,16 @@ body {
   font-family: monospace;
 }
 
+a {
+  color: #0088cc;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #eb8717;
+  text-decoration: underline;
+}
+
 a img {
   border-style: none;
 }
@@ -207,6 +217,20 @@ a img {
   margin: 0 20px;
   text-decoration: none;
   color: #fcfcfc;
+}
+
+#header-links a:last-child {
+  background: url('../images/private_pad.png') 0 -28px;
+  height: 28px;
+  width: 114px;
+  float: right;
+  margin-top: -5px;
+}
+
+#header-links a:last-child:hover {
+  background: url('../images/private_pad.png') 0 0;
+  height: 28px;
+  width: 114px;
 }
 
 #page-links a {
