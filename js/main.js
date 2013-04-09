@@ -29,18 +29,9 @@ function joinFirepadForHash() {
 
   window.location = window.location.toString().replace(/#.*/, '') + '#' + room;
 
-  var $codeMirror = $('.CodeMirror');
-  function codeMirrorVisible() {
-    return $(window).scrollTop() <= ($codeMirror.offset().top+$codeMirror.height());
-  }
-  var visible = codeMirrorVisible();
   $(window).on('scroll', function() {
-    var newVisible = codeMirrorVisible();
-    if(visible && !newVisible) {
-      // unfocus codemirror so it doesn't scroll into view on cursor movements.
-      codeMirror.getInputField().blur();
-    }
-    visible = newVisible;
+    // unfocus codemirror on scroll, so it doesn't scroll into view on cursor movements.
+    codeMirror.getInputField().blur();
   });
 }
 
