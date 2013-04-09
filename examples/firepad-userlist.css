@@ -80,9 +80,9 @@ input.firepad-userlist-name-input {
 }
 
 .firepad-userlist-name {
-  display: inline-block;
-  vertical-align: top;
-  margin: 2px 0 0 5px;
+  position: absolute;
+  top: 2px;
+  left: 38px;
+  width: 95px;
   font-size: 13px;
-  width: 100px;
 }
