@@ -1,7 +1,7 @@
 var examples = ['richtext', 'code', 'userlist'];
 var currentId;
 
-function main() {
+$(window).on('ready', function() {
   loadExampleFromUrl();
   setTimeout(function() {
     $(window).on('hashchange', loadExampleFromUrl);
@@ -11,8 +11,8 @@ function main() {
     var example = examples[i];
     addClickHandler(example);
   }
-}
-setTimeout(main, 0);
+});
+
 
 function loadExampleFromUrl() {
   var info = getExampleAndIdFromUrl();
