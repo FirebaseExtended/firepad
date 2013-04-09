@@ -60,7 +60,7 @@ var FirepadUserList = (function() {
     var colorDiv = elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
     this.firebaseOn_(myUserRef.child('color'), 'value', function(colorSnapshot) {
       var color = colorSnapshot.val();
-      if (color.match(/^#[a-fA-F0-9]{3,6}$/)) {
+      if (typeof color === 'string' && color.match(/^#[a-fA-F0-9]{3,6}$/)) {
         colorDiv.style.backgroundColor = color;
       }
     });
