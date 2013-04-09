@@ -24,7 +24,7 @@
           <a href="../">Home</a>
           <a href="../examples/">Examples</a>
           <a href="#" class="selected">Documentation</a>
-          <a href="http://demo.firepad.io/" class="private-firepad"></a>
+          <a href="http://demo.firepad.io/" target="_blank" class="private-firepad"></a>
         </div>
         <a href="../">
           <div id="logo-small"></div>
@@ -38,7 +38,7 @@
   <div class="container" id="docs-container">
     <div class="row">
       <div class="span3 sidebar">
-        <ul class="nav nav-list sidenav">
+        <ul class="nav nav-list sidenav" data-spy="affix" data-offset-top="150">
           <li><a href="#getting_started"><i class="icon-chevron-right"></i> Getting Started</a></li>
           <li><a href="#api"><i class="icon-chevron-right"></i> API</a></li>
           <li><a href="#firebase"><i class="icon-chevron-right"></i> Firebase Data</a></li>
@@ -47,31 +47,9 @@
       </div>
       <div class="span9">
         {{ content }}
-        <!--
-        <section id="richtext">
-          <div class="uses-title example-title">1. Rich Text
-            <a href="#" class="example-view-source" target="_blank"><img src="../images/view-source.png"></a>
-          </div>
-          <p>Use Firepad's rich text features for collaborative blogging, note taking, proofreading and much more!</p>
-          <iframe class="example-container" src="richtext.html"></iframe>
-        </section>
-
-        <section id="code">
-          <div class="uses-title example-title">2. Code Editing
-            <a href="#" class="example-view-source" target="_blank"><img src="../images/view-source.png"></a>
-          </div>
-          <p>Combined with CodeMirror's extensive code editing features, Firepad is great for pair programming!</p>
-          <iframe class="example-container" src="code.html"></iframe>
-        </section>
-
-        <section id="userlist">
-          <div class="uses-title example-title">3. User List
-            <a href="#" class="example-view-source" target="_blank"><img src="../images/view-source.png"></a>
-          </div>
-          <p>You can easily add user presence information and other features.</p>
-          <iframe class="example-container" src="userlist.html"></iframe>
-        </section>
-        -->
+        <div class="build-something">Build something cool using Firepad?  We'd
+          love to <a href="mailto:firepad@firebase.com?subject=[Firepad]">hear from you</a>!
+        </div>
       </div>
     </div>
   </div>
@@ -82,7 +60,7 @@
         <a href="../">Home</a>
         <a href="../examples/">Examples</a>
         <a href="https://github.com/firebase/firepad" target="_blank">GitHub Project</a>
-        <a href="mailto:firepad@firebase.com?subject=[FirePad Question]" target="_blank">Contact</a>
+        <a href="mailto:firepad@firebase.com?subject=[Firepad Question]" target="_blank">Contact</a>
       </div>
       <div id="powered-by-firebase">
         <a href="https://www.firebase.com/"><img src="../images/powered-by-firebase-dim.png"></a>
@@ -102,5 +80,7 @@
     })();
 
   </script>
+  <script src="../js/jquery-1.9.1.min.js"></script>
+  <script src="../js/bootstrap-affix.js"></script>
 </body>
 </html>

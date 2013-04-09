@@ -10,18 +10,6 @@
   <link rel="stylesheet" href="examples/firepad-userlist.css" />
   <link rel="stylesheet" href="css/global.css" />
   <link href="images/favicon.ico" rel="shortcut icon" />
-  <script>
-    if (typeof localStorage === 'undefined' || localStorage.getItem('password') !== 'firebase') {
-      var password = prompt('Password?');
-      if (password !== 'firebase') {
-        window.location = 'about:blank';
-      } else {
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('password', 'firebase');
-        }
-      }
-    }
-  </script>
 </head>
 
 <body class="home-page">
@@ -36,7 +24,7 @@
           <a href="#" class="selected">Home</a>
           <a href="examples/">Examples</a>
           <a href="docs/">Documentation</a>
-          <a href="http://demo.firepad.io/" class="private-firepad"></a>
+          <a href="http://demo.firepad.io/" target="_blank" class="private-firepad"></a>
         </div>
         <div id="home-title-container" class="clearfix">
             <img src="images/firepad_logo.png" alt="Firepad Logo" />
@@ -202,7 +190,7 @@
         <a href="examples/">Examples</a>
         <a href="docs/">Docs</a>
         <a href="https://github.com/firebase/firepad" target="_blank">GitHub Project</a>
-        <a href="mailto:firepad@firebase.com?subject=[FirePad Question]" target="_blank">Contact</a>
+        <a href="mailto:firepad@firebase.com?subject=[Firepad Question]" target="_blank">Contact</a>
       </div>
       <div id="powered-by-firebase">
         <a href="https://www.firebase.com/?utm_source=landing&utm_medium=email&utm_campaign=firepad" target="_blank"><img src="images/powered-by-firebase-dim.png"></a>

@@ -1,31 +1,91 @@
-var examples = ['richtext', 'code', 'userlist'];
+var examples = {
+  'richtext' : {
+    create: function(div, ref) {
+      var codeMirror = CodeMirror(div, { lineWrapping: true, mode: '' });
+
+      this.firepad = Firepad.fromCodeMirror(ref, codeMirror,
+          { richTextToolbar: true, richTextShortcuts: true });
+
+      var self = this;
+      this.firepad.on('ready', function() {
+        if (self.firepad.isHistoryEmpty()) {
+          self.firepad.setText('Rich-Text editing with Firepad!');
+        }
+      });
+    },
+    dispose: function() {
+      this.firepad.dispose();
+    }
+  },
+  'code' : {
+    create: function(div, ref) {
+      var codeMirror = CodeMirror(div, {
+        lineNumbers: true,
+        mode: 'javascript'
+      });
+
+      this.firepad = Firepad.fromCodeMirror(ref, codeMirror);
+
+      var self = this;
+      this.firepad.on('ready', function() {
+        if (self.firepad.isHistoryEmpty()) {
+          self.firepad.setText('// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}');
+        }
+      });
+    },
+    dispose: function() {
+      this.firepad.dispose();
+    }
+  },
+  'userlist' : {
+    create: function(div, ref) {
+      var codeMirror = CodeMirror(div, { lineWrapping: true, mode: '' });
+
+      var userId = Math.floor(Math.random() * 9999999999).toString();
+
+      this.firepad = Firepad.fromCodeMirror(ref, codeMirror,
+          { richTextToolbar: true, richTextShortcuts: true, userId: userId});
+
+      this.firepadUserList = FirepadUserList.fromDiv(ref.child('users'), div, userId);
+
+      var self = this;
+      this.firepad.on('ready', function() {
+        if (self.firepad.isHistoryEmpty()) {
+          self.firepad.setText('Check out the user list to the left!');
+        }
+      });
+    },
+    dispose: function() {
+      this.firepad.dispose();
+      this.firepadUserList.dispose();
+    }
+  }
+};
+
 var currentId;
-
 $(window).on('ready', function() {
-  loadExampleFromUrl();
-  setTimeout(function() {
-    $(window).on('hashchange', loadExampleFromUrl);
-  }, 0);
-
-  for(var i = 0; i < examples.length; i++) {
-    var example = examples[i];
+  var ref = new Firebase('https://firepad-examples.firebaseio-demo.com');
+  for(var example in examples) {
     addClickHandler(example);
   }
+
+  initializeExamplesFromUrl();
+  setTimeout(function() {
+    $(window).on('hashchange', initializeExamplesFromUrl);
+  }, 0);
 });
 
 
-function loadExampleFromUrl() {
+function initializeExamplesFromUrl() {
   var info = getExampleAndIdFromUrl();
   var newId = info.id || randomString(10);
   if (newId !== currentId) {
     currentId = newId;
-    initializeExampleIframes(currentId);
+    initializeExamples(currentId);
   }
 
-  var example = (examples.indexOf(info.example) >= 0) ? info.example : '';
-  setTimeout(function() {
-    scrollToExample(example);
-  }, 0);
+  var example = (examples[info.example] != null) ? info.example : '';
+  scrollToExample(example);
 
   window.location = './#' + example + '-' + currentId;
 }
@@ -36,17 +96,19 @@ function getExampleAndIdFromUrl() {
   return { example: parts[0], id: parts[1] };
 }
 
-function initializeExampleIframes(id) {
-  for(var i = 0; i < examples.length; i++) {
-    var example = examples[i];
-    var url = './' + example + '.html#' + example + '-' + id;
-    var $iframe = $('#' + example + ' .example-container');
+var initialized = false;
+function initializeExamples(id) {
+  var ref = new Firebase('https://firepad-examples.firebaseio-demo.com').child(id);
+  for(var example in examples) {
+    var $div = $('#' + example + ' .example-container');
+    if (initialized) {
+      examples[example].dispose();
+      $div.empty();
+    }
 
-    // HACK: We recreate the iframe since changing its 'src' with a different hash might not actually reload it.
-    $iframe.replaceWith(
-        $('<iframe></iframe>').addClass('example-container').attr('src', url)
-    );
+    examples[example].create($div.get(0), ref.child(example));
   }
+  initialized = true;
 }
 
 function addClickHandler(example) {
@@ -57,8 +119,10 @@ function addClickHandler(example) {
 }
 
 function scrollToExample(example) {
-  var scrollTo = example ? ($('#' + example).offset().top - 20) : 0;
-  $('html, body').scrollTop(scrollTo);
+  if (example) {
+    var scrollTo = example ? ($('#' + example).offset().top - 20) : 0;
+    $('html, body').scrollTop(scrollTo);
+  }
 }
 
 function randomString(length) {

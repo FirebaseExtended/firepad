@@ -320,6 +320,12 @@ a img {
   border-top: 1px solid #e0e0e0;
 }
 
+.build-something {
+  margin: auto;
+  margin-top: 30px;
+  width: 500px;
+  font-style: italic;
+}
 
 /************************************************/
 /* sidebar for docs & examples */
@@ -336,6 +342,7 @@ a img {
   -moz-box-shadow: 0 1px 4px rgba(0,0,0,.065);
   box-shadow: 0 1px 4px rgba(0,0,0,.065);
 }
+
 .sidenav > li > a {
   display: block;
   width: 150px \9;
@@ -378,11 +385,11 @@ a img {
 }
 .sidenav .active .icon-chevron-right,
 .sidenav .active a:hover .icon-chevron-right {
-  background-image: url(../img/glyphicons-halflings-white.png);
+  /* background-image: url(../img/glyphicons-halflings-white.png); */
   opacity: 1;
 }
 .sidenav.affix {
-  top: 40px;
+  top: 0;
 }
 .sidenav.affix-bottom {
   position: absolute;
@@ -578,6 +585,7 @@ a img {
 }
 
 .example-container {
+  position: relative;
   width: 700px;
   height: 290px;
   background: white;
@@ -585,6 +593,25 @@ a img {
   -webkit-box-shadow: 0 2px 5px rgba(0,0,0,.11);
   -moz-box-shadow: 0 2px 5px rgba(0,0,0,.11);
   box-shadow: 0 2px 5px rgba(0,0,0,.11);
+}
+
+.example-container .firepad {
+  width: 100%;
+  height: 100%;
+}
+
+#userlist .firepad {
+  position: absolute;
+  left: 175px;
+  right: 0;
+  width: auto;
+  height: 290px;
+}
+
+#userlist .firepad-userlist {
+  position: absolute;
+  width: 175px;
+  height: 290px;
 }
 
 .example-view-source {
@@ -685,3 +712,6 @@ h2 {
   color: #dc4700;
 }
 
+.error-page #top {
+  height: 200px;
+}

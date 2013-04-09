@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="http://twitter.github.io/bootstrap/assets/css/bootstrap.css" />
   <link href="../css/prettify.css" type="text/css" rel="stylesheet" />
   <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="codemirror/lib/codemirror.css" />
+  <link rel="stylesheet" href="firepad.css" />
+  <link rel="stylesheet" href="firepad-userlist.css" />
   <link href="../images/favicon.ico" rel="shortcut icon" />
 </head>
 
@@ -23,7 +26,7 @@
           <a href="../">Home</a>
           <a href="#" class="selected">Examples</a>
           <a href="../docs/">Documentation</a>
-          <a href="http://demo.firepad.io/" class="private-firepad"></a>
+          <a href="http://demo.firepad.io/" target="_blank" class="private-firepad"></a>
         </div>
         <a href="../">
           <div id="logo-small"></div>
@@ -36,7 +39,7 @@
   <div class="container" id="examples-container">
     <div class="row">
     <div class="span3 sidebar">
-      <ul class="nav nav-list sidenav">
+      <ul class="nav nav-list sidenav" data-spy="affix" data-offset-top="150">
         <li><a href="#richtext" id="richtext-link"><i class="icon-chevron-right"></i> Rich Text</a></li>
         <li><a href="#code" id="code-link"><i class="icon-chevron-right"></i> Code Editing</a></li>
         <li><a href="#userlist" id="userlist-link"><i class="icon-chevron-right"></i> User List</a></li>
@@ -48,7 +51,7 @@
           <a href="https://github.com/firebase/firepad/blob/gh-pages/examples/richtext.html" class="example-view-source" target="_blank"><img src="../images/view-source.png"></a>
         </div>
         <p>Use Firepad's rich text features for collaborative blogging, note taking, proofreading and much more!</p>
-        <iframe class="example-container"></iframe>
+        <div class="example-container"></div>
       </section>
 
       <section id="code">
@@ -56,7 +59,7 @@
           <a href="https://github.com/firebase/firepad/blob/gh-pages/examples/code.html" class="example-view-source" target="_blank"><img src="../images/view-source.png"></a>
         </div>
         <p>Combined with CodeMirror's extensive code editing features, Firepad is great for pair programming!</p>
-        <iframe class="example-container"></iframe>
+        <div class="example-container"></div>
       </section>
 
       <section id="userlist">
@@ -64,10 +67,13 @@
           <a href="https://github.com/firebase/firepad/blob/gh-pages/examples/userlist.html" class="example-view-source" target="_blank"><img src="../images/view-source.png"></a>
         </div>
         <p>You can easily add user presence information and other features.</p>
-        <iframe class="example-container"></iframe>
+        <div class="example-container"></div>
       </section>
+      <div class="build-something">Build something cool of your own using Firepad?  We'd
+        love to <a href="mailto:firepad@firebase.com?subject=[Firepad]">hear from you</a>!
+      </div>
     </div>
-  </div>
+    </div>
   </div>
 
   <div id="footer-wrap">
@@ -76,7 +82,7 @@
         <a href="../index.html">Home</a>
         <a href="../docs/">Docs</a>
         <a href="https://github.com/firebase/firepad" target="_blank">GitHub Project</a>
-        <a href="mailto:firepad@firebase.com?subject=[FirePad Question]" target="_blank">Contact</a>
+        <a href="mailto:firepad@firebase.com?subject=[Firepad Question]" target="_blank">Contact</a>
       </div>
       <div id="powered-by-firebase">
         <a href="https://www.firebase.com/?utm_source=examples&utm_medium=email&utm_campaign=firepad" target="_blank"><img
@@ -85,6 +91,12 @@
     </div>
   </div>
   <script src="../js/jquery-1.9.1.min.js"></script>
+  <script src="../js/bootstrap-affix.js"></script>
+  <script src="https://cdn.firebase.com/v0/firebase.js"></script>
+  <script src="codemirror/lib/codemirror.js"></script>
+  <script src="codemirror/mode/javascript/javascript.js"></script>
+  <script src="firepad.js"></script>
+  <script src="firepad-userlist.js"></script>
   <script src="../js/examples.js"></script>
   <script src="../js/prettify.js"></script>
   <script type="text/javascript">

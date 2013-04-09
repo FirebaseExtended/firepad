@@ -25,8 +25,10 @@
     <div id="top-bg-tile">
       <div id="top-content">
         <div id="firepad-demo"></div>
-        <a href="./" id="my-pads" class="sprite-btn"></a>
+        <a onclick="displayPads()" id="my-pads" class="sprite-btn"></a>
         <a href="./" id="create-pad" class="sprite-btn"></a>
+        <div id="my-pads-list">
+        </div>
         <div id="firepad-container">
           <div id="firepad-userlist"></div>
           <div id="firepad"></div>
@@ -75,6 +77,12 @@
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
 
+</script>
+
+<script type="text/javascript">
+    function displayPads() {
+      $('#my-pads-list').toggle();
+    }
 </script>
 </body>
 </html>

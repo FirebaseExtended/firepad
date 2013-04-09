@@ -51,18 +51,61 @@ body {
   position: absolute;
   background-image: url('http://www.firepad.io/images/my_pads.png');
   width: 120px;
-  height: 41px;
+  height: 36px;
   right: 230px;
   top: 27px;
+  cursor: pointer;
+  cursor: hand;
+}
+
+#my-pads:active {
+  background-image: url('http://www.firepad.io/images/my_pads_pressed.png');
+}
+
+#my-pads-list {
+  border: 1px solid #1b5ee9;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  background: #fff;
+  position: absolute;
+  right: 230px;
+  top: 59px;
+  max-height: 150px;
+  overflow-y: auto;
+  width: 150px;
+  z-index: 10;
+  display: none;
+}
+
+.my-pads-item {
+  width: 100%;
+  border-bottom: 1px solid #ccc;
+}
+
+#my-pads-list a {
+  font-size: 15px;
+  color: #0088cc;
+  margin: 5px 10px;
+  cursor: pointer;
+  cursor: hand;
+  display: inline-block;
+}
+
+#my-pads-list a:hover {
+  text-decoration: underline;
+  color: #eb8717;
 }
 
 #create-pad {
   position: absolute;
   background-image: url('http://www.firepad.io/images/create-pad.png');
   width: 190px;
-  height: 41px;
+  height: 36px;
   right: 30px;
   top: 27px;
+  cursor: pointer;
+  cursor: hand;
 }
 
 #create-pad:active {
