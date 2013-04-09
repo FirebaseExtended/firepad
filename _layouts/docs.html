@@ -5,12 +5,14 @@
   <meta charset="utf-8" />
   <title>Firepad - Documentation</title>
 
+  <link rel="stylesheet" href="http://twitter.github.io/bootstrap/assets/css/bootstrap.css" />
   <link rel="stylesheet" href="../css/global.css" />
   <link rel="stylesheet" href="../css/borland.css" />
+  <link href="../images/favicon.ico" rel="shortcut icon" />
 </head>
 
-<body>
-  <a href="https://github.com/firebase/firepad">
+<body class="docs-page">
+  <a href="https://github.com/firebase/firepad" target="_blank">
     <img style="position: absolute; top: 0; left: 0; border: 0; z-index: 1;" src="../images/fork_on_github.png" alt="Fork me on GitHub">
   </a>
   <div id="top">
@@ -22,29 +24,59 @@
           <a href="../">Home</a>
           <a href="../examples/">Examples</a>
           <a href="#" class="selected">Documentation</a>
-          <a href="http://demo.firepad.io/" target="_blank">Demo</a>
+          <a href="http://demo.firepad.io/" class="private-firepad"></a>
         </div>
         <a href="../">
           <div id="logo-small"></div>
         </a>
         <div id="page-title">Documentation</div>
-        <div id="page-links">
-          <a href="#getting_started">Getting Started</a> |
-          <a href="#api">API</a> |
-          <a href="#firebase">Firebase Data</a> |
-          <a href="#extending">Extending</a>
-        </div>
-        <a href="https://github.com/firebase/firepad" id="download-on-github"><img src="../images/download.png"></a>
+        <a href="https://github.com/firebase/firepad" id="download-on-github" target="_blank"><img src="../images/download.png"></a>
       </div>
     </div>
   </div>
 
-  <div id="bottom">
-    <div id="bottom-container">
-      <div id="docs-content">
+  <div class="container" id="docs-container">
+    <div class="row">
+      <div class="span3 sidebar">
+        <ul class="nav nav-list sidenav">
+          <li><a href="#getting_started"><i class="icon-chevron-right"></i> Getting Started</a></li>
+          <li><a href="#api"><i class="icon-chevron-right"></i> API</a></li>
+          <li><a href="#firebase"><i class="icon-chevron-right"></i> Firebase Data</a></li>
+          <li><a href="#extending"><i class="icon-chevron-right"></i> Extending</a></li>
+        </ul>
+      </div>
+      <div class="span9">
         {{ content }}
+        <!--
+        <section id="richtext">
+          <div class="uses-title example-title">1. Rich Text
+            <a href="#" class="example-view-source" target="_blank"><img src="../images/view-source.png"></a>
+          </div>
+          <p>Use Firepad's rich text features for collaborative blogging, note taking, proofreading and much more!</p>
+          <iframe class="example-container" src="richtext.html"></iframe>
+        </section>
+
+        <section id="code">
+          <div class="uses-title example-title">2. Code Editing
+            <a href="#" class="example-view-source" target="_blank"><img src="../images/view-source.png"></a>
+          </div>
+          <p>Combined with CodeMirror's extensive code editing features, Firepad is great for pair programming!</p>
+          <iframe class="example-container" src="code.html"></iframe>
+        </section>
+
+        <section id="userlist">
+          <div class="uses-title example-title">3. User List
+            <a href="#" class="example-view-source" target="_blank"><img src="../images/view-source.png"></a>
+          </div>
+          <p>You can easily add user presence information and other features.</p>
+          <iframe class="example-container" src="userlist.html"></iframe>
+        </section>
+        -->
       </div>
     </div>
+  </div>
+
+  <div id="footer-wrap">
     <div id="footer">
       <div id="footer-links">
         <a href="../">Home</a>

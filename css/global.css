@@ -24,6 +24,16 @@ body {
   font-family: monospace;
 }
 
+a {
+  color: #0088cc;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #eb8717;
+  text-decoration: underline;
+}
+
 a img {
   border-style: none;
 }
@@ -147,16 +157,14 @@ a img {
 #top-content {
   position: relative;
   margin: 0 auto;
-  height: 190px;
+  height: 150px;
   width: 960px;
   text-align: center;
 }
 
 #download-on-github {
-  position: absolute;
-  right: 15px;
-  bottom: 15px;
-  border: 0;
+  float: right;
+  margin-top: 35px;
 }
 
 #top-shadow {
@@ -171,6 +179,19 @@ a img {
   -moz-background-size: cover;
   -o-background-size: cover;
   background-size: cover;
+}
+
+#private-firepad-link {
+  margin-bottom: 5px;
+}
+#private-firepad-link a {
+  float: right;
+  color: #fff;
+  display: block;
+}
+#private-firepad-link a:hover {
+  text-decoration: underline;
+  color: #eb8717;
 }
 
 #logo-small {
@@ -209,6 +230,20 @@ a img {
   margin: 0 20px;
   text-decoration: none;
   color: #fcfcfc;
+}
+
+#header-links a:last-child {
+  background: url('../images/private_pad.png') 0 -28px;
+  height: 28px;
+  width: 114px;
+  float: right;
+  margin-top: -5px;
+}
+
+#header-links a:last-child:hover {
+  background: url('../images/private_pad.png') 0 0;
+  height: 28px;
+  width: 114px;
 }
 
 #page-links a {
@@ -285,6 +320,77 @@ a img {
   border-top: 1px solid #e0e0e0;
 }
 
+
+/************************************************/
+/* sidebar for docs & examples */
+/************************************************/
+.sidenav {
+  width: 178px;
+  margin: 30px 0 0;
+  padding: 0;
+  background-color: #fff;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+  -webkit-box-shadow: 0 1px 4px rgba(0,0,0,.065);
+  -moz-box-shadow: 0 1px 4px rgba(0,0,0,.065);
+  box-shadow: 0 1px 4px rgba(0,0,0,.065);
+}
+.sidenav > li > a {
+  display: block;
+  width: 150px \9;
+  margin: 0 0 -1px;
+  padding: 8px 14px;
+  border: 1px solid #e5e5e5;
+}
+.sidenav > li:first-child > a {
+  -webkit-border-radius: 6px 6px 0 0;
+  -moz-border-radius: 6px 6px 0 0;
+  border-radius: 6px 6px 0 0;
+}
+.sidenav > li:last-child > a {
+  -webkit-border-radius: 0 0 6px 6px;
+  -moz-border-radius: 0 0 6px 6px;
+  border-radius: 0 0 6px 6px;
+}
+.sidenav > .active > a {
+  position: relative;
+  z-index: 2;
+  padding: 9px 15px;
+  border: 0;
+  text-shadow: 0 1px 0 rgba(0,0,0,.15);
+  -webkit-box-shadow: inset 1px 0 0 rgba(0,0,0,.1), inset -1px 0 0 rgba(0,0,0,.1);
+  -moz-box-shadow: inset 1px 0 0 rgba(0,0,0,.1), inset -1px 0 0 rgba(0,0,0,.1);
+  box-shadow: inset 1px 0 0 rgba(0,0,0,.1), inset -1px 0 0 rgba(0,0,0,.1);
+}
+/* Chevrons */
+.sidenav .icon-chevron-right {
+  float: right;
+  margin-top: 2px;
+  margin-right: -6px;
+  opacity: .25;
+}
+.sidenav > li > a:hover {
+  background-color: #f5f5f5;
+}
+.sidenav a:hover .icon-chevron-right {
+  opacity: .5;
+}
+.sidenav .active .icon-chevron-right,
+.sidenav .active a:hover .icon-chevron-right {
+  background-image: url(../img/glyphicons-halflings-white.png);
+  opacity: 1;
+}
+.sidenav.affix {
+  top: 40px;
+}
+.sidenav.affix-bottom {
+  position: absolute;
+  top: auto;
+  bottom: 270px;
+}
+
+
 /************************************************/
 /* Footer */
 /************************************************/
@@ -330,7 +436,7 @@ a img {
 /* index.html specific styles. */
 /************************************************/
 .home-page #top-content {
-  height: 920px;
+  height: 948px;
 }
 
 .home-page .bottom-content {
@@ -496,71 +602,6 @@ a img {
   color: #f9e701;
 }
 
-.examples-sidenav {
-  width: 178px;
-  margin: 30px 0 0;
-  padding: 0;
-  background-color: #fff;
-  -webkit-border-radius: 6px;
-  -moz-border-radius: 6px;
-  border-radius: 6px;
-  -webkit-box-shadow: 0 1px 4px rgba(0,0,0,.065);
-  -moz-box-shadow: 0 1px 4px rgba(0,0,0,.065);
-  box-shadow: 0 1px 4px rgba(0,0,0,.065);
-}
-.examples-sidenav > li > a {
-  display: block;
-  width: 150px \9;
-  margin: 0 0 -1px;
-  padding: 8px 14px;
-  border: 1px solid #e5e5e5;
-}
-.examples-sidenav > li:first-child > a {
-  -webkit-border-radius: 6px 6px 0 0;
-  -moz-border-radius: 6px 6px 0 0;
-  border-radius: 6px 6px 0 0;
-}
-.examples-sidenav > li:last-child > a {
-  -webkit-border-radius: 0 0 6px 6px;
-  -moz-border-radius: 0 0 6px 6px;
-  border-radius: 0 0 6px 6px;
-}
-.examples-sidenav > .active > a {
-  position: relative;
-  z-index: 2;
-  padding: 9px 15px;
-  border: 0;
-  text-shadow: 0 1px 0 rgba(0,0,0,.15);
-  -webkit-box-shadow: inset 1px 0 0 rgba(0,0,0,.1), inset -1px 0 0 rgba(0,0,0,.1);
-  -moz-box-shadow: inset 1px 0 0 rgba(0,0,0,.1), inset -1px 0 0 rgba(0,0,0,.1);
-  box-shadow: inset 1px 0 0 rgba(0,0,0,.1), inset -1px 0 0 rgba(0,0,0,.1);
-}
-/* Chevrons */
-.examples-sidenav .icon-chevron-right {
-  float: right;
-  margin-top: 2px;
-  margin-right: -6px;
-  opacity: .25;
-}
-.examples-sidenav > li > a:hover {
-  background-color: #f5f5f5;
-}
-.examples-sidenav a:hover .icon-chevron-right {
-  opacity: .5;
-}
-.examples-sidenav .active .icon-chevron-right,
-.examples-sidenav .active a:hover .icon-chevron-right {
-  background-image: url(../img/glyphicons-halflings-white.png);
-  opacity: 1;
-}
-.examples-sidenav.affix {
-  top: 40px;
-}
-.examples-sidenav.affix-bottom {
-  position: absolute;
-  top: auto;
-  bottom: 270px;
-}
 .example-title {
   margin-top: 50px;
 }
@@ -568,10 +609,40 @@ a img {
 /************************************************/
 /* docs/ specific styles */
 /************************************************/
+
+h1 {
+  font-size: 34px;
+  color: #333;
+  margin: 20px 0;
+  padding-top: 25px;
+  font-family: "Helvetica Neue", sans-serif;
+  font-weight: normal;
+  clear: both;
+}
+
+h2 {
+  font-size: 24px;
+  color: #535353;
+  margin: 10px 0;
+  padding-top: 10px;
+  font-weight: normal;
+  font-family: "Helvetica Neue", sans-serif;
+  clear: both;
+}
+
+.docs-page {
+  background: #fcfcfc;
+}
+
 #docs-content {
   padding: 30px 90px 0;
   color: #5e5e5e;
   margin-bottom: 40px;
+}
+
+.docs-page pre {
+  margin: 20px 10px;
+  padding: 15px 10px;
 }
 
 .docs-separator {
@@ -613,3 +684,4 @@ a img {
 #docs-content .emphasis-box a {
   color: #dc4700;
 }
+
