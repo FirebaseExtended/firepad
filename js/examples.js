@@ -57,8 +57,10 @@ function addClickHandler(example) {
 }
 
 function scrollToExample(example) {
-  var scrollTo = example ? ($('#' + example).offset().top - 20) : 0;
-  $('html, body').scrollTop(scrollTo);
+  if (example) {
+    var scrollTo = example ? ($('#' + example).offset().top - 20) : 0;
+    $('html, body').scrollTop(scrollTo);
+  }
 }
 
 function randomString(length) {
