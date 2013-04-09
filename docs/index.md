@@ -195,4 +195,3 @@ This website is also open source and is checked into the [gh-pages](https://gith
 branch of the Firepad repository.  Most of it is static HTML, but the docs page is generated from
 Markdown using jekyll.
 
-That's it!  Feel free to reach us at [firepad@firebase.com](mailto:firepad@firebase.com) with any questions or comments!

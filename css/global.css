@@ -320,6 +320,12 @@ a img {
   border-top: 1px solid #e0e0e0;
 }
 
+.build-something {
+  margin: auto;
+  margin-top: 30px;
+  width: 500px;
+  font-style: italic;
+}
 
 /************************************************/
 /* sidebar for docs & examples */
