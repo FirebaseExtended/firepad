@@ -28,9 +28,25 @@ function joinFirepadForHash() {
       document.getElementById('firepad-userlist'), userId);
 
   window.location = window.location.toString().replace(/#.*/, '') + '#' + room;
+
+  var $codeMirror = $('.CodeMirror');
+  function codeMirrorVisible() {
+    return $(window).scrollTop() <= ($codeMirror.offset().top+$codeMirror.height());
+  }
+  var visible = codeMirrorVisible();
+  $(window).on('scroll', function() {
+    var newVisible = codeMirrorVisible();
+    if(visible && !newVisible) {
+      // unfocus codemirror so it doesn't scroll into view on cursor movements.
+      codeMirror.getInputField().blur();
+    }
+    visible = newVisible;
+  });
 }
 
-joinFirepadForHash();
-setTimeout(function() {
-  $(window).on('hashchange', joinFirepadForHash);
-},0);
+$(document).on('ready', function() {
+  joinFirepadForHash();
+  setTimeout(function() {
+    $(window).on('hashchange', joinFirepadForHash);
+  },0);
+});
