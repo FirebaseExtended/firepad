@@ -1,5 +1,5 @@
 var ROOMS = 15;
-var OFFSET = 15;
+var OFFSET = 30;
 var firepad = null, codeMirror = null, userList = null;
 
 function joinFirepadForHash() {
