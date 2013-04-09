@@ -10,18 +10,6 @@
   <link rel="stylesheet" href="examples/firepad-userlist.css" />
   <link rel="stylesheet" href="css/global.css" />
   <link href="images/favicon.ico" rel="shortcut icon" />
-  <script>
-    if (typeof localStorage === 'undefined' || localStorage.getItem('password') !== 'firebase') {
-      var password = prompt('Password?');
-      if (password !== 'firebase') {
-        window.location = 'about:blank';
-      } else {
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('password', 'firebase');
-        }
-      }
-    }
-  </script>
 </head>
 
 <body class="home-page">
