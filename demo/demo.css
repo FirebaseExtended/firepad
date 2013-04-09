@@ -47,6 +47,15 @@ body {
   height: 38px;
 }
 
+#my-pads {
+  position: absolute;
+  background-image: url('http://www.firepad.io/images/my_pads.png');
+  width: 120px;
+  height: 41px;
+  right: 230px;
+  top: 27px;
+}
+
 #create-pad {
   position: absolute;
   background-image: url('http://www.firepad.io/images/create-pad.png');
