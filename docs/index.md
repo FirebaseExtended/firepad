@@ -5,7 +5,7 @@ permalink: index.html
 
 <a name="getting_started"> </a>
 
-# Getting Started
+# 1. Getting Started
 
 Firepad was designed to be embedded inside larger applications. Since it uses [Firebase](https://www.firebase.com/) as a backend it
 requires no server-side code and can be added to any web app simply by including the JavaScript files.
@@ -85,12 +85,11 @@ The toolbar and other aspects can also be customized.  Take a look at firepad.cs
 <div class="emphasis-box">Firepad is also great for editing markdown, code, and just about anything else.
 Check out the <a href="../examples/">examples page</a> for more embedding examples.</div>
 
-<div class="docs-separator"> </div>
 <a name="api"> </a>
 
 
 
-# Firepad API
+# 2. Firepad API
 
 ## Constructing a Firepad
 
@@ -148,9 +147,8 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
   to its original state.
 
 
-<div class="docs-separator"> </div>
 <a name="firebase"> </a>
-# Firebase Data
+# 3. Firebase Data
 Firepad uses [Firebase](https://www.firebase.com/) for its data storage and synchronization. This means
 you don't need to run any server code and you benefit from all the features of Firebase
 (first-class data security, data accessibility, automatic scaling, etc.). It also means you own all of
@@ -184,9 +182,8 @@ To lock down your Firepad data, you can use Firebase's builtin
 security rules, see these [example rules on Github](https://github.com/firebase/firepad/tree/master/examples/security).
 
 
-<div class="docs-separator"> </div>
 <a name="extending"> </a>
-# Extending Firepad
+# 4. Extending Firepad
 Firepad is an open source project and is meant to be extended and customized. We'd love for the community
 to help add support for more editors, extend the rich text capabilities, etc. If you want to take the plunge,
 read on!
