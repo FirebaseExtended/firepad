@@ -181,6 +181,19 @@ a img {
   background-size: cover;
 }
 
+#private-firepad-link {
+  margin-bottom: 5px;
+}
+#private-firepad-link a {
+  float: right;
+  color: #fff;
+  display: block;
+}
+#private-firepad-link a:hover {
+  text-decoration: underline;
+  color: #f9e701;
+}
+
 #logo-small {
   position: absolute;
   left: 85px;
@@ -423,7 +436,7 @@ a img {
 /* index.html specific styles. */
 /************************************************/
 .home-page #top-content {
-  height: 920px;
+  height: 948px;
 }
 
 .home-page .bottom-content {
