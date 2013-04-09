@@ -64,24 +64,31 @@ body {
 
 #my-pads-list {
   border: 1px solid #1b5ee9;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
   background: #fff;
   position: absolute;
   right: 230px;
   top: 59px;
-  height: 150px;
+  max-height: 150px;
+  overflow-y: auto;
   width: 150px;
   z-index: 10;
   display: none;
 }
 
+.my-pads-item {
+  width: 100%;
+  border-bottom: 1px solid #ccc;
+}
+
 #my-pads-list a {
   font-size: 15px;
-  border-bottom: 1px solid #ccc;
   color: #0088cc;
-  padding: 5px 10px;
+  margin: 5px 10px;
   cursor: pointer;
   cursor: hand;
-  width: 100%;
   display: inline-block;
 }
 
