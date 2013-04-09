@@ -54,12 +54,38 @@ body {
   height: 36px;
   right: 230px;
   top: 27px;
+  cursor: pointer;
+  cursor: hand;
 }
 
 #my-pads:active {
   background-image: url('http://www.firepad.io/images/my_pads_pressed.png');
 }
 
+#my-pads-list {
+  border: 1px solid #1b5ee9;
+  background: #fff;
+  position: absolute;
+  right: 230px;
+  top: 59px;
+  height: 150px;
+  width: 150px;
+  z-index: 10;
+}
+
+#my-pads-list a {
+  font-size: 15px;
+  border-bottom: 1px solid #ccc;
+  color: #0088cc;
+  padding: 5px 10px;
+  cursor: pointer;
+  cursor: hand;
+}
+
+#my-pads-list div:hover {
+  text-decoration: underline;
+  color: #eb8717;
+}
 
 #create-pad {
   position: absolute;
@@ -68,6 +94,8 @@ body {
   height: 36px;
   right: 30px;
   top: 27px;
+  cursor: pointer;
+  cursor: hand;
 }
 
 #create-pad:active {
