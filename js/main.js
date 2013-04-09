@@ -1,4 +1,5 @@
 var ROOMS = 15;
+var OFFSET = 15;
 var firepad = null, codeMirror = null, userList = null;
 
 function joinFirepadForHash() {
@@ -11,8 +12,8 @@ function joinFirepadForHash() {
   }
 
   var room = Number(window.location.hash.replace(/#/g, ''));
-  if (!(room >= 1 && room <= ROOMS)) {
-    room = Math.floor(Math.random() * ROOMS);
+  if (!(room >= 1 && room <= OFFSET + ROOMS)) {
+    room = OFFSET + Math.floor(Math.random() * ROOMS);
   }
 
   var NAMESPACES = 15;
