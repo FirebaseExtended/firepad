@@ -54,7 +54,7 @@
   border-radius: 4px;
 }
 
-.firepad-userlist-name-input {
+input.firepad-userlist-name-input {
   position: absolute;
   left: 38px;
   top: 0;
@@ -62,6 +62,12 @@
   height: 20px;
   border: 0;
   border-bottom: 1px solid #d6d6d6;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+  font-size: 14px;
+  line-height: 14px;
+  padding: 1px;
 }
 
 .firepad-userlist-name-hint {
