@@ -27,7 +27,6 @@ function joinFirepadForHash() {
   userList = FirepadUserList.fromDiv(firepadRef.child('users'),
       document.getElementById('firepad-userlist'), userId);
 
-  codeMirror.focus();
   window.location = window.location.toString().replace(/#.*/, '') + '#' + room;
 }
 
