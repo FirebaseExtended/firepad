@@ -1,7 +1,7 @@
 var examples = {
   'richtext' : {
     create: function(div, ref) {
-      var codeMirror = CodeMirror(div, { lineWrapping: true });
+      var codeMirror = CodeMirror(div, { lineWrapping: true, mode: '' });
 
       this.firepad = Firepad.fromCodeMirror(ref, codeMirror,
           { richTextToolbar: true, richTextShortcuts: true });
@@ -39,7 +39,7 @@ var examples = {
   },
   'userlist' : {
     create: function(div, ref) {
-      var codeMirror = CodeMirror(div, { lineWrapping: true });
+      var codeMirror = CodeMirror(div, { lineWrapping: true, mode: '' });
 
       var userId = Math.floor(Math.random() * 9999999999).toString();
 
