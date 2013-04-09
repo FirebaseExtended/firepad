@@ -51,16 +51,21 @@ body {
   position: absolute;
   background-image: url('http://www.firepad.io/images/my_pads.png');
   width: 120px;
-  height: 41px;
+  height: 36px;
   right: 230px;
   top: 27px;
 }
+
+#my-pads:active {
+  background-image: url('http://www.firepad.io/images/my_pads_pressed.png');
+}
+
 
 #create-pad {
   position: absolute;
   background-image: url('http://www.firepad.io/images/create-pad.png');
   width: 190px;
-  height: 41px;
+  height: 36px;
   right: 30px;
   top: 27px;
 }
