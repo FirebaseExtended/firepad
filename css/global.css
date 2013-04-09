@@ -579,6 +579,7 @@ a img {
 }
 
 .example-container {
+  position: relative;
   width: 700px;
   height: 290px;
   background: white;
@@ -586,6 +587,25 @@ a img {
   -webkit-box-shadow: 0 2px 5px rgba(0,0,0,.11);
   -moz-box-shadow: 0 2px 5px rgba(0,0,0,.11);
   box-shadow: 0 2px 5px rgba(0,0,0,.11);
+}
+
+.example-container .firepad {
+  width: 100%;
+  height: 100%;
+}
+
+#userlist .firepad {
+  position: absolute;
+  left: 175px;
+  right: 0;
+  width: auto;
+  height: 290px;
+}
+
+#userlist .firepad-userlist {
+  position: absolute;
+  width: 175px;
+  height: 290px;
 }
 
 .example-view-source {
