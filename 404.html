@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Firepad: Page not found.</title>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="css/global.css" />
+  <link href="images/favicon.ico" rel="shortcut icon" />
+</head>
+
+<body class="error-page">
+  <a href="https://github.com/firebase/firepad" target="_blank">
+    <img style="position: absolute; top: 0; left: 0; border: 0; z-index: 1;" src="images/fork_on_github.png" alt="Fork me on GitHub">
+  </a>
+  <div id="top">
+    <div id="top-shadow"></div>
+    <div id="top-bg-tile">
+      <div id="top-content">
+        <div id="header-links" class="clearfix">
+          <a href="#" class="selected">Home</a>
+          <a href="examples/">Examples</a>
+          <a href="docs/">Documentation</a>
+          <a href="http://demo.firepad.io/" class="private-firepad"></a>
+        </div>
+        <div id="home-title-container" class="clearfix">
+            <img src="images/firepad_logo.png" alt="Firepad Logo" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="bottom">
+    <div id="bottom-container">
+      <div class="bottom-content">
+        <h1>Page not found.</h1>
+        Sorry.  We couldn't find what you were looking for.  If you found a broken link, please
+        <a href="mailto:firepad@firebase.com?subject=[Broken Firepad Link]" target="_blank">Let us know!</a>
+      </div>
+    </div>
+    <div id="footer">
+      <div id="footer-links">
+        <a href="examples/">Examples</a>
+        <a href="docs/">Docs</a>
+        <a href="https://github.com/firebase/firepad" target="_blank">GitHub Project</a>
+        <a href="mailto:firepad@firebase.com?subject=[Firepad Question]" target="_blank">Contact</a>
+      </div>
+      <div id="powered-by-firebase">
+        <a href="https://www.firebase.com/?utm_source=landing&utm_medium=email&utm_campaign=firepad" target="_blank"><img src="images/powered-by-firebase-dim.png"></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+  <div id="fb-root"></div>
+  <script>(function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));</script>
+  <script src="js/jquery-1.9.1.min.js"></script>
+  <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-39969708-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script>
+</body>
+</html>

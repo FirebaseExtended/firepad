@@ -379,7 +379,7 @@ a img {
 }
 .sidenav .active .icon-chevron-right,
 .sidenav .active a:hover .icon-chevron-right {
-  background-image: url(../img/glyphicons-halflings-white.png);
+  /* background-image: url(../img/glyphicons-halflings-white.png); */
   opacity: 1;
 }
 .sidenav.affix {
@@ -706,3 +706,6 @@ h2 {
   color: #dc4700;
 }
 
+.error-page #top {
+  height: 200px;
+}
