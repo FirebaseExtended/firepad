@@ -29,7 +29,7 @@ var examples = {
       var self = this;
       this.firepad.on('ready', function() {
         if (self.firepad.isHistoryEmpty()) {
-          self.firepad.setText('// Code Editing with Firepad!\nvar x = 3 + 4;\n');
+          self.firepad.setText('// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}');
         }
       });
     },
