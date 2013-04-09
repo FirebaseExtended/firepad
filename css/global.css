@@ -336,6 +336,7 @@ a img {
   -moz-box-shadow: 0 1px 4px rgba(0,0,0,.065);
   box-shadow: 0 1px 4px rgba(0,0,0,.065);
 }
+
 .sidenav > li > a {
   display: block;
   width: 150px \9;
@@ -382,7 +383,7 @@ a img {
   opacity: 1;
 }
 .sidenav.affix {
-  top: 40px;
+  top: 0;
 }
 .sidenav.affix-bottom {
   position: absolute;
