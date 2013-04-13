@@ -1677,7 +1677,7 @@ firepad.RichTextToolbar = (function(global) {
       utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [bold, italic, underline], { 'class': 'firepad-btn-group'})
-    ], { class: 'firepad-toolbar' });
+    ], { 'class': 'firepad-toolbar' });
 
     return toolbar;
   };
@@ -3240,7 +3240,7 @@ firepad.Firepad = (function(global) {
   };
 
   Firepad.prototype.addPoweredByLogo_ = function() {
-    var poweredBy = utils.elt('a', null, { class: 'powered-by-firepad'} );
+    var poweredBy = utils.elt('a', null, { 'class': 'powered-by-firepad'} );
     poweredBy.setAttribute('href', 'http://www.firepad.io/');
     poweredBy.setAttribute('target', '_blank');
     this.firepadWrapper_.appendChild(poweredBy)
