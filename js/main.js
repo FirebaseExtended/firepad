@@ -1,6 +1,6 @@
 (function() {
-  var ROOMS = 5;
-  var OFFSET = 50;
+  var ROOMS = 1;
+  var OFFSET = 0;
   var firepad = null, codeMirror = null, userList = null;
 
   function joinFirepadForHash() {
@@ -13,12 +13,13 @@
     }
 
     var room = Number(window.location.hash.replace(/#/g, ''));
-    if (!(room >= 1 && room <= OFFSET + ROOMS)) {
+    if (!(room >= 0 && room < OFFSET + ROOMS)) {
       room = OFFSET + Math.floor(Math.random() * ROOMS);
     }
 
     var NAMESPACES = 15;
-    var firebaseUrl = 'https://firebase-firepad' + (room % NAMESPACES) + '.firebaseio.com/' + room;
+    //var firebaseUrl = 'https://firebase-firepad' + (room % NAMESPACES) + '.firebaseio.com/' + room;
+    var firebaseUrl = 'https://firepad.firebaseio.com/home/' + room;
     var firepadRef = new Firebase(firebaseUrl);
 
     codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
