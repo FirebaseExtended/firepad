@@ -18,8 +18,9 @@
   <script src="firepad-userlist.js"></script>
   <link rel="stylesheet" href="firepad-userlist.css" />
 
-  <!-- Helper for generating URLs / Firebase references for example purposes. -->
-  <script src="helpers.js"></script>
+  <!-- Helper for generating URLs / Firebase references for example purposes.
+       Not necessary in production apps. -->
+  <script src="example-helper.js"></script>
 
   <style>
     html { height: 100%; }
@@ -42,8 +43,9 @@
 
   <script>
     //// Initialize Firebase.
-    // var firepadRef = new Firebase('<YOUR FIREBASE URL>');
     var firepadRef = getExampleRef();
+    // TODO: Replace above line with:
+    // var firepadRef = new Firebase('<YOUR FIREBASE URL>');
 
     //// Create CodeMirror (with lineWrapping on).
     var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
