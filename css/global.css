@@ -474,8 +474,8 @@ a img {
 #firepad-container {
   position: relative;
   margin: 20px auto;
-  width: 960px;
-  height: 570px;
+  width: 850px;
+  height: 400px;
   background: white;
   -moz-box-shadow: 0 5px 25px #333;
   -webkit-box-shadow: 0 5px 25px #333;
@@ -484,15 +484,57 @@ a img {
 
 #firepad-container .firepad-userlist {
   position: absolute;
-  height: 570px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  height: auto;
   width: 175px;
 }
 
 #firepad-container .firepad {
   position: absolute;
   left: 175px;
-  width: 785px;
-  height: 570px;
+  right: 0;
+  height: 100%;
+}
+
+#code-container {
+  width: 600px;
+  margin: 22px auto;
+}
+
+#code-heading {
+  text-align: left;
+  font-size: 22px;
+  margin-bottom: 2px;
+}
+
+#code-heading a {
+  color: #f9e701;
+  text-decoration: underline;
+}
+
+#code-container pre {
+  background-color: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  margin: 0;
+  padding: 20px;
+  border-radius: 4px;
+  text-align: left;
+  font-size: 14px;
+  color: #000;
+  line-height: 20px;
+  font-family: monospace;
+}
+
+#code-examples-link {
+  display: block;
+  float: right;
+  margin-top: 5px;
+  font-size: 17px;
+  color: #fff;
 }
 
 #first-bc {
@@ -529,7 +571,7 @@ a img {
   font-weight: bold;
   color: #333;
   padding-bottom: 5px;
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 .use-link:hover {
@@ -630,7 +672,10 @@ a img {
 }
 
 .example-title {
-  margin-top: 50px;
+  margin-top: 60px;
+  font-size: 32px;
+  color: #535353;
+  padding-bottom: 15px;
 }
 
 /************************************************/

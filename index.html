@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 
 <head>
   <title>Firepad, an open source collaborative text editor</title>
@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="examples/firepad.css" />
   <link rel="stylesheet" href="examples/firepad-userlist.css" />
   <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/borland.css" />
   <link href="images/favicon.ico" rel="shortcut icon" />
 </head>
 
@@ -35,8 +36,16 @@
           <div id="firepad-userlist"></div>
           <div id="firepad"></div>
         </div>
-        <div id="private-firepad-link" class="container">
-          <a href="http://demo.firepad.io" target="_blank">Create a private Firepad »</a>
+
+        <div id="code-container">
+          <div id="code-heading">
+            Add Firepad to your app! Use <a href="https://github.com/firebase/firepad/blob/master/examples/richtext.html">this code</a>:
+          </div>
+          <pre><span class="kd">var</span> <span class="nx">firepadDiv</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">&#39;firepad&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">firepadRef</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Firebase</span><span class="p">(</span><span class="s1">&#39;&lt;firebase url...&gt;&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">codeMirror</span> <span class="o">=</span> <span class="nx">CodeMirror</span><span class="p">(</span><span class="nx">firepadDiv</span><span class="p">),</span> <span class="p">{</span> <span class="nx">lineWrapping</span><span class="o">:</span> <span class="kc">true</span> <span class="p">});</span>
+<span class="kd">var</span> <span class="nx">firepad</span> <span class="o">=</span> <span class="nx">Firepad</span><span class="p">.</span><span class="nx">fromCodeMirror</span><span class="p">(</span><span class="nx">firepadRef</span><span class="p">,</span> <span class="nx">codeMirror</span><span class="p">,</span>
+    <span class="p">{</span> <span class="nx">richTextShortcuts</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">richTextToolbar</span><span class="o">:</span> <span class="kc">true</span> <span class="p">});</span></pre>
         </div>
       </div>
     </div>
@@ -69,21 +78,21 @@
           <div class="uses-col clearfix">
             <div class="uses-title">Use Firepad for:</div>
             <div class="clearfix">
-              <div class="use-icon"><img src="images/use_richtext.png"></div>
+              <div class="use-icon"><a href="./examples/#richtext"><img src="images/use_richtext.png"></a></div>
               <div class="use-text">
                 <a href="./examples/#richtext" class="use-link">Rich Text Editing</a>
                 Enable synchronous rich-text document editing.
               </div>
             </div>
             <div class="clearfix">
-              <div class="use-icon"><img src="images/use_coding.png"></div>
+              <div class="use-icon"><a href="./examples/#code"><img src="images/use_coding.png"></a></div>
               <div class="use-text">
                 <a href="./examples/#code" class="use-link">Code Editing</a>
                 Create a collaborative coding experience.
               </div>
             </div>
             <div class="clearfix">
-              <div class="use-icon" style="margin-top: 21px;"><img src="images/use_ellipsis.png"></div>
+              <div class="use-icon" style="margin-top: 21px;"><a href="./examples/"><img src="images/use_ellipsis.png"></a></div>
               <div class="use-text">
                 <a href="./examples/" class="use-link">and more!</a>
                 Extend Firepad through its API or by contributing to the MIT licensed GitHub project.<br>
