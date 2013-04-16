@@ -1367,6 +1367,14 @@ firepad.FirebaseAdapter = (function (global) {
   FirebaseAdapter.prototype.sendOperation = function (operation, cursor) {
     var self = this;
 
+    // If we're not ready yet, do nothing right now, and trigger a retry when we're ready.
+    if (!this.ready_) {
+      this.on('ready', function() {
+        self.trigger('retry');
+      });
+      return;
+    }
+
     // Sanity check that this operation is valid.
     assert(this.document_.targetLength === operation.baseLength, "sendOperation() called with invalid operation.");
 
