@@ -1,10 +1,9 @@
 (function() {
   var ROOMS = 1;
-  var OFFSET = 0;
+  var OFFSET = 1; // Must be at least 1.
   var firepad = null, codeMirror = null, userList = null;
 
   function joinFirepadForHash() {
-    console.log(firepad);
     if (firepad) {
       // Clean up.
       firepad.dispose();
@@ -13,7 +12,7 @@
     }
 
     var room = Number(window.location.hash.replace(/#/g, ''));
-    if (!(room >= 0 && room < OFFSET + ROOMS)) {
+    if (room < 1 || room >= OFFSET + ROOMS) {
       room = OFFSET + Math.floor(Math.random() * ROOMS);
     }
 
