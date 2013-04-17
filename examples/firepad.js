@@ -1518,7 +1518,10 @@ firepad.FirebaseAdapter = (function (global) {
     this.trigger('operation', this.document_);
 
     this.ready_ = true;
-    this.trigger('ready');
+    var self = this;
+    setTimeout(function() {
+      self.trigger('ready');
+    }, 0);
   };
 
   FirebaseAdapter.prototype.handlePendingReceivedRevisions_ = function() {
