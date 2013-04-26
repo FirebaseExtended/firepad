@@ -9,7 +9,12 @@ var examples = {
       var self = this;
       this.firepad.on('ready', function() {
         if (self.firepad.isHistoryEmpty()) {
-          self.firepad.setText('Rich-Text editing with Firepad!');
+          var f = Firepad.Formatting().fontSize(24);
+          self.firepad.setText([
+            Firepad.Text("Rich-text", f.italic(true).color('green')),
+            Firepad.Text(" editing with ", f),
+            Firepad.Text("Firepad!", f.color('red'))
+          ]);
         }
       });
     },
