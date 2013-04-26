@@ -49,7 +49,12 @@
     //// Initialize contents.
     firepad.on('ready', function() {
       if (firepad.isHistoryEmpty()) {
-        firepad.setText('Rich-Text editing with Firepad!');
+        var f = Firepad.Formatting().fontSize(24);
+        firepad.setText([
+          Firepad.Text("Rich-text", f.italic(true).color('green')),
+          Firepad.Text(" editing with ", f),
+          Firepad.Text("Firepad!", f.color('red'))
+        ]);
       }
     });
   </script>

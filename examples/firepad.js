@@ -2454,13 +2454,19 @@ firepad.RichTextCodeMirror = (function () {
     }
   };
 
-  RichTextCodeMirror.prototype.insertText = function(pos, text, attributes, origin) {
+  RichTextCodeMirror.prototype.replaceText = function(start, end, text, attributes, origin) {
     this.changeId_++;
     var newOrigin = RichTextOriginPrefix + this.changeId_;
     this.outstandingChanges_[newOrigin] = { origOrigin: origin, attributes: attributes };
 
     var cm = this.codeMirror;
-    cm.replaceRange(text, cm.posFromIndex(pos), null, newOrigin);
+    var from = cm.posFromIndex(start);
+    var to = typeof end === 'number' ? cm.posFromIndex(end) : null;
+    cm.replaceRange(text, from, to, newOrigin);
+  };
+
+  RichTextCodeMirror.prototype.insertText = function(index, text, attributes, origin) {
+    this.replaceText(index, null, text, attributes, origin);
   };
 
   RichTextCodeMirror.prototype.removeText = function(start, end, origin) {
@@ -3031,12 +3037,104 @@ firepad.RichTextCodeMirrorAdapter = (function () {
 
 var firepad = firepad || { };
 
+firepad.AttributeConstants = {
+  BOLD: 'b',
+  ITALIC: 'i',
+  UNDERLINE: 'u',
+  FONT: 'f',
+  FONT_SIZE: 'fs',
+  COLOR: 'c'
+};
+
+var firepad = firepad || { };
+
+/**
+ * Immutable object to represent text formatting.  Formatting can be modified by chaining method calls.
+ *
+ * @constructor
+ * @type {Function}
+ */
+firepad.Formatting = (function() {
+  var ATTR = firepad.AttributeConstants;
+
+  function Formatting(attributes) {
+    // Allow calling without new.
+    if (!(this instanceof Formatting)) { return new Formatting(attributes); }
+
+    this.attributes = attributes || { };
+  }
+
+  Formatting.prototype.cloneWithNewAttribute_ = function(attribute, value) {
+    var attributes = { };
+
+    // Copy existing.
+    for(var attr in this.attributes) {
+      attributes[attr] = this.attributes[attr];
+    }
+
+    // Add new one.
+    if (value === false) {
+      delete attributes[attribute];
+    } else {
+      attributes[attribute] = value;
+    }
+
+    return new Formatting(attributes);
+  };
+
+  Formatting.prototype.bold = function(val) {
+    return this.cloneWithNewAttribute_(ATTR.BOLD, val);
+  };
+
+  Formatting.prototype.italic = function(val) {
+    return this.cloneWithNewAttribute_(ATTR.ITALIC, val);
+  };
+
+  Formatting.prototype.underline = function(val) {
+    return this.cloneWithNewAttribute_(ATTR.UNDERLINE, val);
+  };
+
+  Formatting.prototype.font = function(font) {
+    return this.cloneWithNewAttribute_(ATTR.FONT, font);
+  };
+
+  Formatting.prototype.fontSize = function(size) {
+    return this.cloneWithNewAttribute_(ATTR.FONT_SIZE, size);
+  };
+
+  Formatting.prototype.color = function(color) {
+    return this.cloneWithNewAttribute_(ATTR.COLOR, color);
+  };
+
+  return Formatting;
+})();
+var firepad = firepad || { };
+
+/**
+ * Object to represent Formatted text.
+ *
+ * @type {Function}
+ */
+firepad.Text = (function() {
+  function Text(text, formatting) {
+    // Allow calling without new.
+    if (!(this instanceof Text)) { return new Text(text, formatting); }
+
+    this.text = text;
+    this.formatting = formatting || firepad.Formatting();
+  }
+
+  return Text;
+})();
+var firepad = firepad || { };
+
 firepad.Firepad = (function(global) {
   var RichTextCodeMirrorAdapter = firepad.RichTextCodeMirrorAdapter;
   var RichTextCodeMirror = firepad.RichTextCodeMirror;
   var RichTextToolbar = firepad.RichTextToolbar;
   var FirebaseAdapter = firepad.FirebaseAdapter;
   var EditorClient = firepad.EditorClient;
+  var AttributeConstants = firepad.AttributeConstants;
   var utils = firepad.utils;
   var CodeMirror = global.CodeMirror;
 
@@ -3136,14 +3234,35 @@ firepad.Firepad = (function(global) {
     return this.codeMirror_.getValue();
   };
 
-  Firepad.prototype.setText = function(text) {
+  Firepad.prototype.setText = function(textPieces) {
     this.assertReady_('setText');
-    return this.codeMirror_.setValue(text);
+    // Wrap it in an array if it's not already.
+    if(Object.prototype.toString.call(textPieces) !== '[object Array]') {
+      textPieces = [textPieces];
+    }
+
+    // TODO: Batch this all into a single operation.
+    this.codeMirror_.setValue("");
+    var end = 0;
+    for(var i = 0; i < textPieces.length; i++) {
+      var text, attributes;
+      if (textPieces[i] instanceof firepad.Text) {
+        text = textPieces[i].text;
+        attributes = textPieces[i].formatting.attributes;
+      } else {
+        text = textPieces[i];
+        attributes = null;
+      }
+
+      this.richTextCodeMirror_.insertText(end, text, attributes);
+      end += text.length;
+    }
   };
 
   Firepad.prototype.getHtml = function() {
     var doc = this.firebaseAdapter_.getDocument();
     var html = '';
+    var c = AttributeConstants;
     for(var i = 0; i < doc.ops.length; i++) {
       var op = doc.ops[i], attrs = op.attributes;
       utils.assert(op.isInsert());
@@ -3151,16 +3270,16 @@ firepad.Firepad = (function(global) {
       for(var attr in attrs) {
         var value = attrs[attr];
         var start, end;
-        if (attr === 'b' || attr === 'i' || attr === 'u') {
+        if (attr === c.BOLD || attr === c.ITALIC || attr === c.UNDERLINE) {
           utils.assert(value === true);
           start = end = attr;
-        } else if (attr === 'fs') {
+        } else if (attr === c.FONT_SIZE) {
           start = 'font size="' + value + '"';
           end = 'font';
-        } else if (attr === 'f') {
+        } else if (attr === c.FONT) {
           start = 'font face="' + value + '"';
           end = 'font';
-        } else if (attr === 'c') {
+        } else if (attr === c.COLOR) {
           start = 'font color="' + value + '"';
           end = 'font';
         } else {
@@ -3195,32 +3314,32 @@ firepad.Firepad = (function(global) {
   };
 
   Firepad.prototype.bold = function() {
-    this.richTextCodeMirror_.toggleAttribute('b');
+    this.richTextCodeMirror_.toggleAttribute(AttributeConstants.BOLD);
     this.codeMirror_.focus();
   };
 
   Firepad.prototype.italic = function() {
-    this.richTextCodeMirror_.toggleAttribute('i');
+    this.richTextCodeMirror_.toggleAttribute(AttributeConstants.ITALIC);
     this.codeMirror_.focus();
   };
 
   Firepad.prototype.underline = function() {
-    this.richTextCodeMirror_.toggleAttribute('u');
+    this.richTextCodeMirror_.toggleAttribute(AttributeConstants.UNDERLINE);
     this.codeMirror_.focus();
   };
 
   Firepad.prototype.fontSize = function(size) {
-    this.richTextCodeMirror_.setAttribute('fs', size);
+    this.richTextCodeMirror_.setAttribute(AttributeConstants.FONT_SIZE, size);
     this.codeMirror_.focus();
   };
 
   Firepad.prototype.font = function(font) {
-    this.richTextCodeMirror_.setAttribute('f', font);
+    this.richTextCodeMirror_.setAttribute(AttributeConstants.FONT, font);
     this.codeMirror_.focus();
   };
 
   Firepad.prototype.color = function(color) {
-    this.richTextCodeMirror_.setAttribute('c', color);
+    this.richTextCodeMirror_.setAttribute(AttributeConstants.COLOR, color);
     this.codeMirror_.focus();
   };
 
@@ -3309,4 +3428,7 @@ firepad.Firepad = (function(global) {
   return Firepad;
 })(this);
 
+// Export Text class.
+firepad.Firepad.Formatting = firepad.Formatting;
+firepad.Firepad.Text = firepad.Text;
 return firepad.Firepad; })();

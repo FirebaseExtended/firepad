@@ -30,6 +30,9 @@ module.exports = function (grunt) {
           /*"lib/codemirror-adapter.js",*/
           "lib/rich-text-codemirror.js",
           "lib/rich-text-codemirror-adapter.js",
+          "lib/attribute-constants.js",
+          "lib/formatting.js",
+          "lib/text.js",
           "lib/firepad.js"
         ],
         "dest": "build/firepad.js"
