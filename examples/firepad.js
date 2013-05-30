@@ -2710,7 +2710,7 @@ firepad.RichTextCodeMirror = (function () {
   RichTextCodeMirror.prototype.markLineSentinelCharactersForChangedLines_ = function(startLine, endLine) {
     // Back up to first list item.
     if (startLine < Number.MAX_VALUE) {
-      while(startLine > 0 && this.lineIsListItem_(startLine-1)) {
+      while(startLine > 0 && this.lineIsListItemOrIndented_(startLine-1)) {
         startLine--;
       }
     }
@@ -2718,12 +2718,12 @@ firepad.RichTextCodeMirror = (function () {
     // Advance to last list item.
     if (endLine > -1) {
       var lineCount = this.codeMirror.lineCount();
-      while (endLine + 1 < lineCount && this.lineIsListItem_(endLine+1)) {
+      while (endLine + 1 < lineCount && this.lineIsListItemOrIndented_(endLine+1)) {
         endLine++;
       }
     }
 
-    var listNumber = 1;
+    var listNumber = [1, 1, 1, 1, 1, 1, 1]; // keeps track of the list number at each indent level.
     var cm = this.codeMirror;
     for(var line = startLine; line <= endLine; line++) {
       var text = cm.getLine(line);
@@ -2740,14 +2740,20 @@ firepad.RichTextCodeMirror = (function () {
         // Create new mark with appropriate contents.
         var attributes = this.getLineAttributes_(line);
         var element = null;
-        var listType = attributes[firepad.AttributeConstants.LIST_TYPE]
+        var listType = attributes[firepad.AttributeConstants.LIST_TYPE];
+        var indent = attributes[firepad.AttributeConstants.LINE_INDENT] || 0;
+        if (listType && indent === 0) { indent = 1; }
+        if (indent >= listNumber.length) indent = listNumber.length - 1; // we don't support deeper indents.
         if (listType === 'o') {
-          element = this.makeOrderedListElement_(listNumber);
-          listNumber++;
+          element = this.makeOrderedListElement_(listNumber[indent]);
+          listNumber[indent]++;
         } else if (listType === 'u') {
           element = this.makeUnorderedListElement_();
-        } else {
-          listNumber = 1;
+        }
+
+        // Reset deeper indents.
+        for(i = indent+1; i < listNumber.length; i++) {
+          listNumber[i] = 1;
         }
 
         var markerOptions = { inclusiveLeft: true, collapsed: true };
@@ -2757,7 +2763,10 @@ firepad.RichTextCodeMirror = (function () {
 
         cm.markText({line: line, ch: 0 }, { line: line, ch: 1}, markerOptions);
       } else {
-        listNumber = 1;
+        // Reset all indents.
+        for(i = 0; i < listNumber.length; i++) {
+          listNumber[i] = 1;
+        }
       }
     }
   };
@@ -2774,8 +2783,10 @@ firepad.RichTextCodeMirror = (function () {
     });
   };
 
-  RichTextCodeMirror.prototype.lineIsListItem_ = function(lineNum) {
-    return (this.getLineAttributes_(lineNum)[firepad.AttributeConstants.LIST_TYPE] || false) !== false;
+  RichTextCodeMirror.prototype.lineIsListItemOrIndented_ = function(lineNum) {
+    var attrs = this.getLineAttributes_(lineNum);
+    return ((attrs[firepad.AttributeConstants.LIST_TYPE] || false) !== false) ||
+           ((attrs[firepad.AttributeConstants.LINE_INDENT] || 0) !== 0);
   };
 
   RichTextCodeMirror.prototype.onCursorActivity_ = function() {
@@ -2855,6 +2866,7 @@ firepad.RichTextCodeMirror = (function () {
         // They hit enter on a line with just a list heading.  Just remove the list heading.
         var attributes = {};
         attributes[firepad.AttributeConstants.LIST_TYPE] = false;
+        attributes[firepad.AttributeConstants.LINE_INDENT] = false;
         this.updateLineAttributes(cursorLine, cursorLine, attributes);
       } else {
         cm.replaceSelection('\n', 'end', '+input');
@@ -2877,6 +2889,7 @@ firepad.RichTextCodeMirror = (function () {
       // They hit backspace at the beginning of a line with a list heading.  Just remove the list heading.
       var attributes = {};
       attributes[firepad.AttributeConstants.LIST_TYPE] = false;
+      attributes[firepad.AttributeConstants.LINE_INDENT] = false;
       this.updateLineAttributes(cursorPos.line, cursorPos.line, attributes);
     } else {
       cm.deleteH(-1, "char");
@@ -2896,6 +2909,39 @@ firepad.RichTextCodeMirror = (function () {
     } else {
       cm.deleteH(1, "char");
     }
+  };
+
+  RichTextCodeMirror.prototype.indent = function() {
+    var currentAttributes = this.getCurrentLineAttributes_();
+    var indent = currentAttributes[firepad.AttributeConstants.LINE_INDENT];
+    var listType = currentAttributes[firepad.AttributeConstants.LIST_TYPE];
+    if (indent) {
+      indent++;
+    } else if (listType) {
+      indent = 2; // it's already implicity indented 1 level.
+    } else {
+      indent = 1;
+    }
+
+    this.setLineAttribute(firepad.AttributeConstants.LINE_INDENT, indent);
+  };
+
+  RichTextCodeMirror.prototype.unindent = function() {
+    var currentAttributes = this.getCurrentLineAttributes_();
+    var indent = currentAttributes[firepad.AttributeConstants.LINE_INDENT];
+    var listType = currentAttributes[firepad.AttributeConstants.LIST_TYPE];
+    if (indent) {
+      indent--;
+    } else if (listType) {
+      indent = 1; // can't unindent a list beyond 1.
+    } else {
+      indent = 0;
+    }
+    if (indent <= 0) {
+      indent = false;
+    }
+
+    this.setLineAttribute(firepad.AttributeConstants.LINE_INDENT, indent);
   };
 
   /**
@@ -3322,6 +3368,7 @@ firepad.AttributeConstants = {
 
 // Line Attributes
   LINE_SENTINEL: 'l',
+  LINE_INDENT: 'li',
   LIST_TYPE: 'lt'
 };
 
@@ -3645,6 +3692,14 @@ firepad.Firepad = (function(global) {
     this.richTextCodeMirror_.deleteRight();
   };
 
+  Firepad.prototype.indent = function() {
+    this.richTextCodeMirror_.indent();
+  };
+
+  Firepad.prototype.unindent = function() {
+    this.richTextCodeMirror_.unindent();
+  };
+
   Firepad.prototype.getOption = function(option, def) {
     return (option in this.options_) ? this.options_[option] : def;
   };
@@ -3697,6 +3752,8 @@ firepad.Firepad = (function(global) {
       "Enter": binder(this.newline),
       "Delete": binder(this.deleteRight),
       "Backspace": binder(this.deleteLeft),
+      "Tab": binder(this.indent),
+      "Shift-Tab": binder(this.unindent),
       fallthrough: ['default']
     };
   };

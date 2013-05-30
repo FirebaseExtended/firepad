@@ -61,13 +61,16 @@
 .firepad-c-grey { color: grey; }
 
 /** Line Styles */
-pre.firepad-lt-o {
+pre.firepad-lt-o, pre.firepad-lt-u {
   margin-left: 30px;
 }
 
-pre.firepad-lt-u {
-  margin-left: 30px;
-}
+pre.firepad-li-1 { margin-left: 30px; }
+pre.firepad-li-2 { margin-left: 60px; }
+pre.firepad-li-3 { margin-left: 90px; }
+pre.firepad-li-4 { margin-left: 120px; }
+pre.firepad-li-5 { margin-left: 150px; }
+pre.firepad-li-6 { margin-left: 180px; }
 
 .powered-by-firepad {
   position: absolute;
