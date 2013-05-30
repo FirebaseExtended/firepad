@@ -2413,43 +2413,34 @@ firepad.RichTextCodeMirror = (function () {
       }
       this.currentAttributes_ = attrs;
     } else {
-      var attributes = { };
-      attributes[attribute] = value;
-      this.updateTextAttributes(cm.indexFromPos(cm.getCursor('start')), cm.indexFromPos(cm.getCursor('end')), attributes);
+      this.updateTextAttributes(cm.indexFromPos(cm.getCursor('start')), cm.indexFromPos(cm.getCursor('end')),
+        function(attributes) {
+          if (value === false) {
+            delete attributes[attribute];
+          } else {
+            attributes[attribute] = value;
+          }
+        });
+
       this.updateCurrentAttributes_();
     }
   };
 
-  RichTextCodeMirror.prototype.updateTextAttributes = function(start, end, appliedAttributes, origin) {
-    if (emptyAttributes(appliedAttributes)) {
-      return;
-    }
-
+  RichTextCodeMirror.prototype.updateTextAttributes = function(start, end, updateFn, origin) {
     var newChangeList = { }, newChange = newChangeList;
-    var pos = start;
+    var pos = start, self = this;
     this.annotationList_.updateSpan(new Span(start, end - start), function(annotation, length) {
       var attributes = { };
       for(var attr in annotation.attributes) {
         attributes[attr] = annotation.attributes[attr];
       }
 
+      updateFn(attributes);
+
       // changedAttributes will be the attributes we changed, with their new values.
       // changedAttributesInverse will be the attributes we changed, with their old values.
       var changedAttributes = { }, changedAttributesInverse = { };
-      for (attr in appliedAttributes) {
-        var value = appliedAttributes[attr];
-        if (value === false) {
-          if (attr in attributes) {
-            changedAttributesInverse[attr] = attributes[attr];
-            changedAttributes[attr] = false;
-            delete attributes[attr];
-          }
-        } else if (attributes[attr] !== value) {
-          changedAttributesInverse[attr] = attributes[attr] || false;
-          changedAttributes[attr] = value;
-          attributes[attr] = value;
-        }
-      }
+      self.computeChangedAttributes_(annotation.attributes, attributes, changedAttributes, changedAttributesInverse);
       if (!emptyAttributes(changedAttributes)) {
         newChange.next = { start: pos, end: pos + length, attributes: changedAttributes, attributesInverse: changedAttributesInverse, origin: origin };
         newChange = newChange.next;
@@ -2461,6 +2452,28 @@ firepad.RichTextCodeMirror = (function () {
 
     if (newChangeList.next) {
       this.trigger('attributesChange', this, newChangeList.next);
+    }
+  };
+
+  RichTextCodeMirror.prototype.computeChangedAttributes_ = function(oldAttrs, newAttrs, changed, inverseChanged) {
+    var attrs = { }, attr;
+    for(attr in oldAttrs) { attrs[attr] = true; }
+    for(attr in newAttrs) { attrs[attr] = true; }
+
+    for (attr in attrs) {
+      if (!(attr in newAttrs)) {
+        // it was removed.
+        changed[attr] = false;
+        inverseChanged[attr] = oldAttrs[attr];
+      } else if (!(attr in oldAttrs)) {
+        // it was added.
+        changed[attr] = newAttrs[attr];
+        inverseChanged[attr] = false;
+      } else if (oldAttrs[attr] !== newAttrs[attr]) {
+        // it was changed.
+        changed[attr] = newAttrs[attr];
+        inverseChanged[attr] = oldAttrs[attr];
+      }
     }
   };
 
@@ -2486,20 +2499,28 @@ firepad.RichTextCodeMirror = (function () {
 
     var attributes = {};
     attributes[attribute] = value;
-    this.updateLineAttributes(startLine, endLine, attributes);
+    this.updateLineAttributes(startLine, endLine, function(attributes) {
+      if (value === false) {
+        delete attributes[attribute];
+      } else {
+        attributes[attribute] = value;
+      }
+    });
   };
 
-  RichTextCodeMirror.prototype.updateLineAttributes = function(startLine, endLine, attributes) {
+  RichTextCodeMirror.prototype.updateLineAttributes = function(startLine, endLine, updateFn) {
     // TODO: Batch this into a single operation somehow.
     for(var line = startLine; line <= endLine; line++) {
       var text = this.codeMirror.getLine(line);
       var lineStartIndex = this.codeMirror.indexFromPos({line: line, ch: 0});
       // Create line sentinel character if necessary.
       if (text[0] !== LineSentinelCharacter) {
+        var attributes = { };
         attributes[firepad.AttributeConstants.LINE_SENTINEL] = true;
+        updateFn(attributes);
         this.insertText(lineStartIndex, LineSentinelCharacter, attributes);
       } else {
-        this.updateTextAttributes(lineStartIndex, lineStartIndex + 1, attributes);
+        this.updateTextAttributes(lineStartIndex, lineStartIndex + 1, updateFn);
       }
     }
   };
@@ -3128,7 +3149,17 @@ firepad.RichTextCodeMirrorAdapter = (function () {
       for (var i = 0, l = ops.length; i < l; i++) {
         var op = ops[i];
         if (op.isRetain()) {
-          rtcm.updateTextAttributes(index, index + op.chars, op.attributes, 'RTCMADAPTER');
+          if (!emptyAttributes(op.attributes)) {
+            rtcm.updateTextAttributes(index, index + op.chars, function(attributes) {
+              for(var attr in op.attributes) {
+                if (op.attributes[attr] === false) {
+                  delete attributes[attr];
+                } else {
+                  attributes[attr] = op.attributes[attr];
+                }
+              }
+            }, 'RTCMADAPTER');
+          }
           index += op.chars;
         } else if (op.isInsert()) {
           rtcm.insertText(index, op.text, op.attributes, 'RTCMADAPTER');
