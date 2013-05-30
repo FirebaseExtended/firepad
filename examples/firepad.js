@@ -2775,6 +2775,7 @@ firepad.RichTextCodeMirror = (function () {
           listNumber[indent]++;
         } else if (listType === 'u') {
           element = this.makeUnorderedListElement_();
+          listNumber[indent] = 1;
         }
 
         // Reset deeper indents.
@@ -2968,6 +2969,10 @@ firepad.RichTextCodeMirror = (function () {
         }
       }
     });
+  };
+
+  RichTextCodeMirror.prototype.getText = function() {
+    return this.codeMirror.getValue().replace(new RegExp(LineSentinelCharacter, "g"), '');
   };
 
   /**
@@ -3594,7 +3599,7 @@ firepad.Firepad = (function(global) {
 
   Firepad.prototype.getText = function() {
     this.assertReady_('getText');
-    return this.codeMirror_.getValue();
+    return this.richTextCodeMirror_.getText();
   };
 
   Firepad.prototype.setText = function(textPieces) {
