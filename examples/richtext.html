@@ -49,11 +49,39 @@
     //// Initialize contents.
     firepad.on('ready', function() {
       if (firepad.isHistoryEmpty()) {
-        var f = Firepad.Formatting().fontSize(24);
+        var f = Firepad.Formatting().fontSize(18);
+        var lf = Firepad.LineFormatting();
         firepad.setText([
-          Firepad.Text("Rich-text", f.italic(true).color('green')),
-          Firepad.Text(" editing with ", f),
-          Firepad.Text("Firepad!", f.color('red'))
+          Firepad.Line([
+            Firepad.Text("Rich-text editing with ", f.fontSize(24)),
+            Firepad.Text("Firepad!", f.fontSize(24).color('red'))
+          ]),
+          Firepad.Line(),
+          Firepad.Line("Supports:"),
+          Firepad.Line([
+            "Different ",
+            Firepad.Text("fonts, ", f.font("impact")),
+            Firepad.Text("sizes, ", f.fontSize(24)),
+            Firepad.Text("and colors.", f.color('blue')),
+          ], lf.unorderedListItem(true)),
+          Firepad.Line([
+            Firepad.Text("Bold, ", f.bold(true)),
+            Firepad.Text("Italic, ", f.italic(true)),
+            Firepad.Text("and underline", f.underline(true)),
+            "."
+          ], lf.unorderedListItem(true)),
+          Firepad.Line([
+            "Lists."
+          ], lf.unorderedListItem(true)),
+          Firepad.Line([
+            "One."
+          ], lf.orderedListItem(true).indent(2)),
+          Firepad.Line([
+            "Two."
+          ], lf.orderedListItem(true).indent(2)),
+          Firepad.Line("Undo / redo", lf.unorderedListItem(true)),
+          Firepad.Line("Cursor / selection synchronization.", lf.unorderedListItem(true)),
+          Firepad.Line("And it's all fully collaborative!", lf.unorderedListItem(true))
         ]);
       }
     });

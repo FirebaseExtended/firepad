@@ -2346,16 +2346,29 @@ firepad.EditorClient = (function () {
 
 var firepad = firepad || { };
 
+firepad.AttributeConstants = {
+  BOLD: 'b',
+  ITALIC: 'i',
+  UNDERLINE: 'u',
+  FONT: 'f',
+  FONT_SIZE: 'fs',
+  COLOR: 'c',
+
+// Line Attributes
+  LINE_SENTINEL: 'l',
+  LINE_INDENT: 'li',
+  LIST_TYPE: 'lt'
+};
+
+var firepad = firepad || { };
+
 firepad.RichTextCodeMirror = (function () {
   var AnnotationList = firepad.AnnotationList;
   var Span = firepad.Span;
   var utils = firepad.utils;
+  var ATTR = firepad.AttributeConstants;
   var RichTextClassPrefixDefault = 'cmrt-';
   var RichTextOriginPrefix = 'cmrt-';
-
-  // A special character we insert at the beginning of lines so we can attach attributes to it to represent
-  // "line attributes."  E000 is from the unicode "private use" range.
-  var LineSentinelCharacter = '\uE000';
 
   function RichTextCodeMirror(codeMirror, options) {
     this.codeMirror = codeMirror;
@@ -2379,6 +2392,11 @@ firepad.RichTextCodeMirror = (function () {
     this.outstandingChanges_ = { };
   }
   utils.makeEventEmitter(RichTextCodeMirror, ['change', 'attributesChange']);
+
+  // A special character we insert at the beginning of lines so we can attach attributes to it to represent
+  // "line attributes."  E000 is from the unicode "private use" range.
+  var LineSentinelCharacter = '\uE000';
+  RichTextCodeMirror.LineSentinelCharacter = LineSentinelCharacter;
 
   RichTextCodeMirror.prototype.detach = function() {
     this.codeMirror.off('change', this.onCodeMirrorChange_);
@@ -2521,7 +2539,7 @@ firepad.RichTextCodeMirror = (function () {
       // Create line sentinel character if necessary.
       if (text[0] !== LineSentinelCharacter) {
         var attributes = { };
-        attributes[firepad.AttributeConstants.LINE_SENTINEL] = true;
+        attributes[ATTR.LINE_SENTINEL] = true;
         updateFn(attributes);
         this.insertText(lineStartIndex, LineSentinelCharacter, attributes);
       } else {
@@ -2585,7 +2603,7 @@ firepad.RichTextCodeMirror = (function () {
 
     for(var i = 0; i < oldNodes.length; i++) {
       var attributes = oldNodes[i].annotation.attributes;
-      if (firepad.AttributeConstants.LINE_SENTINEL in attributes) {
+      if (ATTR.LINE_SENTINEL in attributes) {
         linesToReMark[this.codeMirror.posFromIndex(oldNodes[i].pos).line] = true;
       }
       marker = oldNodes[i].getAttachedObject();
@@ -2599,7 +2617,7 @@ firepad.RichTextCodeMirror = (function () {
       var className='', forLine = false;
       for(var attr in annotation.attributes) {
         var val = annotation.attributes[attr];
-        if (attr === firepad.AttributeConstants.LINE_SENTINEL) {
+        if (attr === ATTR.LINE_SENTINEL) {
           firepad.utils.assert(val === true, "LINE_SENTINEL attribute should be true if it exists.");
           forLine = true;
         } else {
@@ -2766,8 +2784,8 @@ firepad.RichTextCodeMirror = (function () {
         // Create new mark with appropriate contents.
         var attributes = this.getLineAttributes_(line);
         var element = null;
-        var listType = attributes[firepad.AttributeConstants.LIST_TYPE];
-        var indent = attributes[firepad.AttributeConstants.LINE_INDENT] || 0;
+        var listType = attributes[ATTR.LIST_TYPE];
+        var indent = attributes[ATTR.LINE_INDENT] || 0;
         if (listType && indent === 0) { indent = 1; }
         if (indent >= listNumber.length) indent = listNumber.length - 1; // we don't support deeper indents.
         if (listType === 'o') {
@@ -2812,8 +2830,8 @@ firepad.RichTextCodeMirror = (function () {
 
   RichTextCodeMirror.prototype.lineIsListItemOrIndented_ = function(lineNum) {
     var attrs = this.getLineAttributes_(lineNum);
-    return ((attrs[firepad.AttributeConstants.LIST_TYPE] || false) !== false) ||
-           ((attrs[firepad.AttributeConstants.LINE_INDENT] || 0) !== 0);
+    return ((attrs[ATTR.LIST_TYPE] || false) !== false) ||
+           ((attrs[ATTR.LINE_INDENT] || 0) !== 0);
   };
 
   RichTextCodeMirror.prototype.onCursorActivity_ = function() {
@@ -2887,13 +2905,13 @@ firepad.RichTextCodeMirror = (function () {
     } else {
       var cursorLine = cm.getCursor('head').line;
       var lineAttributes = this.getLineAttributes_(cursorLine);
-      var listType = lineAttributes[firepad.AttributeConstants.LIST_TYPE];
+      var listType = lineAttributes[ATTR.LIST_TYPE];
 
       if (listType && cm.getLine(cursorLine).length === 1) {
         // They hit enter on a line with just a list heading.  Just remove the list heading.
         var attributes = {};
-        attributes[firepad.AttributeConstants.LIST_TYPE] = false;
-        attributes[firepad.AttributeConstants.LINE_INDENT] = false;
+        attributes[ATTR.LIST_TYPE] = false;
+        attributes[ATTR.LINE_INDENT] = false;
         this.updateLineAttributes(cursorLine, cursorLine, attributes);
       } else {
         cm.replaceSelection('\n', 'end', '+input');
@@ -2910,13 +2928,13 @@ firepad.RichTextCodeMirror = (function () {
     var cm = this.codeMirror;
     var cursorPos = cm.getCursor('head');
     var lineAttributes = this.getLineAttributes_(cursorPos.line);
-    var listType = lineAttributes[firepad.AttributeConstants.LIST_TYPE];
+    var listType = lineAttributes[ATTR.LIST_TYPE];
 
     if (this.emptySelection_() && listType && cursorPos.ch === 1) {
       // They hit backspace at the beginning of a line with a list heading.  Just remove the list heading.
       var attributes = {};
-      attributes[firepad.AttributeConstants.LIST_TYPE] = false;
-      attributes[firepad.AttributeConstants.LINE_INDENT] = false;
+      attributes[ATTR.LIST_TYPE] = false;
+      attributes[ATTR.LINE_INDENT] = false;
       this.updateLineAttributes(cursorPos.line, cursorPos.line, attributes);
     } else {
       cm.deleteH(-1, "char");
@@ -2940,32 +2958,32 @@ firepad.RichTextCodeMirror = (function () {
 
   RichTextCodeMirror.prototype.indent = function() {
     this.updateLineAttributesForSelection(function(attributes) {
-      var indent = attributes[firepad.AttributeConstants.LINE_INDENT];
-      var listType = attributes[firepad.AttributeConstants.LIST_TYPE];
+      var indent = attributes[ATTR.LINE_INDENT];
+      var listType = attributes[ATTR.LIST_TYPE];
 
       if (indent && indent < 6) {
-        attributes[firepad.AttributeConstants.LINE_INDENT]++;
+        attributes[ATTR.LINE_INDENT]++;
       } else if (listType) {
         // lists are implicitly already indented once.
-        attributes[firepad.AttributeConstants.LINE_INDENT] = 2;
+        attributes[ATTR.LINE_INDENT] = 2;
       } else {
-        attributes[firepad.AttributeConstants.LINE_INDENT] = 1;
+        attributes[ATTR.LINE_INDENT] = 1;
       }
     });
   };
 
   RichTextCodeMirror.prototype.unindent = function() {
     this.updateLineAttributesForSelection(function(attributes) {
-      var indent = attributes[firepad.AttributeConstants.LINE_INDENT];
-      var listType = attributes[firepad.AttributeConstants.LIST_TYPE];
+      var indent = attributes[ATTR.LINE_INDENT];
+      var listType = attributes[ATTR.LIST_TYPE];
 
       if (indent && indent > 1) {
-        attributes[firepad.AttributeConstants.LINE_INDENT] = indent - 1;
+        attributes[ATTR.LINE_INDENT] = indent - 1;
       } else {
-        attributes[firepad.AttributeConstants.LINE_INDENT] = false;
+        attributes[ATTR.LINE_INDENT] = false;
         if (listType) {
           // Remove list.
-          attributes[firepad.AttributeConstants.LIST_TYPE] = false;
+          attributes[ATTR.LIST_TYPE] = false;
         }
       }
     });
@@ -3399,22 +3417,6 @@ firepad.RichTextCodeMirrorAdapter = (function () {
 
 var firepad = firepad || { };
 
-firepad.AttributeConstants = {
-  BOLD: 'b',
-  ITALIC: 'i',
-  UNDERLINE: 'u',
-  FONT: 'f',
-  FONT_SIZE: 'fs',
-  COLOR: 'c',
-
-// Line Attributes
-  LINE_SENTINEL: 'l',
-  LINE_INDENT: 'li',
-  LIST_TYPE: 'lt'
-};
-
-var firepad = firepad || { };
-
 /**
  * Immutable object to represent text formatting.  Formatting can be modified by chaining method calls.
  *
@@ -3493,6 +3495,85 @@ firepad.Text = (function() {
   }
 
   return Text;
+})();
+var firepad = firepad || { };
+
+/**
+ * Immutable object to represent line formatting.  Formatting can be modified by chaining method calls.
+ *
+ * @constructor
+ * @type {Function}
+ */
+firepad.LineFormatting = (function() {
+  var ATTR = firepad.AttributeConstants;
+
+  function LineFormatting(attributes) {
+    // Allow calling without new.
+    if (!(this instanceof LineFormatting)) { return new LineFormatting(attributes); }
+
+    this.attributes = attributes || { };
+    this.attributes[ATTR.LINE_SENTINEL] = true;
+  }
+
+  LineFormatting.prototype.cloneWithNewAttribute_ = function(attribute, value) {
+    var attributes = { };
+
+    // Copy existing.
+    for(var attr in this.attributes) {
+      attributes[attr] = this.attributes[attr];
+    }
+
+    // Add new one.
+    if (value === false) {
+      delete attributes[attribute];
+    } else {
+      attributes[attribute] = value;
+    }
+
+    return new LineFormatting(attributes);
+  };
+
+  LineFormatting.prototype.indent = function(indent) {
+    return this.cloneWithNewAttribute_(ATTR.LINE_INDENT, indent);
+  };
+
+  LineFormatting.prototype.orderedListItem = function(val) {
+    var listType = (val === true) ? 'o': false;
+    return this.cloneWithNewAttribute_(ATTR.LIST_TYPE, listType);
+  };
+
+  LineFormatting.prototype.unorderedListItem = function(val) {
+    var listType = (val === true) ? 'u': false;
+    return this.cloneWithNewAttribute_(ATTR.LIST_TYPE, listType);
+  };
+
+  return LineFormatting;
+})();
+var firepad = firepad || { };
+
+/**
+ * Object to represent Formatted line.
+ *
+ * @type {Function}
+ */
+firepad.Line = (function() {
+  function Line(textPieces, formatting) {
+    // Allow calling without new.
+    if (!(this instanceof Line)) { return new Line(textPieces, formatting); }
+
+    if(Object.prototype.toString.call(textPieces) !== '[object Array]') {
+      if (typeof textPieces === 'undefined') {
+        textPieces = [];
+      } else {
+        textPieces = [textPieces];
+      }
+    }
+
+    this.textPieces = textPieces;
+    this.formatting = formatting || firepad.LineFormatting();
+  }
+
+  return Line;
 })();
 var firepad = firepad || { };
 
@@ -3611,19 +3692,44 @@ firepad.Firepad = (function(global) {
 
     // TODO: Batch this all into a single operation.
     this.codeMirror_.setValue("");
-    var end = 0;
-    for(var i = 0; i < textPieces.length; i++) {
-      var text, attributes;
-      if (textPieces[i] instanceof firepad.Text) {
-        text = textPieces[i].text;
-        attributes = textPieces[i].formatting.attributes;
+    var end = 0, atNewLine = true, self = this;
+
+    function insert(string, attributes) {
+      self.richTextCodeMirror_.insertText(end, string, attributes || null);
+      end += string.length;
+      atNewLine = string[string.length-1] === '\n';
+    }
+
+    function insertTextOrString(x) {
+      if (x instanceof firepad.Text) {
+        insert(x.text, x.formatting.attributes);
+      } else if (typeof x === 'string') {
+        insert(x);
       } else {
-        text = textPieces[i];
-        attributes = null;
+        console.error("Can't insert into firepad", x);
+        throw "Can't insert into firepad: " + x;
+      }
+    }
+
+    function insertLine(line) {
+      if (!atNewLine)
+        insert('\n');
+
+      insert(RichTextCodeMirror.LineSentinelCharacter, line.formatting.attributes);
+
+      for(var i = 0; i < line.textPieces.length; i++) {
+        insertTextOrString(line.textPieces[i]);
       }
 
-      this.richTextCodeMirror_.insertText(end, text, attributes);
-      end += text.length;
+      insert('\n');
+    }
+
+    for(var i = 0; i < textPieces.length; i++) {
+      if (textPieces[i] instanceof firepad.Line) {
+        insertLine(textPieces[i]);
+      } else {
+        insertTextOrString(textPieces[i]);
+      }
     }
   };
 
@@ -3838,4 +3944,9 @@ firepad.Firepad = (function(global) {
 // Export Text class.
 firepad.Firepad.Formatting = firepad.Formatting;
 firepad.Firepad.Text = firepad.Text;
+firepad.Firepad.LineFormatting = firepad.LineFormatting;
+firepad.Firepad.Line = firepad.Line;
+
+firepad.Firepad.TextOperation = firepad.TextOperation;
+
 return firepad.Firepad; })();
