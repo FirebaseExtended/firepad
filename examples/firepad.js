@@ -2933,12 +2933,19 @@ firepad.RichTextCodeMirror = (function () {
     var cursorPos = cm.getCursor('head');
     var lineAttributes = this.getLineAttributes_(cursorPos.line);
     var listType = lineAttributes[ATTR.LIST_TYPE];
+    var indent = lineAttributes[ATTR.LINE_INDENT];
 
-    if (this.emptySelection_() && listType && cursorPos.ch === 1) {
+    var backspaceAtStartOfLine = this.emptySelection_() && cursorPos.ch === 1;
+
+    if (backspaceAtStartOfLine && listType) {
       // They hit backspace at the beginning of a line with a list heading.  Just remove the list heading.
       this.updateLineAttributes(cursorPos.line, cursorPos.line, function(attributes) {
         delete attributes[ATTR.LIST_TYPE];
         delete attributes[ATTR.LINE_INDENT];
+      });
+    } else if (backspaceAtStartOfLine && indent && indent > 0) {
+      this.updateLineAttributes(cursorPos.line, cursorPos.line, function(attributes) {
+        attributes[ATTR.LINE_INDENT]--;
       });
     } else {
       cm.deleteH(-1, "char");
