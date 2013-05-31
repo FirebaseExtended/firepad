@@ -2909,16 +2909,20 @@ firepad.RichTextCodeMirror = (function () {
 
       if (listType && cm.getLine(cursorLine).length === 1) {
         // They hit enter on a line with just a list heading.  Just remove the list heading.
-        var attributes = {};
-        attributes[ATTR.LIST_TYPE] = false;
-        attributes[ATTR.LINE_INDENT] = false;
-        this.updateLineAttributes(cursorLine, cursorLine, attributes);
+        this.updateLineAttributes(cursorLine, cursorLine, function(attributes) {
+          delete attributes[ATTR.LIST_TYPE];
+          delete attributes[ATTR.LINE_INDENT];
+        });
       } else {
         cm.replaceSelection('\n', 'end', '+input');
 
         if (listType) {
           // Copy line attributes forward.
-          this.updateLineAttributes(cursorLine+1, cursorLine+1, lineAttributes);
+          this.updateLineAttributes(cursorLine+1, cursorLine+1, function(attributes) {
+            for(var attr in lineAttributes) {
+              attributes[attr] = lineAttributes[attr];
+            }
+          });
         }
       }
     }
@@ -2932,10 +2936,10 @@ firepad.RichTextCodeMirror = (function () {
 
     if (this.emptySelection_() && listType && cursorPos.ch === 1) {
       // They hit backspace at the beginning of a line with a list heading.  Just remove the list heading.
-      var attributes = {};
-      attributes[ATTR.LIST_TYPE] = false;
-      attributes[ATTR.LINE_INDENT] = false;
-      this.updateLineAttributes(cursorPos.line, cursorPos.line, attributes);
+      this.updateLineAttributes(cursorPos.line, cursorPos.line, function(attributes) {
+        delete attributes[ATTR.LIST_TYPE];
+        delete attributes[ATTR.LINE_INDENT];
+      });
     } else {
       cm.deleteH(-1, "char");
     }
