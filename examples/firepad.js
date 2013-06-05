@@ -2190,8 +2190,8 @@ firepad.EditorClient = (function () {
 
   SelfMeta.prototype.transform = function (operation) {
     return new SelfMeta(
-      this.cursorBefore.transform(operation),
-      this.cursorAfter.transform(operation)
+      this.cursorBefore ? this.cursorBefore.transform(operation) : null,
+      this.cursorAfter ? this.cursorAfter.transform(operation) : null
     );
   };
 
