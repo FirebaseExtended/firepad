@@ -32,6 +32,8 @@ var opera_version = opera && navigator.userAgent.match(/Version\/(\d+\.\d+)/);
 if (opera_version) opera_version = Number(opera_version);
 var opera_lt10 = opera && (!opera_version || opera_version < 10);
 
+namespace = "core_";
+
 test("core_fromTextArea", function() {
   var te = document.getElementById("code");
   te.value = "CONTENT";
@@ -209,15 +211,18 @@ testCM("coords", function(cm) {
 
 testCM("coordsChar", function(cm) {
   addDoc(cm, 35, 70);
-  for (var ch = 0; ch <= 35; ch += 5) {
-    for (var line = 0; line < 70; line += 5) {
-      cm.setCursor(line, ch);
-      var coords = cm.charCoords(Pos(line, ch));
-      var pos = cm.coordsChar({left: coords.left, top: coords.top + 5});
-      eqPos(pos, Pos(line, ch));
+  for (var i = 0; i < 2; ++i) {
+    var sys = i ? "local" : "page";
+    for (var ch = 0; ch <= 35; ch += 5) {
+      for (var line = 0; line < 70; line += 5) {
+        cm.setCursor(line, ch);
+        var coords = cm.charCoords(Pos(line, ch), sys);
+        var pos = cm.coordsChar({left: coords.left + 1, top: coords.top + 1}, sys);
+        eqPos(pos, Pos(line, ch));
+      }
     }
   }
-});
+}, {lineNumbers: true});
 
 testCM("posFromIndex", function(cm) {
   cm.setValue(
@@ -445,6 +450,13 @@ testCM("markClearBetween", function(cm) {
   eq(cm.findMarksAt(Pos(1, 1)).length, 0);
 });
 
+testCM("deleteSpanCollapsedInclusiveLeft", function(cm) {
+  var from = Pos(1, 0), to = Pos(1, 1);
+  var m = cm.markText(from, to, {collapsed: true, inclusiveLeft: true});
+  // Delete collapsed span.
+  cm.replaceRange("", from, to);
+}, {value: "abc\nX\ndef"});
+
 testCM("bookmark", function(cm) {
   function p(v) { return v && Pos(v[0], v[1]); }
   forEach([{a: [1, 0], b: [1, 1], c: "", d: [1, 4]},
@@ -509,6 +521,25 @@ testCM("scrollSnap", function(cm) {
   cm.setCursor(Pos(199, 0));
   info = cm.getScrollInfo();
   is(info.left == 0 && info.top + 2 > info.height - cm.getScrollerElement().clientHeight, "scrolled clean to bottom");
+});
+
+testCM("scrollIntoView", function(cm) {
+  if (phantom) return;
+  var outer = cm.getWrapperElement().getBoundingClientRect();
+  function test(line, ch) {
+    var pos = Pos(line, ch);
+    cm.scrollIntoView(pos);
+    var box = cm.charCoords(pos, "window");
+    is(box.left >= outer.left && box.right <= outer.right &&
+       box.top >= outer.top && box.bottom <= outer.bottom);
+  }
+  addDoc(cm, 200, 200);
+  test(199, 199);
+  test(0, 0);
+  test(100, 100);
+  test(199, 0);
+  test(0, 199);
+  test(100, 100);
 });
 
 testCM("selectionPos", function(cm) {
@@ -755,6 +786,26 @@ testCM("badNestedFold", function(cm) {
   is(/overlap/i.test(caught.message), "wrong error");
 });
 
+testCM("wrappingInlineWidget", function(cm) {
+  cm.setSize("11em");
+  var w = document.createElement("span");
+  w.style.color = "red";
+  w.innerHTML = "one two three four";
+  cm.markText(Pos(0, 6), Pos(0, 9), {replacedWith: w});
+  var cur0 = cm.cursorCoords(Pos(0, 0)), cur1 = cm.cursorCoords(Pos(0, 10));
+  is(cur0.top < cur1.top);
+  is(cur0.bottom < cur1.bottom);
+  var curL = cm.cursorCoords(Pos(0, 6)), curR = cm.cursorCoords(Pos(0, 9));
+  eq(curL.top, cur0.top);
+  eq(curL.bottom, cur0.bottom);
+  eq(curR.top, cur1.top);
+  eq(curR.bottom, cur1.bottom);
+  cm.replaceRange("", Pos(0, 9), Pos(0));
+  curR = cm.cursorCoords(Pos(0, 9));
+  eq(curR.top, cur1.top);
+  eq(curR.bottom, cur1.bottom);
+}, {value: "1 2 3 xxx 4", lineWrapping: true});
+
 testCM("inlineWidget", function(cm) {
   var w = cm.setBookmark(Pos(0, 2), {widget: document.createTextNode("uu")});
   cm.setCursor(0, 2);
@@ -858,7 +909,7 @@ testCM("verticalScroll", function(cm) {
   cm.setLine(0, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaah");
   is(sc.scrollWidth > baseWidth, "scrollbar present");
   cm.setLine(0, "foo");
-  eq(sc.scrollWidth, baseWidth, "scrollbar gone");
+  if (!phantom) eq(sc.scrollWidth, baseWidth, "scrollbar gone");
   cm.setLine(0, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaah");
   cm.setLine(1, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbh");
   is(sc.scrollWidth > baseWidth, "present again");
@@ -1013,7 +1064,8 @@ testCM("verticalMovementCommandsWrapping", function(cm) {
 
 testCM("rtlMovement", function(cm) {
   forEach(["خحج", "خحabcخحج", "abخحخحجcd", "abخde", "abخح2342خ1حج", "خ1ح2خح3حxج",
-           "خحcd", "1خحcd", "abcdeح1ج", "خمرحبها مها!", "foobarر"], function(line) {
+           "خحcd", "1خحcd", "abcdeح1ج", "خمرحبها مها!", "foobarر",
+           "<img src=\"/בדיקה3.jpg\">"], function(line) {
     var inv = line.charAt(0) == "خ";
     cm.setValue(line + "\n"); cm.execCommand(inv ? "goLineEnd" : "goLineStart");
     var cursor = byClassName(cm.getWrapperElement(), "CodeMirror-cursor")[0];
@@ -1298,7 +1350,7 @@ testCM("addKeyMap", function(cm) {
   sendKey(39);
   eqPos(cm.getCursor(), Pos(0, 1));
   eq(test, 1);
-  cm.addKeyMap(map2);
+  cm.addKeyMap(map2, true);
   sendKey(39);
   eq(test, 2);
   cm.removeKeyMap(map1);
@@ -1354,6 +1406,19 @@ testCM("beforeChange", function(cm) {
   cm.replaceRange("hey hey hey", Pos(1, 0), Pos(2, 0));
   eq(cm.getValue(), "hello,_i_am_a\nhey_hey_hey");
 }, {value: "abcdefghijk"});
+
+testCM("beforeChangeUndo", function(cm) {
+  cm.setLine(0, "hi");
+  cm.setLine(0, "bye");
+  eq(cm.historySize().undo, 2);
+  cm.on("beforeChange", function(cm, change) {
+    is(!change.update);
+    change.cancel();
+  });
+  cm.undo();
+  eq(cm.historySize().undo, 0);
+  eq(cm.getValue(), "bye\ntwo");
+}, {value: "one\ntwo"});
 
 testCM("beforeSelectionChange", function(cm) {
   function notAtEnd(cm, pos) {

@@ -3,7 +3,7 @@
  * Branched from CodeMirror's Scheme mode (by Koh Zi Han, based on implementation by Koh Zi Chun)
  */
 CodeMirror.defineMode("clojure", function () {
-    var BUILTIN = "builtin", COMMENT = "comment", STRING = "string",
+    var BUILTIN = "builtin", COMMENT = "comment", STRING = "string", CHARACTER = "string-2",
         ATOM = "atom", NUMBER = "number", BRACKET = "bracket", KEYWORD = "keyword";
     var INDENT_WORD_SKIP = 2;
 
@@ -14,7 +14,7 @@ CodeMirror.defineMode("clojure", function () {
     }
 
     var atoms = makeKeywords("true false nil");
-    
+
     var keywords = makeKeywords(
       "defn defn- def def- defonce defmulti defmethod defmacro defstruct deftype defprotocol defrecord defproject deftest slice defalias defhinted defmacro- defn-memo defnk defnk defonce- defunbound defunbound- defvar defvar- let letfn do case cond condp for loop recur when when-not when-let when-first if if-let if-not . .. -> ->> doto and or dosync doseq dotimes dorun doall load import unimport ns in-ns refer try catch finally throw with-open with-local-vars binding gen-class gen-and-load-class gen-and-save-class handler-case handle");
 
@@ -44,8 +44,7 @@ CodeMirror.defineMode("clojure", function () {
         sign: /[+-]/,
         exponent: /e/i,
         keyword_char: /[^\s\(\[\;\)\]]/,
-        basic: /[\w\$_\-]/,
-        lang_keyword: /[\w*+!\-_?:\/]/
+        symbol: /[\w*+!\-\._?:\/]/
     };
 
     function stateStack(indent, type, prev) { // represents a state stack object
@@ -95,6 +94,20 @@ CodeMirror.defineMode("clojure", function () {
         return false;
     }
 
+    // Eat character that starts after backslash \
+    function eatCharacter(stream) {
+        var first = stream.next();
+        // Read special literals: backspace, newline, space, return.
+        // Just read all lowercase letters.
+        if (first.match(/[a-z]/) && stream.match(/[a-z]+/, true)) {
+            return;
+        }
+        // Read unicode character: \u1000 \uA0a1
+        if (first === "u") {
+            stream.match(/[0-9a-z]{4}/i, true);
+        }
+    }
+
     return {
         startState: function () {
             return {
@@ -135,6 +148,9 @@ CodeMirror.defineMode("clojure", function () {
                     if (ch == "\"") {
                         state.mode = "string";
                         returnType = STRING;
+                    } else if (ch == "\\") {
+                        eatCharacter(stream);
+                        returnType = CHARACTER;
                     } else if (ch == "'" && !( tests.digit_or_colon.test(stream.peek()) )) {
                         returnType = ATOM;
                     } else if (ch == ";") { // comment
@@ -178,10 +194,10 @@ CodeMirror.defineMode("clojure", function () {
                             popStack(state);
                         }
                     } else if ( ch == ":" ) {
-                        stream.eatWhile(tests.lang_keyword);
+                        stream.eatWhile(tests.symbol);
                         return ATOM;
                     } else {
-                        stream.eatWhile(tests.basic);
+                        stream.eatWhile(tests.symbol);
 
                         if (keywords && keywords.propertyIsEnumerable(stream.current())) {
                             returnType = KEYWORD;
@@ -199,7 +215,9 @@ CodeMirror.defineMode("clojure", function () {
         indent: function (state) {
             if (state.indentStack == null) return state.indentation;
             return state.indentStack.indent;
-        }
+        },
+
+        lineComment: ";;"
     };
 });
 
