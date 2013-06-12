@@ -131,7 +131,10 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 > Sets the contents of Firepad as a string.
 
 `firepad.getHtml()`
-> Gets the contents of Firepad as a string containing html tags (`<b>` for bold, `<i>` for italic, etc.)
+> Gets the contents of Firepad as html.
+
+`firepad.setHtml(text)`
+> Sets the contents of Firepad as html.
 
 `firepad.isHistoryEmpty()`
 > Returns true if the Firepad has never had any content.  Useful for doing first-time initialization.
