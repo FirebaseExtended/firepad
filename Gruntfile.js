@@ -35,6 +35,7 @@ module.exports = function (grunt) {
           "lib/text.js",
           "lib/line-formatting.js",
           "lib/line.js",
+          "lib/parse-html.js",
           "lib/firepad.js"
         ],
         "dest": "build/firepad.js"
