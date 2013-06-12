@@ -46,13 +46,9 @@
     var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
         { richTextToolbar: true, richTextShortcuts: true });
 
-    var listType = Firepad.LineFormatting.LIST_TYPE,
-        ORDERED = listType.ORDERED, UNORDERED = listType.UNORDERED;
     //// Initialize contents.
     firepad.on('ready', function() {
       if (firepad.isHistoryEmpty()) {
-        var f = Firepad.Formatting().fontSize(18);
-        var lf = Firepad.LineFormatting();
         firepad.setHtml(
             '<span style="font-size: 24px;">Rich-text editing with <span style="color: red">Firepad!</span></span><br/>\n' +
             '<br/>' +

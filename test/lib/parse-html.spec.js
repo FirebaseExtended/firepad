@@ -22,6 +22,12 @@ describe('Parse HTML Tests', function() {
     ]);
   });
 
+  it("Handle newlines and extra spaces in html.", function() {
+    parseTest('Foo\nBar\nBaz    Blah', [
+      Line([Text('Foo Bar Baz Blah')], lf)
+    ]);
+  });
+
 
   it('Supported styles', function() {
     styleTest('', tf);

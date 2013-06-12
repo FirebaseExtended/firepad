@@ -3723,7 +3723,8 @@ firepad.ParseHtml = (function () {
   function parseNode(node, state, output) {
     switch (node.nodeType) {
       case Node.TEXT_NODE:
-        output.currentLine.push(firepad.Text(node.nodeValue, state.textFormatting));
+        var text = node.nodeValue.replace(/\s+/g, ' '); // Not sure this is 100% right, but mostly works.
+        output.currentLine.push(firepad.Text(text, state.textFormatting));
         break;
       case Node.ELEMENT_NODE:
         var style = node.getAttribute('style') || '';
