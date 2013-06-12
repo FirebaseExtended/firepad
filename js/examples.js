@@ -9,12 +9,32 @@ var examples = {
       var self = this;
       this.firepad.on('ready', function() {
         if (self.firepad.isHistoryEmpty()) {
-          var f = Firepad.Formatting().fontSize(24);
-          self.firepad.setText([
-            Firepad.Text("Rich-text", f.italic(true).color('green')),
-            Firepad.Text(" editing with ", f),
-            Firepad.Text("Firepad!", f.color('red'))
-          ]);
+          self.firepad.setHtml(
+            '<span style="font-size: 24px;">Rich-text editing     with <span style="color: red">Firepad!</span></span><br/>\n' +
+            '<div style="font-size: 14px">' +
+            'Supports:<br/>' +
+            '<ul>' +
+              '<li>Different ' +
+                '<span style="font-family: impact">fonts,</span>' +
+                '<span style="font-size: 24px;"> sizes, </span>' +
+                '<span style="color: blue">and colors.</span>' +
+              '</li>' +
+              '<li>' +
+                '<b>Bold, </b>' +
+                '<i>italic, </i>' +
+                '<u>and underline.</u>' +
+              '</li>' +
+              '<li>Lists' +
+                '<ol>' +
+                  '<li>One</li>' +
+                  '<li>Two</li>' +
+                '</ol>' +
+              '</li>' +
+              '<li>Undo / redo</li>' +
+              '<li>Cursor / selection synchronization.</li>' +
+              '<li>And it\'s all fully collaborative!</li>' +
+            '</ul>' +
+            '</div>');
         }
       });
     },
