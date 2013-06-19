@@ -3753,10 +3753,10 @@ firepad.ParseHtml = (function () {
           case 'font':
             var face = node.getAttribute('face');
             var color = node.getAttribute('color');
-            var size = node.getAttribute('size');
+            var size = parseInt(node.getAttribute('size'));
             if (face) { state = state.withTextFormatting(state.textFormatting.font(face)); }
             if (color) { state = state.withTextFormatting(state.textFormatting.color(color)); }
-            if (size) { state = state.withTextFormatting(state.textFormatting.size(size)); }
+            if (size) { state = state.withTextFormatting(state.textFormatting.fontSize(size)); }
             parseChildren(node, state, output);
             break;
           case 'br':
@@ -4099,11 +4099,11 @@ firepad.Firepad = (function(global) {
           start = 'span style="font-size: ' + value + 'px"';
           end = 'span';
         } else if (attr === ATTR.FONT) {
-          start = 'font face="' + value + '"';
-          end = 'font';
+          start = 'span style="font-family: ' + value + '"';
+          end = 'span';
         } else if (attr === ATTR.COLOR) {
-          start = 'font color="' + value + '"';
-          end = 'font';
+          start = 'span style="color: ' + value + '"';
+          end = 'span';
         } else {
           utils.assert(false, "Encountered unknown attribute while rendering html: " + attr);
         }
