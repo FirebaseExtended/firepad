@@ -4091,13 +4091,13 @@ firepad.Firepad = (function(global) {
         } else if (attr === ATTR.COLOR) {
           start = 'font color="' + value + '"';
           end = 'font';
-        } else if (attr === ATTR.LIST_TYPE) {
-        	prefix += '  &bull; ';
         } else {
           utils.log(false, "Encountered unknown attribute while rendering html: " + attr);
         }
-        if (start) prefix += '<' + start + '>';
-	      if (end) suffix = '</' + end + '>' + suffix;
+        if (start && end) {
+	        prefix += '<' + start + '>';
+	        suffix = '</' + end + '>' + suffix;
+        }
       }
 
       html += prefix + this.textToHtml_(op.text) + suffix;
@@ -4121,7 +4121,6 @@ firepad.Firepad = (function(global) {
         .replace(/'/g, '&#39;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(RichTextCodeMirror.LineSentinelCharacter, '')
         .replace(/\n/g, '<br />');
   };
 
