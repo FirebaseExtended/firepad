@@ -127,7 +127,7 @@ describe('Parse HTML Tests', function() {
 
   it('Complex list (1)', function() {
     var t = Text('Foo', tf);
-    parseTest('<ol><li>Foo<ol><li>Foo</li><li>Foo</li></ol></li><li>Foo</li></ul>', [
+    parseTest('<ol><li>Foo<ol><li>Foo</li><li>Foo</li></ol></li><li>Foo</li></ol>', [
       Line([t], lf.indent(1).listItem(LIST_TYPE.ORDERED)),
       Line([t], lf.indent(2).listItem(LIST_TYPE.ORDERED)),
       Line([t], lf.indent(2).listItem(LIST_TYPE.ORDERED)),
@@ -138,11 +138,18 @@ describe('Parse HTML Tests', function() {
   // same as last, but with no text on each line.
   it('Complex list (2)', function() {
     var t = Text('Foo', tf);
-    parseTest('<ol><li><ol><li></li><li></li></ol></li><li></li></ul>', [
+    parseTest('<ol><li><ol><li></li><li></li></ol></li><li></li></ol>', [
       Line([], lf.indent(1).listItem(LIST_TYPE.ORDERED)),
       Line([], lf.indent(2).listItem(LIST_TYPE.ORDERED)),
       Line([], lf.indent(2).listItem(LIST_TYPE.ORDERED)),
       Line([], lf.indent(1).listItem(LIST_TYPE.ORDERED))
+    ]);
+  });
+
+  it('Text after list', function() {
+    parseTest('<ul><li>Hello</li></ul>Foo', [
+      Line([Text("Hello")], lf.indent(1).listItem(LIST_TYPE.UNORDERED)),
+      Line([Text("Foo")], lf)
     ]);
   });
 

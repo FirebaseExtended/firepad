@@ -3692,20 +3692,38 @@ firepad.ParseHtml = (function () {
    */
   function ParseOutput() {
     this.lines = [ ];
-    this.currentLineFormatting = firepad.LineFormatting();
     this.currentLine = [];
+    this.currentLineListItemType = null;
   }
 
-  ParseOutput.prototype.newlineIfNonEmpty = function(newLineFormatting) {
+  ParseOutput.prototype.newlineIfNonEmpty = function(state) {
     if (this.currentLine.length > 0) {
-      this.newline(newLineFormatting);
+      this.newline(state);
     }
   };
 
-  ParseOutput.prototype.newline = function(newLineFormatting) {
-    this.lines.push(firepad.Line(this.currentLine, this.currentLineFormatting));
+  ParseOutput.prototype.newlineIfNonEmptyOrListItem = function(state) {
+    if (this.currentLine.length > 0 || this.currentLineListItemType !== null) {
+      this.newline(state);
+    }
+  };
+
+  ParseOutput.prototype.newline = function(state) {
+    var lineFormatting = state.lineFormatting;
+    if (this.currentLineListItemType !== null) {
+      lineFormatting = lineFormatting.listItem(this.currentLineListItemType);
+      this.currentLineListItemType = null;
+    }
+    this.lines.push(firepad.Line(this.currentLine, lineFormatting));
     this.currentLine = [];
-    this.currentLineFormatting = newLineFormatting;
+  };
+
+  ParseOutput.prototype.makeListItem = function(type) {
+    this.currentLineListItemType = type;
+  };
+
+  ParseOutput.prototype.isListItem = function() {
+    return this.currentLineListItemType !== null;
   };
 
   function parseHtml(html) {
@@ -3735,9 +3753,9 @@ firepad.ParseHtml = (function () {
           case 'h2':
           case 'h3':
           case 'p':
-            output.newlineIfNonEmpty(state.lineFormatting);
+            output.newlineIfNonEmpty(state);
             parseChildren(node, state, output);
-            output.newlineIfNonEmpty(state.lineFormatting);
+            output.newlineIfNonEmpty(state);
             break;
           case 'b':
           case 'strong':
@@ -3760,13 +3778,17 @@ firepad.ParseHtml = (function () {
             parseChildren(node, state, output);
             break;
           case 'br':
-            output.newline(state.lineFormatting);
+            output.newline(state);
             break;
           case 'ul':
+            output.newlineIfNonEmptyOrListItem(state);
             parseChildren(node, state.withListType(LIST_TYPE.UNORDERED).withIncreasedIndent(), output);
+            output.newlineIfNonEmpty(state);
             break;
           case 'ol':
+            output.newlineIfNonEmptyOrListItem(state);
             parseChildren(node, state.withListType(LIST_TYPE.ORDERED).withIncreasedIndent(), output);
+            output.newlineIfNonEmpty(state);
             break;
           case 'li':
             parseListItem(node, state, output);
@@ -3795,18 +3817,15 @@ firepad.ParseHtml = (function () {
     // * Only the first line in the <li> tag should be a list item (i.e. with a bullet or number next to it).
     // * <li></li> should create an empty list item line; <li><ol><li></li></ol></li> should create two.
 
-    // If the current line is non-empty or already a list item, create a new line.
-    if (output.currentLine.length > 0 || output.currentLineFormatting.getListItem() !== false) {
-      output.newline();
-    }
-    output.currentLineFormatting = state.lineFormatting.listItem(state.listType);
+    output.newlineIfNonEmptyOrListItem(state);
 
+    output.makeListItem(state.listType);
     var oldLine = output.currentLine;
 
     parseChildren(node, state, output);
 
     if (oldLine === output.currentLine || output.currentLine.length > 0) {
-      output.newline(state.lineFormatting);
+      output.newline(state);
     }
   }
 
