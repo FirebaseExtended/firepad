@@ -41,7 +41,7 @@ firepad.utils.makeEventEmitter = function(clazz, opt_allowedEVents) {
 
   clazz.prototype.validateEventType_ = function(eventType) {
     if (this.allowedEvents_ && this.allowedEvents_.indexOf(eventType) === -1) {
-      throw new Error('Unknown event "' + eventType + '"');
+      console.log('Unknown event "' + eventType + '"');
     }
   };
 };
@@ -1289,7 +1289,7 @@ firepad.FirebaseAdapter = (function (global) {
   // Save a checkpoint every 100 edits.
   var CHECKPOINT_FREQUENCY = 100;
 
-  function FirebaseAdapter (ref, userId, userColor) {
+  function FirebaseAdapter (ref, userId, userColor, lastRevision, lastCheckpoint) {
     this.ref_ = ref;
     this.ready_ = false;
     this.firebaseCallbacks_ = [];
@@ -1301,6 +1301,10 @@ firepad.FirebaseAdapter = (function (global) {
 
     // The next expected revision.
     this.revision_ = 0;
+
+    // The last known revision
+    this.lastRevision_ = parseInt(lastRevision || 0);
+    this.lastCheckpoint_ = parseInt(lastCheckpoint || 0);
 
     // This is used for two purposes:
     // 1) On initialization, we fill this with the latest checkpoint and any subsequent operations and then
@@ -1330,6 +1334,15 @@ firepad.FirebaseAdapter = (function (global) {
       self.monitorCursors_();
     });
 
+    /// Also listen to "checkpoint" orders from caller
+    this.on('history', function() {
+      self.saveCheckpoint_(true);
+    });
+
+    /// Restart cursors when refreshed
+    this.on('refreshed', function() {
+      self.monitorCursors_();
+    });
   }
   utils.makeEventEmitter(FirebaseAdapter, ['ready', 'cursor', 'operation', 'ack', 'retry']);
 
@@ -1443,10 +1456,11 @@ firepad.FirebaseAdapter = (function (global) {
 
     function childChanged(childSnap) {
       var userId = childSnap.name();
+      var userData = childSnap.val();
       if (userId !== self.userId_) {
-        var userData = childSnap.val();
         self.trigger('cursor', userId, userData.cursor, userData.color);
       }
+      self.trigger('cursors', userId, userData.cursor, userData.color);
     }
 
     this.firebaseOn_(usersRef, 'child_added', childChanged);
@@ -3858,6 +3872,7 @@ firepad.ParseHtml = (function () {
         case 'font-family':
           var font = val.split(',')[0].trim(); // get first font.
           font = font.replace(/['"]/g, ''); // remove quotes.
+          font = font.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase() });
           formatting = formatting.font(font);
           break;
       }
@@ -3927,8 +3942,12 @@ firepad.Firepad = (function(global) {
     var userId = this.getOption('userId', ref.push().name());
     var userColor = this.getOption('userColor', colorFromUserId(userId));
 
+    /// Diff last revision
+    var lastRevision = this.getOption('lastRevision', 0);
+    var lastCheckpoint = this.getOption('lastCheckpoint', 0);
+
     this.richTextCodeMirror_ = new RichTextCodeMirror(this.codeMirror_, { cssPrefix: 'firepad-' });
-    this.firebaseAdapter_ = new FirebaseAdapter(ref, userId, userColor);
+    this.firebaseAdapter_ = new FirebaseAdapter(ref, userId, userColor, lastRevision, lastCheckpoint);
     this.cmAdapter_ = new RichTextCodeMirrorAdapter(this.richTextCodeMirror_);
     this.client_ = new EditorClient(this.firebaseAdapter_, this.cmAdapter_);
 
@@ -3937,11 +3956,36 @@ firepad.Firepad = (function(global) {
       self.ready_ = true;
       self.trigger('ready');
     });
+	  this.firebaseAdapter_.on('cursors', function(id, cursor, color) {
+	    if (cursor) {
+	      var pos = self.codeMirror_.posFromIndex(cursor.position),
+	       coords = self.codeMirror_.cursorCoords(pos);
+	      self.trigger('cursor', id, cursor, coords, color);
+	    } else {
+	      self.trigger('cursor', id, cursor);
+	    }
+	  });
+	  this.firebaseAdapter_.on('revision', function(revision, revisionId) {
+	    self.trigger('revision', revision, revisionId);
+	  });
+	  this.firebaseAdapter_.on('checkpoint', function(point, append) {
+	    self.trigger('checkpoint', point, append);
+	  });
   }
   utils.makeEventEmitter(Firepad);
 
   // For readability, this is the primary "constructor", even though right now they're just aliases for Firepad.
   Firepad.fromCodeMirror = Firepad;
+
+  /// Append to revisions history
+  Firepad.prototype.history = function() {
+    this.firebaseAdapter_.trigger('history');
+  };
+
+  /// Refresh
+  Firepad.prototype.refresh = function(revision, checkpoint) {
+    this.firebaseAdapter_.refresh(this, revision, checkpoint);
+  };
 
   Firepad.prototype.dispose = function() {
     this.zombie_ = true; // We've been disposed.  No longer valid to do anything.
@@ -4025,7 +4069,7 @@ firepad.Firepad = (function(global) {
     }
   };
 
-  Firepad.prototype.getHtml = function() {
+  Firepad.prototype.getHtml = function(diff) {
     var doc = this.firebaseAdapter_.getDocument();
     var html = '';
     for(var i = 0; i < doc.ops.length; i++) {
@@ -4047,15 +4091,26 @@ firepad.Firepad = (function(global) {
         } else if (attr === ATTR.COLOR) {
           start = 'font color="' + value + '"';
           end = 'font';
+        } else if (attr === ATTR.LIST_TYPE) {
+        	prefix += '  &bull; ';
         } else {
-          utils.assert(false, "Encountered unknown attribute while rendering html: " + attr);
+          utils.log(false, "Encountered unknown attribute while rendering html: " + attr);
         }
-        prefix += '<' + start + '>';
-        suffix = '</' + end + '>' + suffix;
+        if (start) prefix += '<' + start + '>';
+	      if (end) suffix = '</' + end + '>' + suffix;
       }
 
       html += prefix + this.textToHtml_(op.text) + suffix;
     }
+
+    // Tidy HTML
+    // TODO: tidy me better
+    // TIP:  use \n in reg, $n in exp to (re)use n-th match :)
+
+    // Close/reopen tags like </b><b>
+    html = html.replace(/<\/(\w+)><\1>/gi, '');
+    // No <br> after block tags
+    html = html.replace(/<\/(h[1-6]|li|dd|dt|pre|p)><br[\/\ ]*>/gi, '</$1>');
 
     return html;
   };
@@ -4066,7 +4121,8 @@ firepad.Firepad = (function(global) {
         .replace(/'/g, '&#39;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(/\n/g, '<br/>');
+        .replace(RichTextCodeMirror.LineSentinelCharacter, '')
+        .replace(/\n/g, '<br />');
   };
 
   Firepad.prototype.setHtml = function (html) {
