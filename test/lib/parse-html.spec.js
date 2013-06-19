@@ -28,6 +28,12 @@ describe('Parse HTML Tests', function() {
     ]);
   });
 
+  function styleTest(style, textFormatting) {
+    var html = '<div style="' + style + '">Test</div>';
+    parseTest(html, [
+      Line([Text('Test', textFormatting)], lf)
+    ]);
+  }
 
   it('Supported styles', function() {
     styleTest('', tf);
@@ -51,8 +57,30 @@ describe('Parse HTML Tests', function() {
     styleTest('font-weight:bold   ;  text-decoration : underline ', tf.bold(true).underline(true));
   });
 
-  function styleTest(style, textFormatting) {
-    var html = '<div style="' + style + '">Test</div>';
+  it('Inline tags (b, strong, u, i, em)', function() {
+    inlineTest('b', tf.bold(true));
+    inlineTest('strong', tf.bold(true));
+    inlineTest('u', tf.underline(true));
+    inlineTest('i', tf.italic(true));
+    inlineTest('em', tf.italic(true));
+  });
+
+  function inlineTest(tag, textFormatting) {
+    var html = '<' + tag + '>Test</' + tag + '>';
+    parseTest(html, [
+      Line([Text('Test', textFormatting)], lf)
+    ]);
+  }
+
+  it('Supported font tags', function() {
+    fontTest('color="blue"', tf.color('blue'));
+    fontTest('face="impact"', tf.font('impact'));
+    fontTest('size="8"', tf.fontSize(8));
+    fontTest('size="8" color="blue" face="impact"', tf.fontSize(8).color('blue').font('impact'));
+  });
+
+  function fontTest(attrs, textFormatting) {
+    var html = '<font ' + attrs + '>Test</font>';
     parseTest(html, [
       Line([Text('Test', textFormatting)], lf)
     ]);
@@ -70,14 +98,6 @@ describe('Parse HTML Tests', function() {
     parseTest('<span style="font-weight: bold">Foo<span style="color: green">bar</span>baz</span>', [
       Line([Text('Foo', tf.bold(true)), Text('bar', tf.bold(true).color('green')), Text('baz', tf.bold(true))], lf)
     ]);
-  });
-
-  it('Inline tags (b, strong, u, i, em)', function() {
-    inlineTest('b', tf.bold(true));
-    inlineTest('strong', tf.bold(true));
-    inlineTest('u', tf.underline(true));
-    inlineTest('i', tf.italic(true));
-    inlineTest('em', tf.italic(true));
   });
 
   it('Unordered list', function() {
@@ -125,13 +145,6 @@ describe('Parse HTML Tests', function() {
       Line([], lf.indent(1).listItem(LIST_TYPE.ORDERED))
     ]);
   });
-
-  function inlineTest(tag, textFormatting) {
-    var html = '<' + tag + '>Test</' + tag + '>';
-    parseTest(html, [
-      Line([Text('Test', textFormatting)], lf)
-    ]);
-  }
 
   function parseTest(html, expLines) {
     var actLines = parse(html);
