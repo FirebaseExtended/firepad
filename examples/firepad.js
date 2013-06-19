@@ -2830,6 +2830,12 @@ firepad.RichTextCodeMirror = (function () {
             } else if (listType === 'u') {
               element = this.makeUnorderedListElement_();
               listNumber[indent] = 1;
+            } else if (listType === 't') {
+              element = this.makeTodoListElement_(false);
+              listNumber[indent] = 1;
+            } else if (listType === 'tc') {
+              element = this.makeTodoListElement_(true);
+              listNumber[indent] = 1;
             }
 
             var className = this.getClassNameForAttributes_(attributes);
@@ -2875,6 +2881,38 @@ firepad.RichTextCodeMirror = (function () {
     return utils.elt('div', '\u2022', {
       style: "margin-left: -20px; display:inline-block; width:15px;"
     });
+  };
+
+	RichTextCodeMirror.prototype.toggleTodo = function(noRemove) {
+  	var attribute = ATTR.LIST_TYPE;
+    var currentAttributes = this.getCurrentLineAttributes_();
+    var newValue;
+    if (!(attribute in currentAttributes) || ((currentAttributes[attribute] !== 't') && (currentAttributes[attribute] !== 'tc'))) {
+      newValue = 't';
+    } else if (currentAttributes[attribute] === 't') {
+      newValue = 'tc';
+    } else if (currentAttributes[attribute] === 'tc') {
+	    newValue = noRemove ? 't' : false;
+    }
+    this.setLineAttribute(attribute, newValue);
+	};
+
+  RichTextCodeMirror.prototype.makeTodoListElement_ = function(checked) {
+  	var params = {
+    	'type': "checkbox",
+    	'style': "margin-left: -20px; display:inline-block; width:15px; margin-top: -2px;"
+    };
+    if (checked) params['checked'] = true;
+    var el = utils.elt('input', false, params);
+    el.onclick = function(e) {
+	  	e.preventDefault();
+	  	var elem = e.target.parentNode.parentNode;
+	    var i = 0;
+	    while((elem=elem.previousSibling)!=null) ++i;
+	    this.codeMirror.setCursor({line: i, ch: 0});
+	  	this.toggleTodo(true);
+		}.bind(this);
+    return el;
   };
 
   RichTextCodeMirror.prototype.lineIsListItemOrIndented_ = function(lineNum) {
@@ -2973,6 +3011,7 @@ firepad.RichTextCodeMirror = (function () {
         cm.replaceSelection('\n', 'end', '+input');
 
         if (listType) {
+        	if (listType === 'tc') lineAttributes[ATTR.LIST_TYPE] = 't';
           // Copy line attributes forward.
           this.updateLineAttributes(cursorLine+1, cursorLine+1, function(attributes) {
             for(var attr in lineAttributes) {
@@ -3593,7 +3632,9 @@ firepad.LineFormatting = (function() {
   LineFormatting.LIST_TYPE = {
     NONE: false,
     ORDERED: 'o',
-    UNORDERED: 'u'
+    UNORDERED: 'u',
+    TODO: 't',
+    TODOCHECKED: 'tc' 
   };
 
   LineFormatting.prototype.cloneWithNewAttribute_ = function(attribute, value) {
@@ -3619,7 +3660,7 @@ firepad.LineFormatting = (function() {
   };
 
   LineFormatting.prototype.listItem = function(val) {
-    firepad.utils.assert(val === false || val === 'u' || val === 'o');
+    firepad.utils.assert(val === false || val === 'u' || val === 'o' || val === 't' || val === 'tc');
     return this.cloneWithNewAttribute_(ATTR.LIST_TYPE, val);
   };
 
@@ -4091,13 +4132,13 @@ firepad.Firepad = (function(global) {
         } else if (attr === ATTR.COLOR) {
           start = 'font color="' + value + '"';
           end = 'font';
+        } else if (attr === ATTR.LIST_TYPE) {
+        	prefix += '  &bull; ';
         } else {
           utils.log(false, "Encountered unknown attribute while rendering html: " + attr);
         }
-        if (start && end) {
-	        prefix += '<' + start + '>';
-	        suffix = '</' + end + '>' + suffix;
-        }
+        if (start) prefix += '<' + start + '>';
+	      if (end) suffix = '</' + end + '>' + suffix;
       }
 
       html += prefix + this.textToHtml_(op.text) + suffix;
@@ -4121,6 +4162,7 @@ firepad.Firepad = (function(global) {
         .replace(/'/g, '&#39;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
+        .replace(RichTextCodeMirror.LineSentinelCharacter, '')
         .replace(/\n/g, '<br />');
   };
 
@@ -4171,6 +4213,11 @@ firepad.Firepad = (function(global) {
 
   Firepad.prototype.unorderedList = function() {
     this.richTextCodeMirror_.toggleLineAttribute(ATTR.LIST_TYPE, 'u');
+    this.codeMirror_.focus();
+  };
+
+  Firepad.prototype.todo = function() {
+  	this.richTextCodeMirror_.toggleTodo();
     this.codeMirror_.focus();
   };
 

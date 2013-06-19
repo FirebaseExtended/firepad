@@ -61,7 +61,7 @@
 .firepad-c-grey { color: grey; }
 
 /** Line Styles */
-pre.firepad-lt-o, pre.firepad-lt-u {
+pre.firepad-lt-o, pre.firepad-lt-u, pre.firepad-lt-t, pre.firepad-lt-tc {
   margin-left: 30px;
 }
 
