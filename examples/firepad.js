@@ -3692,20 +3692,38 @@ firepad.ParseHtml = (function () {
    */
   function ParseOutput() {
     this.lines = [ ];
-    this.currentLineFormatting = firepad.LineFormatting();
     this.currentLine = [];
+    this.currentLineListItemType = null;
   }
 
-  ParseOutput.prototype.newlineIfNonEmpty = function(newLineFormatting) {
+  ParseOutput.prototype.newlineIfNonEmpty = function(state) {
     if (this.currentLine.length > 0) {
-      this.newline(newLineFormatting);
+      this.newline(state);
     }
   };
 
-  ParseOutput.prototype.newline = function(newLineFormatting) {
-    this.lines.push(firepad.Line(this.currentLine, this.currentLineFormatting));
+  ParseOutput.prototype.newlineIfNonEmptyOrListItem = function(state) {
+    if (this.currentLine.length > 0 || this.currentLineListItemType !== null) {
+      this.newline(state);
+    }
+  };
+
+  ParseOutput.prototype.newline = function(state) {
+    var lineFormatting = state.lineFormatting;
+    if (this.currentLineListItemType !== null) {
+      lineFormatting = lineFormatting.listItem(this.currentLineListItemType);
+      this.currentLineListItemType = null;
+    }
+    this.lines.push(firepad.Line(this.currentLine, lineFormatting));
     this.currentLine = [];
-    this.currentLineFormatting = newLineFormatting;
+  };
+
+  ParseOutput.prototype.makeListItem = function(type) {
+    this.currentLineListItemType = type;
+  };
+
+  ParseOutput.prototype.isListItem = function() {
+    return this.currentLineListItemType !== null;
   };
 
   function parseHtml(html) {
@@ -3735,9 +3753,9 @@ firepad.ParseHtml = (function () {
           case 'h2':
           case 'h3':
           case 'p':
-            output.newlineIfNonEmpty(state.lineFormatting);
+            output.newlineIfNonEmpty(state);
             parseChildren(node, state, output);
-            output.newlineIfNonEmpty(state.lineFormatting);
+            output.newlineIfNonEmpty(state);
             break;
           case 'b':
           case 'strong':
@@ -3750,14 +3768,27 @@ firepad.ParseHtml = (function () {
           case 'em':
             parseChildren(node, state.withTextFormatting(state.textFormatting.italic(true)), output);
             break;
+          case 'font':
+            var face = node.getAttribute('face');
+            var color = node.getAttribute('color');
+            var size = parseInt(node.getAttribute('size'));
+            if (face) { state = state.withTextFormatting(state.textFormatting.font(face)); }
+            if (color) { state = state.withTextFormatting(state.textFormatting.color(color)); }
+            if (size) { state = state.withTextFormatting(state.textFormatting.fontSize(size)); }
+            parseChildren(node, state, output);
+            break;
           case 'br':
-            output.newline(state.lineFormatting);
+            output.newline(state);
             break;
           case 'ul':
-            parseChildren(node, state.withListType(LIST_TYPE.UNORDERED), output);
+            output.newlineIfNonEmptyOrListItem(state);
+            parseChildren(node, state.withListType(LIST_TYPE.UNORDERED).withIncreasedIndent(), output);
+            output.newlineIfNonEmpty(state);
             break;
           case 'ol':
-            parseChildren(node, state.withListType(LIST_TYPE.ORDERED), output);
+            output.newlineIfNonEmptyOrListItem(state);
+            parseChildren(node, state.withListType(LIST_TYPE.ORDERED).withIncreasedIndent(), output);
+            output.newlineIfNonEmpty(state);
             break;
           case 'li':
             parseListItem(node, state, output);
@@ -3783,24 +3814,18 @@ firepad.ParseHtml = (function () {
 
   function parseListItem(node, state, output) {
     // Note: <li> is weird:
-    // * The increased indent applies to all lines within the <li> tag.
-    // * But only the first line in the <li> tag should be a list item (i.e. with a bullet or number next to it).
+    // * Only the first line in the <li> tag should be a list item (i.e. with a bullet or number next to it).
     // * <li></li> should create an empty list item line; <li><ol><li></li></ol></li> should create two.
 
-    var liState = state.withIncreasedIndent();
+    output.newlineIfNonEmptyOrListItem(state);
 
-    // If the current line is non-empty or already a list item, create a new line.
-    if (output.currentLine.length > 0 || output.currentLineFormatting.getListItem() !== false) {
-      output.newline();
-    }
-    output.currentLineFormatting = liState.lineFormatting.listItem(state.listType);
-
+    output.makeListItem(state.listType);
     var oldLine = output.currentLine;
 
-    parseChildren(node, liState, output);
+    parseChildren(node, state, output);
 
     if (oldLine === output.currentLine || output.currentLine.length > 0) {
-      output.newline(state.lineFormatting);
+      output.newline(state);
     }
   }
 
@@ -3877,6 +3902,7 @@ firepad.Firepad = (function(global) {
   var EditorClient = firepad.EditorClient;
   var ATTR = firepad.AttributeConstants;
   var utils = firepad.utils;
+  var LIST_TYPE = firepad.LineFormatting.LIST_TYPE;
   var CodeMirror = global.CodeMirror;
 
   function Firepad(ref, place, options) {
@@ -4027,10 +4053,60 @@ firepad.Firepad = (function(global) {
 
   Firepad.prototype.getHtml = function() {
     var doc = this.firebaseAdapter_.getDocument();
-    var html = '';
-    for(var i = 0; i < doc.ops.length; i++) {
-      var op = doc.ops[i], attrs = op.attributes;
+    var html = '', newLine = true;
+
+    function open(listType) {
+      return (listType === LIST_TYPE.ORDERED) ? '<ol>' : '<ul>';
+    }
+
+    function close(listType) {
+      return (listType === LIST_TYPE.ORDERED) ? '</ol>' : '</ul>';
+    }
+
+    var listTypeStack = [];
+    var inListItem = false;
+    var i = 0, op = doc.ops[i];
+    while(op) {
       utils.assert(op.isInsert());
+      var attrs = op.attributes;
+
+      if (newLine) {
+        newLine = false;
+        var indent = 0, listType = null;
+        if (ATTR.LINE_SENTINEL in attrs) {
+          indent = attrs[ATTR.LINE_INDENT] || 0;
+          listType = attrs[ATTR.LIST_TYPE] || null;
+        }
+
+        if (inListItem) {
+          html += '</li>';
+          inListItem = false;
+        }
+
+        // Close any extra lists.
+        while (listTypeStack.length > indent ||
+            (indent === listTypeStack.length && listType !== null && listType !== listTypeStack[listTypeStack.length - 1])) {
+          html += close(listTypeStack.pop());
+        }
+
+        // Open any needed lists.
+        while (listTypeStack.length < indent) {
+          var toOpen = listType || LIST_TYPE.UNORDERED; // default to unordered lists for indenting non-list-item lines.
+          html += open(toOpen);
+          listTypeStack.push(toOpen);
+        }
+
+        if (listType) {
+          html += "<li>";
+          inListItem = true;
+        }
+      }
+
+      if (ATTR.LINE_SENTINEL in attrs) {
+        op = doc.ops[++i];
+        continue;
+      }
+
       var prefix = '', suffix = '';
       for(var attr in attrs) {
         var value = attrs[attr];
@@ -4042,11 +4118,11 @@ firepad.Firepad = (function(global) {
           start = 'span style="font-size: ' + value + 'px"';
           end = 'span';
         } else if (attr === ATTR.FONT) {
-          start = 'font face="' + value + '"';
-          end = 'font';
+          start = 'span style="font-family: ' + value + '"';
+          end = 'span';
         } else if (attr === ATTR.COLOR) {
-          start = 'font color="' + value + '"';
-          end = 'font';
+          start = 'span style="color: ' + value + '"';
+          end = 'span';
         } else {
           utils.assert(false, "Encountered unknown attribute while rendering html: " + attr);
         }
@@ -4054,7 +4130,31 @@ firepad.Firepad = (function(global) {
         suffix = '</' + end + '>' + suffix;
       }
 
-      html += prefix + this.textToHtml_(op.text) + suffix;
+      var text = op.text;
+      var newLineIndex = text.indexOf('\n');
+      if (newLineIndex >= 0) {
+        newLine = true;
+        if (newLineIndex < text.length - 1) {
+          // split op.
+          op = new firepad.TextOp('insert', text.substr(newLineIndex+1), attrs);
+          text = text.substr(0, newLineIndex+1);
+        } else {
+          op = doc.ops[++i];
+        }
+      } else {
+        op = doc.ops[++i];
+      }
+
+      html += prefix + this.textToHtml_(text) + suffix;
+    }
+
+    if (inListItem) {
+      html += '</li>';
+    }
+
+    // Close any extra lists.
+    while (listTypeStack.length > 0) {
+      html += close(listTypeStack.pop());
     }
 
     return html;
