@@ -1722,12 +1722,12 @@ firepad.RichTextToolbar = (function(global) {
       content.setAttribute('style', 'font-size:' + sizes[i] + 'px; line-height:' + (sizes[i]-6) + 'px;');
       items.push({ content: content, value: sizes[i] });
     }
-    return this.makeDropdown_('Size', 'font-size', items);
+    return this.makeDropdown_('Size', 'font-size', items, 'px');
   };
 
   RichTextToolbar.prototype.makeColorDropdown_ = function() {
     // NOTE: There must be matching .css styles in firepad.css.
-    var colors = ['black', 'red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'grey'];
+    var colors = ['black', 'red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'grey', '#00ff00'];
 
     var items = [];
     for(var i = 0; i < colors.length; i++) {
@@ -1739,7 +1739,7 @@ firepad.RichTextToolbar = (function(global) {
     return this.makeDropdown_('Color', 'color', items);
   };
 
-  RichTextToolbar.prototype.makeDropdown_ = function(title, eventName, items) {
+  RichTextToolbar.prototype.makeDropdown_ = function(title, eventName, items, value_suffix) {
     var self = this;
     var button = utils.elt('a', title + ' ▾', { 'class': 'firepad-btn firepad-dropdown' });
     var list = utils.elt('ul', [ ], { 'class': 'firepad-dropdown-menu' });
@@ -1774,7 +1774,7 @@ firepad.RichTextToolbar = (function(global) {
 
       utils.on(element, 'click', utils.stopEventAnd(function() {
         hideDropdown();
-        self.trigger(eventName, value);
+        self.trigger(eventName, (value_suffix ? value + value_suffix : value));
       }));
 
       list.appendChild(element);
@@ -2369,6 +2369,11 @@ firepad.RichTextCodeMirror = (function () {
   var ATTR = firepad.AttributeConstants;
   var RichTextClassPrefixDefault = 'cmrt-';
   var RichTextOriginPrefix = 'cmrt-';
+  var DynamicStyleAttributes = { 
+  	'c' : 'color', 
+  	'fs' : 'font-size' 
+  	};
+  var StyleCache_ = {};
 
   function RichTextCodeMirror(codeMirror, options) {
     this.codeMirror = codeMirror;
@@ -2639,21 +2644,43 @@ firepad.RichTextCodeMirror = (function () {
     }
   };
 
+  RichTextCodeMirror.prototype.addStyleWithCSS_ = function(css) {
+	  var head = document.getElementsByTagName('head')[0],
+		    style = document.createElement('style');
+		
+		style.type = 'text/css';
+		if (style.styleSheet){
+		  style.styleSheet.cssText = css;
+		} else {
+		  style.appendChild(document.createTextNode(css));
+		}
+		
+		head.appendChild(style);
+  };
+
   RichTextCodeMirror.prototype.getClassNameForAttributes_ = function(attributes) {
-    var className = '';
-    for(var attr in attributes) {
+    var globalClassName = '';
+    for (var attr in attributes) {
       var val = attributes[attr];
       if (attr === ATTR.LINE_SENTINEL) {
         firepad.utils.assert(val === true, "LINE_SENTINEL attribute should be true if it exists.");
       } else {
-        className += ' ' + (this.options_['cssPrefix'] || RichTextClassPrefixDefault) + attr;
+        var className = (this.options_['cssPrefix'] || RichTextClassPrefixDefault) + attr;
         if (val !== true) {
-          val = val.toString().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
-          className += '-' + val;
+          var classVal = val.toString().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+          className += '-' + classVal;
+          if (DynamicStyleAttributes[attr]) {
+		      	if (!StyleCache_[attr]) StyleCache_[attr] = {};
+		      	if (!StyleCache_[attr][classVal]) {
+			      	StyleCache_[attr][classVal] = true;
+			      	this.addStyleWithCSS_('.' + className + '{' + DynamicStyleAttributes[attr] + ':' + val + '}');
+		      	}
+		      }
         }
+        globalClassName = globalClassName + ' ' + className;
       }
     }
-    return className;
+    return globalClassName;
   };
 
   RichTextCodeMirror.prototype.lineClassRemover_ = function(lineNum) {
