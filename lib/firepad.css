@@ -35,30 +35,12 @@
 .firepad-i { font-style: italic; }
 .firepad-u { text-decoration: underline; }
 
-.firepad-fs-9 { font-size: 9px; }
-.firepad-fs-10 { font-size: 10px; }
-.firepad-fs-12 { font-size: 12px; }
-.firepad-fs-14 { font-size: 14px; }
-.firepad-fs-18 { font-size: 18px; }
-.firepad-fs-24 { font-size: 24px; }
-.firepad-fs-32 { font-size: 32px; }
-.firepad-fs-42 { font-size: 42px; }
-
 .firepad-f-arial { font-family: Arial, Helvetica, sans-serif; }
 .firepad-f-comic-sans-ms { font-family: "Comic Sans MS", cursive, sans-serif; }
 .firepad-f-courier-new { font-family: "Courier New", Courier, monospace; }
 .firepad-f-impact { font-family: Impact, Charcoal, sans-serif; }
 .firepad-f-times-new-roman { font-family: "Times New Roman", Times, serif; }
 .firepad-f-verdana { font-family: Verdana, Geneva, sans-serif; }
-
-.firepad-c-black { color: black; }
-.firepad-c-red { color: red; }
-.firepad-c-green { color: green; }
-.firepad-c-blue { color: blue; }
-.firepad-c-yellow { color: yellow; }
-.firepad-c-cyan { color: cyan; }
-.firepad-c-magenta { color: magenta; }
-.firepad-c-grey { color: grey; }
 
 /** Line Styles */
 pre.firepad-lt-o, pre.firepad-lt-u {
