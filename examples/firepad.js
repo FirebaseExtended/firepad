@@ -1444,6 +1444,7 @@ firepad.FirebaseAdapter = (function (global) {
     function childChanged(childSnap) {
       var userId = childSnap.name();
       if (userId !== self.userId_) {
+        var userData = childSnap.val();
         self.trigger('cursor', userId, userData.cursor, userData.color);
       }
     }
