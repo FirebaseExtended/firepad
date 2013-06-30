@@ -4120,6 +4120,8 @@ firepad.Firepad = (function(global) {
         }
 
         // Close any extra lists.
+        utils.assert(indent >= 0, "Indent must not be negative.");
+        utils.assert(listType == null || indent > 0, "Shouldn't have a non-indented list.");
         while (listTypeStack.length > indent ||
             (indent === listTypeStack.length && listType !== null && listType !== listTypeStack[listTypeStack.length - 1])) {
           html += close(listTypeStack.pop());
