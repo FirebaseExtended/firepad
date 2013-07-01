@@ -41,7 +41,7 @@ firepad.utils.makeEventEmitter = function(clazz, opt_allowedEVents) {
 
   clazz.prototype.validateEventType_ = function(eventType) {
     if (this.allowedEvents_ && this.allowedEvents_.indexOf(eventType) === -1) {
-      throw new Error('Unknown event "' + eventType + '"');
+      console.log('Unknown event "' + eventType + '"');
     }
   };
 };
@@ -1666,7 +1666,7 @@ firepad.RichTextToolbar = (function(global) {
     this.element_ = this.makeElement_();
   }
 
-  utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'font', 'font-size', 'color', 'unordered-list', 'ordered-list']);
+  utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'font', 'font-size', 'color', 'unordered-list', 'ordered-list', 'todo']);
 
   RichTextToolbar.prototype.element = function() { return this.element_; };
 
@@ -1683,6 +1683,8 @@ firepad.RichTextToolbar = (function(global) {
     utils.on(ul, 'click', utils.stopEventAnd(function() { self.trigger('unordered-list'); }));
     var ol = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-ol' });
     utils.on(ol, 'click', utils.stopEventAnd(function() { self.trigger('ordered-list'); }));
+    var todo = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-todo' });
+    utils.on(todo, 'click', utils.stopEventAnd(function() { self.trigger('todo'); }));
 
     var font = this.makeFontDropdown_();
     var fontSize = this.makeFontSizeDropdown_();
@@ -1693,7 +1695,7 @@ firepad.RichTextToolbar = (function(global) {
       utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [bold, italic, underline], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [ul, ol], { 'class': 'firepad-btn-group'})
+      utils.elt('div', [ul, ol, todo], { 'class': 'firepad-btn-group'})
     ], { 'class': 'firepad-toolbar' });
 
     return toolbar;
@@ -2852,6 +2854,12 @@ firepad.RichTextCodeMirror = (function () {
             } else if (listType === 'u') {
               element = this.makeUnorderedListElement_();
               listNumber[indent] = 1;
+            } else if (listType === 't') {
+              element = this.makeTodoListElement_(false);
+              listNumber[indent] = 1;
+            } else if (listType === 'tc') {
+              element = this.makeTodoListElement_(true);
+              listNumber[indent] = 1;
             }
 
             var className = this.getClassNameForAttributes_(attributes);
@@ -2897,6 +2905,38 @@ firepad.RichTextCodeMirror = (function () {
     return utils.elt('div', '\u2022', {
       style: "margin-left: -20px; display:inline-block; width:15px;"
     });
+  };
+
+	RichTextCodeMirror.prototype.toggleTodo = function(noRemove) {
+  	var attribute = ATTR.LIST_TYPE;
+    var currentAttributes = this.getCurrentLineAttributes_();
+    var newValue;
+    if (!(attribute in currentAttributes) || ((currentAttributes[attribute] !== 't') && (currentAttributes[attribute] !== 'tc'))) {
+      newValue = 't';
+    } else if (currentAttributes[attribute] === 't') {
+      newValue = 'tc';
+    } else if (currentAttributes[attribute] === 'tc') {
+	    newValue = noRemove ? 't' : false;
+    }
+    this.setLineAttribute(attribute, newValue);
+	};
+
+  RichTextCodeMirror.prototype.makeTodoListElement_ = function(checked) {
+  	var params = {
+    	'type': "checkbox",
+    	'style': "margin-left: -20px; display:inline-block; width:15px; margin-top: -2px;"
+    };
+    if (checked) params['checked'] = true;
+    var el = utils.elt('input', false, params);
+    el.onclick = function(e) {
+	  	e.preventDefault();
+	  	var elem = e.target.parentNode.parentNode;
+	    var i = 0;
+	    while((elem=elem.previousSibling)!=null) ++i;
+	    this.codeMirror.setCursor({line: i, ch: 0});
+	  	this.toggleTodo(true);
+		}.bind(this);
+    return el;
   };
 
   RichTextCodeMirror.prototype.lineIsListItemOrIndented_ = function(lineNum) {
@@ -2995,6 +3035,7 @@ firepad.RichTextCodeMirror = (function () {
         cm.replaceSelection('\n', 'end', '+input');
 
         if (listType) {
+        	if (listType === 'tc') lineAttributes[ATTR.LIST_TYPE] = 't';
           // Copy line attributes forward.
           this.updateLineAttributes(cursorLine+1, cursorLine+1, function(attributes) {
             for(var attr in lineAttributes) {
@@ -3615,7 +3656,9 @@ firepad.LineFormatting = (function() {
   LineFormatting.LIST_TYPE = {
     NONE: false,
     ORDERED: 'o',
-    UNORDERED: 'u'
+    UNORDERED: 'u',
+    TODO: 't',
+    TODOCHECKED: 'tc' 
   };
 
   LineFormatting.prototype.cloneWithNewAttribute_ = function(attribute, value) {
@@ -3641,7 +3684,7 @@ firepad.LineFormatting = (function() {
   };
 
   LineFormatting.prototype.listItem = function(val) {
-    firepad.utils.assert(val === false || val === 'u' || val === 'o');
+    firepad.utils.assert(val === false || val === 'u' || val === 'o' || val === 't' || val === 'tc');
     return this.cloneWithNewAttribute_(ATTR.LIST_TYPE, val);
   };
 
@@ -3919,6 +3962,7 @@ firepad.ParseHtml = (function () {
         case 'font-family':
           var font = val.split(',')[0].trim(); // get first font.
           font = font.replace(/['"]/g, ''); // remove quotes.
+          font = font.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase() });
           formatting = formatting.font(font);
           break;
       }
@@ -4161,11 +4205,13 @@ firepad.Firepad = (function(global) {
         } else if (attr === ATTR.COLOR) {
           start = 'span style="color: ' + value + '"';
           end = 'span';
+        } else if (attr === ATTR.LIST_TYPE) {
+        	prefix += '  &bull; ';
         } else {
-          utils.assert(false, "Encountered unknown attribute while rendering html: " + attr);
+          utils.log(false, "Encountered unknown attribute while rendering html: " + attr);
         }
-        prefix += '<' + start + '>';
-        suffix = '</' + end + '>' + suffix;
+        if (start) prefix += '<' + start + '>';
+	      if (end) suffix = '</' + end + '>' + suffix;
       }
 
       var text = op.text;
@@ -4195,6 +4241,15 @@ firepad.Firepad = (function(global) {
       html += close(listTypeStack.pop());
     }
 
+    // Tidy HTML
+    // TODO: tidy me better
+    // TIP:  use \n in reg, $n in exp to (re)use n-th match :)
+
+    // Close/reopen tags like </b><b>
+    html = html.replace(/<\/(\w+)><\1>/gi, '');
+    // No <br> after block tags
+    html = html.replace(/<\/(h[1-6]|li|dd|dt|pre|p)><br[\/\ ]*>/gi, '</$1>');
+
     return html;
   };
 
@@ -4204,7 +4259,8 @@ firepad.Firepad = (function(global) {
         .replace(/'/g, '&#39;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(/\n/g, '<br/>');
+        .replace(RichTextCodeMirror.LineSentinelCharacter, '')
+        .replace(/\n/g, '<br />');
   };
 
   Firepad.prototype.setHtml = function (html) {
@@ -4257,6 +4313,11 @@ firepad.Firepad = (function(global) {
     this.codeMirror_.focus();
   };
 
+  Firepad.prototype.todo = function() {
+  	this.richTextCodeMirror_.toggleTodo();
+    this.codeMirror_.focus();
+  };
+
   Firepad.prototype.newline = function() {
     this.richTextCodeMirror_.newline();
   };
@@ -4301,6 +4362,7 @@ firepad.Firepad = (function(global) {
     toolbar.on('color', this.color, this);
     toolbar.on('ordered-list', this.orderedList, this);
     toolbar.on('unordered-list', this.unorderedList, this);
+    toolbar.on('todo', this.todo, this);
 
     this.firepadWrapper_.insertBefore(toolbar.element(), this.firepadWrapper_.firstChild);
   };
