@@ -1535,6 +1535,8 @@ firepad.FirebaseAdapter = (function (global) {
         // If a misbehaved client adds a bad operation, just ignore it.
         utils.log('Invalid operation.', this.ref_.toString(), revisionId, pending[revisionId]);
       } else {
+        // Flag as 'diff' in operation composition if required
+        var diff = this.lastRevision_ > 0 && this.revision_ > this.lastRevision_;
         this.document_ = this.document_.compose(revision.operation, diff, revision.author);
       }
 
@@ -1549,7 +1551,7 @@ firepad.FirebaseAdapter = (function (global) {
     var self = this;
     setTimeout(function() {
       self.trigger('ready');
-      self.trigger('revision', this.revision_ - 1, revisionToId(this.revision_ - 1));
+      self.trigger('revision', self.revision_ - 1, revisionToId(self.revision_ - 1));
     }, 0);
   };
 
@@ -4193,62 +4195,12 @@ firepad.Firepad = (function(global) {
     }
   };
 
-  Firepad.prototype.getHtml = function() {
+  Firepad.prototype.getHtml = function(diff) {
     var doc = this.firebaseAdapter_.getDocument();
-    var html = '', newLine = true;
-
-    function open(listType) {
-      return (listType === LIST_TYPE.ORDERED) ? '<ol>' : '<ul>';
-    }
-
-    function close(listType) {
-      return (listType === LIST_TYPE.ORDERED) ? '</ol>' : '</ul>';
-    }
-
-    var listTypeStack = [];
-    var inListItem = false;
-    var i = 0, op = doc.ops[i];
-    while(op) {
+    var html = '';
+    for(var i = 0; i < doc.ops.length; i++) {
+      var op = doc.ops[i], attrs = op.attributes;
       utils.assert(op.isInsert());
-      var attrs = op.attributes;
-
-      if (newLine) {
-        newLine = false;
-        var indent = 0, listType = null;
-        if (ATTR.LINE_SENTINEL in attrs) {
-          indent = attrs[ATTR.LINE_INDENT] || 0;
-          listType = attrs[ATTR.LIST_TYPE] || null;
-        }
-
-        if (inListItem) {
-          html += '</li>';
-          inListItem = false;
-        }
-
-        // Close any extra lists.
-        while (listTypeStack.length > indent ||
-            (indent === listTypeStack.length && listType !== null && listType !== listTypeStack[listTypeStack.length - 1])) {
-          html += close(listTypeStack.pop());
-        }
-
-        // Open any needed lists.
-        while (listTypeStack.length < indent) {
-          var toOpen = listType || LIST_TYPE.UNORDERED; // default to unordered lists for indenting non-list-item lines.
-          html += open(toOpen);
-          listTypeStack.push(toOpen);
-        }
-
-        if (listType) {
-          html += "<li>";
-          inListItem = true;
-        }
-      }
-
-      if (ATTR.LINE_SENTINEL in attrs) {
-        op = doc.ops[++i];
-        continue;
-      }
-
       var prefix = '', suffix = '';
       for(var attr in attrs) {
         var value = attrs[attr];
@@ -4260,45 +4212,21 @@ firepad.Firepad = (function(global) {
           start = 'span style="font-size: ' + value + 'px"';
           end = 'span';
         } else if (attr === ATTR.FONT) {
-          start = 'span style="font-family: ' + value + '"';
-          end = 'span';
+          start = 'font face="' + value + '"';
+          end = 'font';
         } else if (attr === ATTR.COLOR) {
-          start = 'span style="color: ' + value + '"';
-          end = 'span';
+          start = 'font color="' + value + '"';
+          end = 'font';
         } else if (attr === ATTR.LIST_TYPE) {
         	prefix += '  &bull; ';
         } else {
-          utils.log(false, "Encountered unknown attribute while rendering html: " + attr);
+          // utils.log(false, "Encountered unknown attribute while rendering html: " + attr);
         }
         if (start) prefix += '<' + start + '>';
 	      if (end) suffix = '</' + end + '>' + suffix;
       }
 
-      var text = op.text;
-      var newLineIndex = text.indexOf('\n');
-      if (newLineIndex >= 0) {
-        newLine = true;
-        if (newLineIndex < text.length - 1) {
-          // split op.
-          op = new firepad.TextOp('insert', text.substr(newLineIndex+1), attrs);
-          text = text.substr(0, newLineIndex+1);
-        } else {
-          op = doc.ops[++i];
-        }
-      } else {
-        op = doc.ops[++i];
-      }
-
-      html += prefix + this.textToHtml_(text) + suffix;
-    }
-
-    if (inListItem) {
-      html += '</li>';
-    }
-
-    // Close any extra lists.
-    while (listTypeStack.length > 0) {
-      html += close(listTypeStack.pop());
+      html += prefix + this.textToHtml_(op.text) + suffix;
     }
 
     // Tidy HTML
