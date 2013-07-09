@@ -1695,7 +1695,9 @@ firepad.RichTextToolbar = (function(global) {
       utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [bold, italic, underline], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [ul, ol, todo], { 'class': 'firepad-btn-group'})
+
+      // Removing 'todo' until we have a slightly better icon (or move to an icon font or something).
+      utils.elt('div', [ul, ol/*, todo*/], { 'class': 'firepad-btn-group'})
     ], { 'class': 'firepad-toolbar' });
 
     return toolbar;
