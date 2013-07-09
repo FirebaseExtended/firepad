@@ -1666,7 +1666,7 @@ firepad.RichTextToolbar = (function(global) {
     this.element_ = this.makeElement_();
   }
 
-  utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'font', 'font-size', 'color', 'unordered-list', 'ordered-list']);
+  utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'font', 'font-size', 'color', 'unordered-list', 'ordered-list', 'todo']);
 
   RichTextToolbar.prototype.element = function() { return this.element_; };
 
@@ -1683,6 +1683,8 @@ firepad.RichTextToolbar = (function(global) {
     utils.on(ul, 'click', utils.stopEventAnd(function() { self.trigger('unordered-list'); }));
     var ol = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-ol' });
     utils.on(ol, 'click', utils.stopEventAnd(function() { self.trigger('ordered-list'); }));
+    var todo = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-todo' });
+    utils.on(todo, 'click', utils.stopEventAnd(function() { self.trigger('todo'); }));
 
     var font = this.makeFontDropdown_();
     var fontSize = this.makeFontSizeDropdown_();
@@ -1693,7 +1695,9 @@ firepad.RichTextToolbar = (function(global) {
       utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [bold, italic, underline], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [ul, ol], { 'class': 'firepad-btn-group'})
+
+      // Removing 'todo' until we have a slightly better icon (or move to an icon font or something).
+      utils.elt('div', [ul, ol/*, todo*/], { 'class': 'firepad-btn-group'})
     ], { 'class': 'firepad-toolbar' });
 
     return toolbar;
@@ -2736,7 +2740,7 @@ firepad.RichTextCodeMirror = (function () {
         var attributes;
         // TODO: Handle 'paste' differently?
         if (change.origin === '+input' || change.origin === 'paste') {
-          attributes = this.getCurrentAttributes_();
+          attributes = this.currentAttributes_ || { };
         } else if (origin in this.outstandingChanges_) {
           attributes = this.outstandingChanges_[origin].attributes;
           origin = this.outstandingChanges_[origin].origOrigin;
@@ -2837,45 +2841,7 @@ firepad.RichTextCodeMirror = (function () {
             markIndex++;
           }
 
-          // If the mark is at the beginning of the line and it represents a list element, we need to replace it with
-          // the appropriate html element for the list heading.
-          var element = null;
-          if (markStartIndex === 0) {
-            var attributes = this.getLineAttributes_(line);
-            var listType = attributes[ATTR.LIST_TYPE];
-            var indent = attributes[ATTR.LINE_INDENT] || 0;
-            if (listType && indent === 0) { indent = 1; }
-            if (indent >= listNumber.length) indent = listNumber.length - 1; // we don't support deeper indents.
-            if (listType === 'o') {
-              element = this.makeOrderedListElement_(listNumber[indent]);
-              listNumber[indent]++;
-            } else if (listType === 'u') {
-              element = this.makeUnorderedListElement_();
-              listNumber[indent] = 1;
-            }
-
-            var className = this.getClassNameForAttributes_(attributes);
-            if (className !== '') {
-              this.codeMirror.addLineClass(line, "text", className);
-            }
-
-            // Reset deeper indents back to 1.
-            for(i = indent+1; i < listNumber.length; i++) {
-              listNumber[i] = 1;
-            }
-          }
-
-          // Create a marker to cover this series of sentinel characters.
-          // NOTE: The reason we treat them as a group (one marker for all subsequent sentinel characters instead of
-          // one marker for each sentinel character) is that CodeMirror seems to get angry if we don't.
-          var markerOptions = { inclusiveLeft: true, collapsed: true };
-          if (element) {
-            markerOptions.replacedWith = element;
-          }
-          var marker = cm.markText({line: line, ch: markStartIndex }, { line: line, ch: markIndex }, markerOptions);
-          // track that it's a line-sentinel character so we can identify it later.
-          marker.isForLineSentinel = true;
-
+          this.markLineSentinelCharacters_(line, markStartIndex, markIndex, listNumber);
           markIndex = text.indexOf(LineSentinelCharacter, markIndex);
         }
       } else {
@@ -2885,6 +2851,60 @@ firepad.RichTextCodeMirror = (function () {
         }
       }
     }
+  };
+
+  RichTextCodeMirror.prototype.markLineSentinelCharacters_ = function(line, startIndex, endIndex, listNumber) {
+    var cm = this.codeMirror;
+    // If the mark is at the beginning of the line and it represents a list element, we need to replace it with
+    // the appropriate html element for the list heading.
+    var element = null;
+    var marker = null;
+    var getMarkerLine = function() {
+      var span = marker.find();
+      return span ? span.from.line : null;
+    };
+
+    if (startIndex === 0) {
+      var attributes = this.getLineAttributes_(line);
+      var listType = attributes[ATTR.LIST_TYPE];
+      var indent = attributes[ATTR.LINE_INDENT] || 0;
+      if (listType && indent === 0) { indent = 1; }
+      if (indent >= listNumber.length) indent = listNumber.length - 1; // we don't support deeper indents.
+      if (listType === 'o') {
+        element = this.makeOrderedListElement_(listNumber[indent]);
+        listNumber[indent]++;
+      } else if (listType === 'u') {
+        element = this.makeUnorderedListElement_();
+        listNumber[indent] = 1;
+      } else if (listType === 't') {
+        element = this.makeTodoListElement_(false, getMarkerLine);
+        listNumber[indent] = 1;
+      } else if (listType === 'tc') {
+        element = this.makeTodoListElement_(true, getMarkerLine);
+        listNumber[indent] = 1;
+      }
+
+      var className = this.getClassNameForAttributes_(attributes);
+      if (className !== '') {
+        this.codeMirror.addLineClass(line, "text", className);
+      }
+
+      // Reset deeper indents back to 1.
+      for(var i = indent+1; i < listNumber.length; i++) {
+        listNumber[i] = 1;
+      }
+    }
+
+    // Create a marker to cover this series of sentinel characters.
+    // NOTE: The reason we treat them as a group (one marker for all subsequent sentinel characters instead of
+    // one marker for each sentinel character) is that CodeMirror seems to get angry if we don't.
+    var markerOptions = { inclusiveLeft: true, collapsed: true };
+    if (element) {
+      markerOptions.replacedWith = element;
+    }
+    var marker = cm.markText({line: line, ch: startIndex }, { line: line, ch: endIndex }, markerOptions);
+    // track that it's a line-sentinel character so we can identify it later.
+    marker.isForLineSentinel = true;
   };
 
   RichTextCodeMirror.prototype.makeOrderedListElement_ = function(number) {
@@ -2897,6 +2917,35 @@ firepad.RichTextCodeMirror = (function () {
     return utils.elt('div', '\u2022', {
       style: "margin-left: -20px; display:inline-block; width:15px;"
     });
+  };
+
+	RichTextCodeMirror.prototype.toggleTodo = function(noRemove) {
+  	var attribute = ATTR.LIST_TYPE;
+    var currentAttributes = this.getCurrentLineAttributes_();
+    var newValue;
+    if (!(attribute in currentAttributes) || ((currentAttributes[attribute] !== 't') && (currentAttributes[attribute] !== 'tc'))) {
+      newValue = 't';
+    } else if (currentAttributes[attribute] === 't') {
+      newValue = 'tc';
+    } else if (currentAttributes[attribute] === 'tc') {
+	    newValue = noRemove ? 't' : false;
+    }
+    this.setLineAttribute(attribute, newValue);
+	};
+
+  RichTextCodeMirror.prototype.makeTodoListElement_ = function(checked, getMarkerLine) {
+  	var params = {
+    	'type': "checkbox",
+    	'style': "margin-left: -20px; display:inline-block; width:15px; margin-top: -2px;"
+    };
+    if (checked) params['checked'] = true;
+    var el = utils.elt('input', false, params);
+    el.onclick = function(e) {
+	  	e.preventDefault();
+	    this.codeMirror.setCursor({line: getMarkerLine(), ch: 0});
+	  	this.toggleTodo(true);
+		}.bind(this);
+    return el;
   };
 
   RichTextCodeMirror.prototype.lineIsListItemOrIndented_ = function(lineNum) {
@@ -3000,6 +3049,9 @@ firepad.RichTextCodeMirror = (function () {
             for(var attr in lineAttributes) {
               attributes[attr] = lineAttributes[attr];
             }
+
+            // Don't mark new todo items as completed.
+            if (listType === 'tc') attributes[ATTR.LIST_TYPE] = 't';
           });
         }
       }
@@ -3615,7 +3667,9 @@ firepad.LineFormatting = (function() {
   LineFormatting.LIST_TYPE = {
     NONE: false,
     ORDERED: 'o',
-    UNORDERED: 'u'
+    UNORDERED: 'u',
+    TODO: 't',
+    TODOCHECKED: 'tc' 
   };
 
   LineFormatting.prototype.cloneWithNewAttribute_ = function(attribute, value) {
@@ -3641,7 +3695,7 @@ firepad.LineFormatting = (function() {
   };
 
   LineFormatting.prototype.listItem = function(val) {
-    firepad.utils.assert(val === false || val === 'u' || val === 'o');
+    firepad.utils.assert(val === false || val === 'u' || val === 'o' || val === 't' || val === 'tc');
     return this.cloneWithNewAttribute_(ATTR.LIST_TYPE, val);
   };
 
@@ -3919,6 +3973,7 @@ firepad.ParseHtml = (function () {
         case 'font-family':
           var font = val.split(',')[0].trim(); // get first font.
           font = font.replace(/['"]/g, ''); // remove quotes.
+          font = font.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase() });
           formatting = formatting.font(font);
           break;
       }
@@ -4120,6 +4175,8 @@ firepad.Firepad = (function(global) {
         }
 
         // Close any extra lists.
+        utils.assert(indent >= 0, "Indent must not be negative.");
+        utils.assert(listType == null || indent > 0, "Shouldn't have a non-indented list.");
         while (listTypeStack.length > indent ||
             (indent === listTypeStack.length && listType !== null && listType !== listTypeStack[listTypeStack.length - 1])) {
           html += close(listTypeStack.pop());
@@ -4160,10 +4217,10 @@ firepad.Firepad = (function(global) {
           start = 'span style="color: ' + value + '"';
           end = 'span';
         } else {
-          utils.assert(false, "Encountered unknown attribute while rendering html: " + attr);
+          utils.log(false, "Encountered unknown attribute while rendering html: " + attr);
         }
-        prefix += '<' + start + '>';
-        suffix = '</' + end + '>' + suffix;
+        if (start) prefix += '<' + start + '>';
+	      if (end) suffix = '</' + end + '>' + suffix;
       }
 
       var text = op.text;
@@ -4193,6 +4250,15 @@ firepad.Firepad = (function(global) {
       html += close(listTypeStack.pop());
     }
 
+    // Tidy HTML
+    // TODO: tidy me better
+    // TIP:  use \n in reg, $n in exp to (re)use n-th match :)
+
+    // Close/reopen tags like </b><b>
+    html = html.replace(/<\/(\w+)><\1>/gi, '');
+    // No <br> after block tags
+    html = html.replace(/<\/(h[1-6]|li|dd|dt|pre|p)><br[\/\ ]*>/gi, '</$1>');
+
     return html;
   };
 
@@ -4202,7 +4268,7 @@ firepad.Firepad = (function(global) {
         .replace(/'/g, '&#39;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(/\n/g, '<br/>');
+        .replace(/\n/g, '<br />');
   };
 
   Firepad.prototype.setHtml = function (html) {
@@ -4255,6 +4321,11 @@ firepad.Firepad = (function(global) {
     this.codeMirror_.focus();
   };
 
+  Firepad.prototype.todo = function() {
+  	this.richTextCodeMirror_.toggleTodo();
+    this.codeMirror_.focus();
+  };
+
   Firepad.prototype.newline = function() {
     this.richTextCodeMirror_.newline();
   };
@@ -4299,6 +4370,7 @@ firepad.Firepad = (function(global) {
     toolbar.on('color', this.color, this);
     toolbar.on('ordered-list', this.orderedList, this);
     toolbar.on('unordered-list', this.unorderedList, this);
+    toolbar.on('todo', this.todo, this);
 
     this.firepadWrapper_.insertBefore(toolbar.element(), this.firepadWrapper_.firstChild);
   };
