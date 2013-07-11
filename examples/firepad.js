@@ -4224,7 +4224,8 @@ firepad.Firepad = (function(global) {
           utils.assert(value === true);
           start = end = attr;
         } else if (attr === ATTR.FONT_SIZE) {
-          start = 'span style="font-size: ' + value + 'px"';
+          start = 'span style="font-size: ' + value;
+          start += (typeof value !== "string" || value.indexOf("px", value.length - 2) === -1) ? 'px"' : '"';
           end = 'span';
         } else if (attr === ATTR.FONT) {
           start = 'span style="font-family: ' + value + '"';
