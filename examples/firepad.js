@@ -2395,9 +2395,11 @@ firepad.RichTextCodeMirror = (function () {
     // Ensure annotationList is in sync with any existing codemirror contents.
     this.initAnnotationList_();
 
+    bind(this, 'onCodeMirrorBeforeChange_');
     bind(this, 'onCodeMirrorChange_');
     bind(this, 'onCursorActivity_');
 
+    this.codeMirror.on('beforeChange', this.onCodeMirrorBeforeChange_);
     this.codeMirror.on('change', this.onCodeMirrorChange_);
     this.codeMirror.on('cursorActivity', this.onCursorActivity_);
 
@@ -2412,6 +2414,7 @@ firepad.RichTextCodeMirror = (function () {
   RichTextCodeMirror.LineSentinelCharacter = LineSentinelCharacter;
 
   RichTextCodeMirror.prototype.detach = function() {
+    this.codeMirror.off('beforeChange', this.onCodeMirrorBeforeChange_);
     this.codeMirror.off('change', this.onCodeMirrorChange_);
     this.codeMirror.off('cursorActivity', this.onCursorActivity_);
     this.clearAnnotations_();
@@ -2710,6 +2713,19 @@ firepad.RichTextCodeMirror = (function () {
   RichTextCodeMirror.prototype.emptySelection_ = function() {
     var start = this.codeMirror.getCursor('start'), end = this.codeMirror.getCursor('end');
     return (start.line === end.line && start.ch === end.ch);
+  };
+
+  RichTextCodeMirror.prototype.onCodeMirrorBeforeChange_ = function(cm, change) {
+    // Remove LineSentinelCharacters from incoming input (e.g copy/pasting)
+    if (change.origin === '+input' || change.origin === 'paste') {
+      var newText = [];
+      for(var i = 0; i < change.text.length; i++) {
+        var t = change.text[i];
+        t = t.replace(new RegExp(LineSentinelCharacter, 'g'), '');
+        newText.push(t);
+      }
+      change.update(change.from, change.to, newText);
+    }
   };
 
   RichTextCodeMirror.prototype.onCodeMirrorChange_ = function(cm, changes) {
@@ -4208,7 +4224,8 @@ firepad.Firepad = (function(global) {
           utils.assert(value === true);
           start = end = attr;
         } else if (attr === ATTR.FONT_SIZE) {
-          start = 'span style="font-size: ' + value + 'px"';
+          start = 'span style="font-size: ' + value;
+          start += (typeof value !== "string" || value.indexOf("px", value.length - 2) === -1) ? 'px"' : '"';
           end = 'span';
         } else if (attr === ATTR.FONT) {
           start = 'span style="font-family: ' + value + '"';
