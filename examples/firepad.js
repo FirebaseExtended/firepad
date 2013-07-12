@@ -1732,7 +1732,9 @@ firepad.RichTextToolbar = (function(global) {
       utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [bold, italic, underline], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [ul, ol, todo], { 'class': 'firepad-btn-group'})
+
+      // Removing 'todo' until we have a slightly better icon (or move to an icon font or something).
+      utils.elt('div', [ul, ol/*, todo*/], { 'class': 'firepad-btn-group'})
     ], { 'class': 'firepad-toolbar' });
 
     return toolbar;
@@ -2430,9 +2432,11 @@ firepad.RichTextCodeMirror = (function () {
     // Ensure annotationList is in sync with any existing codemirror contents.
     this.initAnnotationList_();
 
+    bind(this, 'onCodeMirrorBeforeChange_');
     bind(this, 'onCodeMirrorChange_');
     bind(this, 'onCursorActivity_');
 
+    this.codeMirror.on('beforeChange', this.onCodeMirrorBeforeChange_);
     this.codeMirror.on('change', this.onCodeMirrorChange_);
     this.codeMirror.on('cursorActivity', this.onCursorActivity_);
 
@@ -2447,6 +2451,7 @@ firepad.RichTextCodeMirror = (function () {
   RichTextCodeMirror.LineSentinelCharacter = LineSentinelCharacter;
 
   RichTextCodeMirror.prototype.detach = function() {
+    this.codeMirror.off('beforeChange', this.onCodeMirrorBeforeChange_);
     this.codeMirror.off('change', this.onCodeMirrorChange_);
     this.codeMirror.off('cursorActivity', this.onCursorActivity_);
     this.clearAnnotations_();
@@ -2747,6 +2752,19 @@ firepad.RichTextCodeMirror = (function () {
     return (start.line === end.line && start.ch === end.ch);
   };
 
+  RichTextCodeMirror.prototype.onCodeMirrorBeforeChange_ = function(cm, change) {
+    // Remove LineSentinelCharacters from incoming input (e.g copy/pasting)
+    if (change.origin === '+input' || change.origin === 'paste') {
+      var newText = [];
+      for(var i = 0; i < change.text.length; i++) {
+        var t = change.text[i];
+        t = t.replace(new RegExp(LineSentinelCharacter, 'g'), '');
+        newText.push(t);
+      }
+      change.update(change.from, change.to, newText);
+    }
+  };
+
   RichTextCodeMirror.prototype.onCodeMirrorChange_ = function(cm, changes) {
     var newChangeList = { }, newChange = newChangeList;
     var changeOffset = 0;
@@ -2775,7 +2793,7 @@ firepad.RichTextCodeMirror = (function () {
         var attributes;
         // TODO: Handle 'paste' differently?
         if (change.origin === '+input' || change.origin === 'paste') {
-          attributes = this.getCurrentAttributes_();
+          attributes = this.currentAttributes_ || { };
         } else if (origin in this.outstandingChanges_) {
           attributes = this.outstandingChanges_[origin].attributes;
           origin = this.outstandingChanges_[origin].origOrigin;
@@ -4218,7 +4236,8 @@ firepad.Firepad = (function(global) {
           utils.assert(value === true);
           start = end = attr;
         } else if (attr === ATTR.FONT_SIZE) {
-          start = 'span style="font-size: ' + value + 'px"';
+          start = 'span style="font-size: ' + value;
+          start += (typeof value !== "string" || value.indexOf("px", value.length - 2) === -1) ? 'px"' : '"';
           end = 'span';
         } else if (attr === ATTR.FONT) {
           start = 'font face="' + value + '"';
