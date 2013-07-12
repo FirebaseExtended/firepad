@@ -41,7 +41,7 @@ firepad.utils.makeEventEmitter = function(clazz, opt_allowedEVents) {
 
   clazz.prototype.validateEventType_ = function(eventType) {
     if (this.allowedEvents_ && this.allowedEvents_.indexOf(eventType) === -1) {
-      console.log('Unknown event "' + eventType + '"');
+      throw new Error('Unknown event "' + eventType + '"');
     }
   };
 };
@@ -1351,7 +1351,7 @@ firepad.FirebaseAdapter = (function (global) {
       self.monitorCursors_();
     });
   }
-  utils.makeEventEmitter(FirebaseAdapter, ['ready', 'cursor', 'operation', 'ack', 'retry']);
+  utils.makeEventEmitter(FirebaseAdapter, ['ready', 'cursor', 'operation', 'ack', 'retry', 'history', 'revision', 'checkpoint', 'refreshed', 'cursors']);
 
   FirebaseAdapter.prototype.dispose = function() {
     this.removeFirebaseCallbacks_();
@@ -2876,51 +2876,7 @@ firepad.RichTextCodeMirror = (function () {
             markIndex++;
           }
 
-          // If the mark is at the beginning of the line and it represents a list element, we need to replace it with
-          // the appropriate html element for the list heading.
-          var element = null;
-          if (markStartIndex === 0) {
-            var attributes = this.getLineAttributes_(line);
-            var listType = attributes[ATTR.LIST_TYPE];
-            var indent = attributes[ATTR.LINE_INDENT] || 0;
-            if (listType && indent === 0) { indent = 1; }
-            if (indent >= listNumber.length) indent = listNumber.length - 1; // we don't support deeper indents.
-            if (listType === 'o') {
-              element = this.makeOrderedListElement_(listNumber[indent]);
-              listNumber[indent]++;
-            } else if (listType === 'u') {
-              element = this.makeUnorderedListElement_();
-              listNumber[indent] = 1;
-            } else if (listType === 't') {
-              element = this.makeTodoListElement_(false);
-              listNumber[indent] = 1;
-            } else if (listType === 'tc') {
-              element = this.makeTodoListElement_(true);
-              listNumber[indent] = 1;
-            }
-
-            var className = this.getClassNameForAttributes_(attributes);
-            if (className !== '') {
-              this.codeMirror.addLineClass(line, "text", className);
-            }
-
-            // Reset deeper indents back to 1.
-            for(i = indent+1; i < listNumber.length; i++) {
-              listNumber[i] = 1;
-            }
-          }
-
-          // Create a marker to cover this series of sentinel characters.
-          // NOTE: The reason we treat them as a group (one marker for all subsequent sentinel characters instead of
-          // one marker for each sentinel character) is that CodeMirror seems to get angry if we don't.
-          var markerOptions = { inclusiveLeft: true, collapsed: true };
-          if (element) {
-            markerOptions.replacedWith = element;
-          }
-          var marker = cm.markText({line: line, ch: markStartIndex }, { line: line, ch: markIndex }, markerOptions);
-          // track that it's a line-sentinel character so we can identify it later.
-          marker.isForLineSentinel = true;
-
+          this.markLineSentinelCharacters_(line, markStartIndex, markIndex, listNumber);
           markIndex = text.indexOf(LineSentinelCharacter, markIndex);
         }
       } else {
@@ -2930,6 +2886,60 @@ firepad.RichTextCodeMirror = (function () {
         }
       }
     }
+  };
+
+  RichTextCodeMirror.prototype.markLineSentinelCharacters_ = function(line, startIndex, endIndex, listNumber) {
+    var cm = this.codeMirror;
+    // If the mark is at the beginning of the line and it represents a list element, we need to replace it with
+    // the appropriate html element for the list heading.
+    var element = null;
+    var marker = null;
+    var getMarkerLine = function() {
+      var span = marker.find();
+      return span ? span.from.line : null;
+    };
+
+    if (startIndex === 0) {
+      var attributes = this.getLineAttributes_(line);
+      var listType = attributes[ATTR.LIST_TYPE];
+      var indent = attributes[ATTR.LINE_INDENT] || 0;
+      if (listType && indent === 0) { indent = 1; }
+      if (indent >= listNumber.length) indent = listNumber.length - 1; // we don't support deeper indents.
+      if (listType === 'o') {
+        element = this.makeOrderedListElement_(listNumber[indent]);
+        listNumber[indent]++;
+      } else if (listType === 'u') {
+        element = this.makeUnorderedListElement_();
+        listNumber[indent] = 1;
+      } else if (listType === 't') {
+        element = this.makeTodoListElement_(false, getMarkerLine);
+        listNumber[indent] = 1;
+      } else if (listType === 'tc') {
+        element = this.makeTodoListElement_(true, getMarkerLine);
+        listNumber[indent] = 1;
+      }
+
+      var className = this.getClassNameForAttributes_(attributes);
+      if (className !== '') {
+        this.codeMirror.addLineClass(line, "text", className);
+      }
+
+      // Reset deeper indents back to 1.
+      for(var i = indent+1; i < listNumber.length; i++) {
+        listNumber[i] = 1;
+      }
+    }
+
+    // Create a marker to cover this series of sentinel characters.
+    // NOTE: The reason we treat them as a group (one marker for all subsequent sentinel characters instead of
+    // one marker for each sentinel character) is that CodeMirror seems to get angry if we don't.
+    var markerOptions = { inclusiveLeft: true, collapsed: true };
+    if (element) {
+      markerOptions.replacedWith = element;
+    }
+    var marker = cm.markText({line: line, ch: startIndex }, { line: line, ch: endIndex }, markerOptions);
+    // track that it's a line-sentinel character so we can identify it later.
+    marker.isForLineSentinel = true;
   };
 
   RichTextCodeMirror.prototype.makeOrderedListElement_ = function(number) {
@@ -2958,7 +2968,7 @@ firepad.RichTextCodeMirror = (function () {
     this.setLineAttribute(attribute, newValue);
 	};
 
-  RichTextCodeMirror.prototype.makeTodoListElement_ = function(checked) {
+  RichTextCodeMirror.prototype.makeTodoListElement_ = function(checked, getMarkerLine) {
   	var params = {
     	'type': "checkbox",
     	'style': "margin-left: -20px; display:inline-block; width:15px; margin-top: -2px;"
@@ -2967,10 +2977,7 @@ firepad.RichTextCodeMirror = (function () {
     var el = utils.elt('input', false, params);
     el.onclick = function(e) {
 	  	e.preventDefault();
-	  	var elem = e.target.parentNode.parentNode;
-	    var i = 0;
-	    while((elem=elem.previousSibling)!=null) ++i;
-	    this.codeMirror.setCursor({line: i, ch: 0});
+	    this.codeMirror.setCursor({line: getMarkerLine(), ch: 0});
 	  	this.toggleTodo(true);
 		}.bind(this);
     return el;
@@ -3072,12 +3079,14 @@ firepad.RichTextCodeMirror = (function () {
         cm.replaceSelection('\n', 'end', '+input');
 
         if (listType) {
-        	if (listType === 'tc') lineAttributes[ATTR.LIST_TYPE] = 't';
           // Copy line attributes forward.
           this.updateLineAttributes(cursorLine+1, cursorLine+1, function(attributes) {
             for(var attr in lineAttributes) {
               attributes[attr] = lineAttributes[attr];
             }
+
+            // Don't mark new todo items as completed.
+            if (listType === 'tc') attributes[ATTR.LIST_TYPE] = 't';
           });
         }
       }
@@ -4217,26 +4226,17 @@ firepad.Firepad = (function(global) {
         } else if (attr === ATTR.COLOR) {
           start = 'font color="' + value + '"';
           end = 'font';
-        } else if (attr === ATTR.LIST_TYPE) {
-        	prefix += '  &bull; ';
         } else {
-          // utils.log(false, "Encountered unknown attribute while rendering html: " + attr);
+          utils.log(false, "Encountered unknown attribute while rendering html: " + attr);
         }
-        if (start) prefix += '<' + start + '>';
-	      if (end) suffix = '</' + end + '>' + suffix;
+        if (start && end) {
+	        prefix += '<' + start + '>';
+	        suffix = '</' + end + '>' + suffix;
+        }
       }
 
       html += prefix + this.textToHtml_(op.text) + suffix;
     }
-
-    // Tidy HTML
-    // TODO: tidy me better
-    // TIP:  use \n in reg, $n in exp to (re)use n-th match :)
-
-    // Close/reopen tags like </b><b>
-    html = html.replace(/<\/(\w+)><\1>/gi, '');
-    // No <br> after block tags
-    html = html.replace(/<\/(h[1-6]|li|dd|dt|pre|p)><br[\/\ ]*>/gi, '</$1>');
 
     return html;
   };
@@ -4247,7 +4247,7 @@ firepad.Firepad = (function(global) {
         .replace(/'/g, '&#39;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(RichTextCodeMirror.LineSentinelCharacter, '')
+        .replace(RichTextCodeMirror.LineSentinelCharacter, ' ')
         .replace(/\n/g, '<br />');
   };
 
