@@ -34,6 +34,8 @@
 .firepad-b { font-weight: bold; }
 .firepad-i { font-style: italic; }
 .firepad-u { text-decoration: underline; }
+.firepad-s { text-decoration: line-through; }
+.firepad-u.firepad-s { text-decoration: underline line-through; }
 
 .firepad-f-arial { font-family: Arial, Helvetica, sans-serif; }
 .firepad-f-comic-sans-ms { font-family: "Comic Sans MS", cursive, sans-serif; }
@@ -41,6 +43,10 @@
 .firepad-f-impact { font-family: Impact, Charcoal, sans-serif; }
 .firepad-f-times-new-roman { font-family: "Times New Roman", Times, serif; }
 .firepad-f-verdana { font-family: Verdana, Geneva, sans-serif; }
+
+.firepad-la-left { text-align: left; }
+.firepad-la-center { text-align: center; }
+.firepad-la-right { text-align: right; }
 
 /** Line Styles */
 pre.firepad-lt-o, pre.firepad-lt-u, pre.firepad-lt-t, pre.firepad-lt-tc {
@@ -53,6 +59,20 @@ pre.firepad-li-3 { margin-left: 90px; }
 pre.firepad-li-4 { margin-left: 120px; }
 pre.firepad-li-5 { margin-left: 150px; }
 pre.firepad-li-6 { margin-left: 180px; }
+pre.firepad-li-7 { margin-left: 210px; }
+pre.firepad-li-8 { margin-left: 240px; }
+pre.firepad-li-9 { margin-left: 270px; }
+pre.firepad-li-10 { margin-left: 300px; }
+pre.firepad-li-11 { margin-left: 330px; }
+pre.firepad-li-12 { margin-left: 360px; }
+pre.firepad-li-13 { margin-left: 390px; }
+pre.firepad-li-14 { margin-left: 420px; }
+pre.firepad-li-15 { margin-left: 450px; }
+pre.firepad-li-16 { margin-left: 480px; }
+pre.firepad-li-17 { margin-left: 510px; }
+pre.firepad-li-18 { margin-left: 540px; }
+pre.firepad-li-19 { margin-left: 570px; }
+pre.firepad-li-20 { margin-left: 600px; }
 
 .powered-by-firepad {
   position: absolute;
@@ -159,6 +179,11 @@ a.firepad-btn-italic {
 a.firepad-btn-underline {
   text-decoration: underline;
   width: 30px;
+}
+
+a.firepad-btn-strike {
+    text-decoration: line-through;
+    width: 30px;
 }
 
 a.firepad-btn-ul .firepad-btn-icon {
