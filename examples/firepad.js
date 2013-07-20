@@ -1666,7 +1666,7 @@ firepad.RichTextToolbar = (function(global) {
     this.element_ = this.makeElement_();
   }
 
-  utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'font', 'font-size', 'color', 'unordered-list', 'ordered-list', 'todo']);
+  utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'strike', 'font', 'font-size', 'color', 'left', 'center', 'right', 'unordered-list', 'ordered-list', 'todo']);
 
   RichTextToolbar.prototype.element = function() { return this.element_; };
 
@@ -1678,6 +1678,15 @@ firepad.RichTextToolbar = (function(global) {
     utils.on(italic, 'click', utils.stopEventAnd(function() { self.trigger('italic'); }));
     var underline = utils.elt('a', 'U', { 'class': 'firepad-btn firepad-btn-underline' });
     utils.on(underline, 'click', utils.stopEventAnd(function() { self.trigger('underline'); }));
+    var strike = utils.elt('a', 'S', { 'class': 'firepad-btn firepad-btn-strike' });
+    utils.on(strike, 'click', utils.stopEventAnd(function() { self.trigger('strike'); }));
+
+    var left = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-left' });
+    utils.on(left, 'click', utils.stopEventAnd(function() { self.trigger('left'); }));
+    var center = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-center' });
+    utils.on(center, 'click', utils.stopEventAnd(function() { self.trigger('center'); }));
+    var right = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-right' });
+    utils.on(right, 'click', utils.stopEventAnd(function() { self.trigger('right'); }));
 
     var ul = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-ul' });
     utils.on(ul, 'click', utils.stopEventAnd(function() { self.trigger('unordered-list'); }));
@@ -1694,7 +1703,9 @@ firepad.RichTextToolbar = (function(global) {
       utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [bold, italic, underline], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [bold, italic, underline, strike], { 'class': 'firepad-btn-group'}),
+      // Add once you have icons
+      // utils.elt('div', [left, center, right], { 'class': 'firepad-btn-group'}),
 
       // Removing 'todo' until we have a slightly better icon (or move to an icon font or something).
       utils.elt('div', [ul, ol/*, todo*/], { 'class': 'firepad-btn-group'})
@@ -2354,6 +2365,7 @@ firepad.AttributeConstants = {
   BOLD: 'b',
   ITALIC: 'i',
   UNDERLINE: 'u',
+  STRIKE: 's',
   FONT: 'f',
   FONT_SIZE: 'fs',
   COLOR: 'c',
@@ -2361,6 +2373,7 @@ firepad.AttributeConstants = {
 // Line Attributes
   LINE_SENTINEL: 'l',
   LINE_INDENT: 'li',
+  LINE_ALIGN: 'la',
   LIST_TYPE: 'lt'
 };
 
@@ -2377,8 +2390,9 @@ firepad.RichTextCodeMirror = (function () {
   // These attributes will have styles generated dynamically in the page.
   var DynamicStyleAttributes = {
     'c' : 'color', 
-    'fs' : 'font-size' 
-    };
+    'fs' : 'font-size',
+    'li' : function(indent) { return 'margin-left: ' + (indent * 30) + 'px'; }
+  };
 
   // A cache of dynamically-created styles so we can re-use them.
   var StyleCache_ = {};
@@ -2689,7 +2703,16 @@ firepad.RichTextCodeMirror = (function () {
             if (!StyleCache_[attr]) StyleCache_[attr] = {};
             if (!StyleCache_[attr][classVal]) {
               StyleCache_[attr][classVal] = true;
-              this.addStyleWithCSS_('.' + className + '{' + DynamicStyleAttributes[attr] + ':' + val + '}');
+              var dynStyle = DynamicStyleAttributes[attr];
+              var css = (typeof dynStyle === 'function') ?
+                  dynStyle(val) :
+                  dynStyle + ": " + val;
+
+              var selector = (attr == ATTR.LINE_INDENT) ?
+                  'pre.' + className :
+                  '.' + className;
+
+              this.addStyleWithCSS_(selector + ' { ' + css + ' }');
             }
           }
         }
@@ -2831,7 +2854,9 @@ firepad.RichTextCodeMirror = (function () {
       }
     }
 
-    var listNumber = [1, 1, 1, 1, 1, 1, 1]; // keeps track of the list number at each indent level.
+    // keeps track of the list number at each indent level.
+    var listNumber = [];
+
     var cm = this.codeMirror;
     for(var line = startLine; line <= endLine; line++) {
       var text = cm.getLine(line);
@@ -2862,9 +2887,7 @@ firepad.RichTextCodeMirror = (function () {
         }
       } else {
         // Reset all indents.
-        for(i = 0; i < listNumber.length; i++) {
-          listNumber[i] = 1;
-        }
+        listNumber = [];
       }
     }
   };
@@ -2885,7 +2908,9 @@ firepad.RichTextCodeMirror = (function () {
       var listType = attributes[ATTR.LIST_TYPE];
       var indent = attributes[ATTR.LINE_INDENT] || 0;
       if (listType && indent === 0) { indent = 1; }
-      if (indent >= listNumber.length) indent = listNumber.length - 1; // we don't support deeper indents.
+      while (indent >= listNumber.length) {
+        listNumber.push(1);
+      }
       if (listType === 'o') {
         element = this.makeOrderedListElement_(listNumber[indent]);
         listNumber[indent]++;
@@ -2906,9 +2931,7 @@ firepad.RichTextCodeMirror = (function () {
       }
 
       // Reset deeper indents back to 1.
-      for(var i = indent+1; i < listNumber.length; i++) {
-        listNumber[i] = 1;
-      }
+      listNumber = listNumber.slice(0, indent+1);
     }
 
     // Create a marker to cover this series of sentinel characters.
@@ -3059,7 +3082,7 @@ firepad.RichTextCodeMirror = (function () {
       } else {
         cm.replaceSelection('\n', 'end', '+input');
 
-        if (listType) {
+        if (true || listType) {
           // Copy line attributes forward.
           this.updateLineAttributes(cursorLine+1, cursorLine+1, function(attributes) {
             for(var attr in lineAttributes) {
@@ -3118,7 +3141,7 @@ firepad.RichTextCodeMirror = (function () {
       var indent = attributes[ATTR.LINE_INDENT];
       var listType = attributes[ATTR.LIST_TYPE];
 
-      if (indent && indent < 6) {
+      if (indent) {
         attributes[ATTR.LINE_INDENT]++;
       } else if (listType) {
         // lists are implicitly already indented once.
@@ -3710,6 +3733,10 @@ firepad.LineFormatting = (function() {
     return this.cloneWithNewAttribute_(ATTR.LINE_INDENT, indent);
   };
 
+  LineFormatting.prototype.align = function(align) {
+    return this.cloneWithNewAttribute_(ATTR.LINE_ALIGN, align);
+  };
+
   LineFormatting.prototype.listItem = function(val) {
     firepad.utils.assert(val === false || val === 'u' || val === 'o' || val === 't' || val === 'tc');
     return this.cloneWithNewAttribute_(ATTR.LIST_TYPE, val);
@@ -3717,6 +3744,10 @@ firepad.LineFormatting = (function() {
 
   LineFormatting.prototype.getIndent = function() {
     return this.attributes[ATTR.LINE_INDENT] || 0;
+  };
+
+  LineFormatting.prototype.getAlign = function() {
+    return this.attributes[ATTR.LINE_ALIGN] || 0;
   };
 
   LineFormatting.prototype.getListItem = function() {
@@ -3789,6 +3820,11 @@ firepad.ParseHtml = (function () {
 
   ParseState.prototype.withIncreasedIndent = function() {
     var lineFormatting = this.lineFormatting.indent(this.lineFormatting.getIndent() + 1);
+    return new ParseState(this.listType, lineFormatting, this.textFormatting);
+  };
+
+  ParseState.prototype.withAlign = function() {
+    var lineFormatting = this.lineFormatting.align(this.lineFormatting.getAlign() + 1);
     return new ParseState(this.listType, lineFormatting, this.textFormatting);
   };
 
@@ -3874,6 +3910,15 @@ firepad.ParseHtml = (function () {
           case 'em':
             parseChildren(node, state.withTextFormatting(state.textFormatting.italic(true)), output);
             break;
+          case 'left':
+            parseChildren(node, state.withTextFormatting(state.textFormatting.align('left')), output);
+            break;
+          case 'center':
+            parseChildren(node, state.withTextFormatting(state.textFormatting.align('center')), output);
+            break;
+          case 'right':
+            parseChildren(node, state.withTextFormatting(state.textFormatting.align('right')), output);
+            break;
           case 'font':
             var face = node.getAttribute('face');
             var color = node.getAttribute('color');
@@ -3958,6 +4003,9 @@ firepad.ParseHtml = (function () {
           break;
         case 'color':
           formatting = formatting.color(val.toLowerCase());
+          break;
+        case 'text-align':
+          formatting = formatting.align(val.toLowerCase());
           break;
         case 'font-size':
           switch (val) {
@@ -4184,9 +4232,6 @@ firepad.Firepad = (function(global) {
           indent = attrs[ATTR.LINE_INDENT] || 0;
           listType = attrs[ATTR.LIST_TYPE] || null;
         }
-        if (listType) {
-          indent = indent || 1; // lists are automatically indented at least 1.
-        }
 
         if (inListItem) {
           html += '</li>';
@@ -4195,6 +4240,7 @@ firepad.Firepad = (function(global) {
 
         // Close any extra lists.
         utils.assert(indent >= 0, "Indent must not be negative.");
+        utils.assert(listType == null || indent > 0, "Shouldn't have a non-indented list.");
         while (listTypeStack.length > indent ||
             (indent === listTypeStack.length && listType !== null && listType !== listTypeStack[listTypeStack.length - 1])) {
           html += close(listTypeStack.pop());
@@ -4222,7 +4268,7 @@ firepad.Firepad = (function(global) {
       for(var attr in attrs) {
         var value = attrs[attr];
         var start, end;
-        if (attr === ATTR.BOLD || attr === ATTR.ITALIC || attr === ATTR.UNDERLINE) {
+        if (attr === ATTR.BOLD || attr === ATTR.ITALIC || attr === ATTR.UNDERLINE || attr === ATTR.STRIKE) {
           utils.assert(value === true);
           start = end = attr;
         } else if (attr === ATTR.FONT_SIZE) {
@@ -4269,6 +4315,15 @@ firepad.Firepad = (function(global) {
       html += close(listTypeStack.pop());
     }
 
+    // Tidy HTML
+    // TODO: tidy me better
+    // TIP:  use \n in reg, $n in exp to (re)use n-th match :)
+
+    // Close/reopen tags like </b><b>
+    html = html.replace(/<\/(\w+)><\1>/gi, '');
+    // No <br> after block tags
+    html = html.replace(/<\/(h[1-6]|li|dd|dt|pre|p)><br[\/\ ]*>/gi, '</$1>');
+
     return html;
   };
 
@@ -4306,6 +4361,11 @@ firepad.Firepad = (function(global) {
     this.codeMirror_.focus();
   };
 
+  Firepad.prototype.strike = function() {
+    this.richTextCodeMirror_.toggleAttribute(ATTR.STRIKE);
+    this.codeMirror_.focus();
+  };
+
   Firepad.prototype.fontSize = function(size) {
     this.richTextCodeMirror_.setAttribute(ATTR.FONT_SIZE, size);
     this.codeMirror_.focus();
@@ -4318,6 +4378,21 @@ firepad.Firepad = (function(global) {
 
   Firepad.prototype.color = function(color) {
     this.richTextCodeMirror_.setAttribute(ATTR.COLOR, color);
+    this.codeMirror_.focus();
+  };
+
+  Firepad.prototype.left = function() {
+    this.richTextCodeMirror_.toggleLineAttribute(ATTR.LINE_ALIGN, 'left');
+    this.codeMirror_.focus();
+  };
+
+  Firepad.prototype.center = function() {
+    this.richTextCodeMirror_.toggleLineAttribute(ATTR.LINE_ALIGN, 'center');
+    this.codeMirror_.focus();
+  };
+
+  Firepad.prototype.right = function() {
+    this.richTextCodeMirror_.toggleLineAttribute(ATTR.LINE_ALIGN, 'right');
     this.codeMirror_.focus();
   };
 
@@ -4375,9 +4450,13 @@ firepad.Firepad = (function(global) {
     toolbar.on('bold', this.bold, this);
     toolbar.on('italic', this.italic, this);
     toolbar.on('underline', this.underline, this);
+    toolbar.on('strike', this.strike, this);
     toolbar.on('font-size', this.fontSize, this);
     toolbar.on('font', this.font, this);
     toolbar.on('color', this.color, this);
+    toolbar.on('left', this.left, this);
+    toolbar.on('center', this.center, this);
+    toolbar.on('right', this.right, this);
     toolbar.on('ordered-list', this.orderedList, this);
     toolbar.on('unordered-list', this.unorderedList, this);
     toolbar.on('todo', this.todo, this);
@@ -4406,6 +4485,8 @@ firepad.Firepad = (function(global) {
       "Cmd-I": binder(this.italic),
       "Ctrl-U": binder(this.underline),
       "Cmd-U": binder(this.underline),
+      "Ctrl-K": binder(this.strike),
+      "Cmd-K": binder(this.strike),
       "Enter": binder(this.newline),
       "Delete": binder(this.deleteRight),
       "Backspace": binder(this.deleteLeft),
