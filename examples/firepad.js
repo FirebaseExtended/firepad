@@ -3082,17 +3082,15 @@ firepad.RichTextCodeMirror = (function () {
       } else {
         cm.replaceSelection('\n', 'end', '+input');
 
-        if (true || listType) {
-          // Copy line attributes forward.
-          this.updateLineAttributes(cursorLine+1, cursorLine+1, function(attributes) {
-            for(var attr in lineAttributes) {
-              attributes[attr] = lineAttributes[attr];
-            }
+        // Copy line attributes forward.
+        this.updateLineAttributes(cursorLine+1, cursorLine+1, function(attributes) {
+          for(var attr in lineAttributes) {
+            attributes[attr] = lineAttributes[attr];
+          }
 
-            // Don't mark new todo items as completed.
-            if (listType === 'tc') attributes[ATTR.LIST_TYPE] = 't';
-          });
-        }
+          // Don't mark new todo items as completed.
+          if (listType === 'tc') attributes[ATTR.LIST_TYPE] = 't';
+        });
       }
     }
   };
@@ -4232,6 +4230,9 @@ firepad.Firepad = (function(global) {
           indent = attrs[ATTR.LINE_INDENT] || 0;
           listType = attrs[ATTR.LIST_TYPE] || null;
         }
+        if (listType) {
+          indent = indent || 1; // lists are automatically indented at least 1.
+        }
 
         if (inListItem) {
           html += '</li>';
@@ -4240,7 +4241,6 @@ firepad.Firepad = (function(global) {
 
         // Close any extra lists.
         utils.assert(indent >= 0, "Indent must not be negative.");
-        utils.assert(listType == null || indent > 0, "Shouldn't have a non-indented list.");
         while (listTypeStack.length > indent ||
             (indent === listTypeStack.length && listType !== null && listType !== listTypeStack[listTypeStack.length - 1])) {
           html += close(listTypeStack.pop());
@@ -4315,15 +4315,6 @@ firepad.Firepad = (function(global) {
       html += close(listTypeStack.pop());
     }
 
-    // Tidy HTML
-    // TODO: tidy me better
-    // TIP:  use \n in reg, $n in exp to (re)use n-th match :)
-
-    // Close/reopen tags like </b><b>
-    html = html.replace(/<\/(\w+)><\1>/gi, '');
-    // No <br> after block tags
-    html = html.replace(/<\/(h[1-6]|li|dd|dt|pre|p)><br[\/\ ]*>/gi, '</$1>');
-
     return html;
   };
 
@@ -4381,18 +4372,11 @@ firepad.Firepad = (function(global) {
     this.codeMirror_.focus();
   };
 
-  Firepad.prototype.left = function() {
-    this.richTextCodeMirror_.toggleLineAttribute(ATTR.LINE_ALIGN, 'left');
-    this.codeMirror_.focus();
-  };
-
-  Firepad.prototype.center = function() {
-    this.richTextCodeMirror_.toggleLineAttribute(ATTR.LINE_ALIGN, 'center');
-    this.codeMirror_.focus();
-  };
-
-  Firepad.prototype.right = function() {
-    this.richTextCodeMirror_.toggleLineAttribute(ATTR.LINE_ALIGN, 'right');
+  Firepad.prototype.align = function(alignment) {
+    if (alignment !== 'left' && alignment !== 'center' && alignment !== 'right') {
+      throw new Error('align() must be passed "left", "center", or "right".');
+    }
+    this.richTextCodeMirror_.toggleLineAttribute(ATTR.LINE_ALIGN, alignment);
     this.codeMirror_.focus();
   };
 
@@ -4485,8 +4469,6 @@ firepad.Firepad = (function(global) {
       "Cmd-I": binder(this.italic),
       "Ctrl-U": binder(this.underline),
       "Cmd-U": binder(this.underline),
-      "Ctrl-K": binder(this.strike),
-      "Cmd-K": binder(this.strike),
       "Enter": binder(this.newline),
       "Delete": binder(this.deleteRight),
       "Backspace": binder(this.deleteLeft),
