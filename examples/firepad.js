@@ -3928,7 +3928,8 @@ firepad.ParseHtml = (function () {
             break;
           case 'ul':
             output.newlineIfNonEmptyOrListItem(state);
-            parseChildren(node, state.withListType(LIST_TYPE.UNORDERED).withIncreasedIndent(), output);
+            var listType = node.getAttribute('class') === 'firepad-todo' ? LIST_TYPE.TODO : LIST_TYPE.UNORDERED;
+            parseChildren(node, state.withListType(listType).withIncreasedIndent(), output);
             output.newlineIfNonEmpty(state);
             break;
           case 'ol':
@@ -3938,6 +3939,8 @@ firepad.ParseHtml = (function () {
             break;
           case 'li':
             parseListItem(node, state, output);
+            break;
+          case 'style': // ignore.
             break;
           default:
             parseChildren(node, state, output);
@@ -3965,7 +3968,8 @@ firepad.ParseHtml = (function () {
 
     output.newlineIfNonEmptyOrListItem(state);
 
-    output.makeListItem(state.listType);
+    var listType = (node.getAttribute('class') === 'firepad-checked') ? LIST_TYPE.TODOCHECKED : state.listType;
+    output.makeListItem(listType);
     var oldLine = output.currentLine;
 
     parseChildren(node, state, output);
@@ -4206,9 +4210,12 @@ firepad.Firepad = (function(global) {
   Firepad.prototype.getHtml = function() {
     var doc = this.firebaseAdapter_.getDocument();
     var html = '', newLine = true;
+    html += Firepad.EXPORT_HTML_STYLE;
 
     function open(listType) {
-      return (listType === LIST_TYPE.ORDERED) ? '<ol>' : '<ul>';
+      return (listType === LIST_TYPE.ORDERED) ? '<ol>' :
+             (listType === LIST_TYPE.UNORDERED) ? '<ul>' :
+             '<ul class="firepad-todo">';
     }
 
     function close(listType) {
@@ -4239,9 +4246,14 @@ firepad.Firepad = (function(global) {
         }
 
         // Close any extra lists.
+        function compatibleListType(l1, l2) {
+          return (l1 === l2) ||
+              (l1 === LIST_TYPE.TODO && l2 === LIST_TYPE.TODOCHECKED) ||
+              (l1 === LIST_TYPE.TODOCHECKED && l2 === LIST_TYPE.TODO);
+        }
         utils.assert(indent >= 0, "Indent must not be negative.");
         while (listTypeStack.length > indent ||
-            (indent === listTypeStack.length && listType !== null && listType !== listTypeStack[listTypeStack.length - 1])) {
+            (indent === listTypeStack.length && listType !== null && !compatibleListType(listType, listTypeStack[listTypeStack.length - 1]))) {
           html += close(listTypeStack.pop());
         }
 
@@ -4253,7 +4265,8 @@ firepad.Firepad = (function(global) {
         }
 
         if (listType) {
-          html += "<li>";
+          var clazz = (listType === LIST_TYPE.TODOCHECKED) ? 'class="firepad-checked"' : '';
+          html += "<li " + clazz + " >";
           inListItem = true;
         }
       }
@@ -4316,6 +4329,8 @@ firepad.Firepad = (function(global) {
 
     return html;
   };
+
+  Firepad.EXPORT_HTML_STYLE = '<style>ul.firepad-todo { list-style: none; margin-left: 0; padding-left: 0; } ul.firepad-todo > li { padding-left: 1em; text-indent: -1em; } ul.firepad-todo > li:before { content: "\\2610"; padding-right: 5px; } ul.firepad-todo > li.firepad-checked:before { content: "\\2611"; padding-right: 5px; }</style>\n';
 
   Firepad.prototype.textToHtml_ = function(text) {
     return text.replace(/&/g, '&amp;')

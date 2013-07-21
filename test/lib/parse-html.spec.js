@@ -153,6 +153,14 @@ describe('Parse HTML Tests', function() {
     ]);
   });
 
+  it('Todo list support', function() {
+    var t = Text('Foo', tf);
+    parseTest('<ul class="firepad-todo"><li>Foo</li><li class="firepad-checked">Foo</li></ul>', [
+      Line([t], lf.indent(1).listItem(LIST_TYPE.TODO)),
+      Line([t], lf.indent(1).listItem(LIST_TYPE.TODOCHECKED))
+    ]);
+  });
+
   it('<center> support (1)', function() {
     parseTest('<center>foo</center>', [
       Line([Text("foo")], lf.align('center'))
