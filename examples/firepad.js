@@ -3821,8 +3821,8 @@ firepad.ParseHtml = (function () {
     return new ParseState(this.listType, lineFormatting, this.textFormatting);
   };
 
-  ParseState.prototype.withAlign = function() {
-    var lineFormatting = this.lineFormatting.align(this.lineFormatting.getAlign() + 1);
+  ParseState.prototype.withAlign = function(align) {
+    var lineFormatting = this.lineFormatting.align(align);
     return new ParseState(this.listType, lineFormatting, this.textFormatting);
   };
 
@@ -3886,7 +3886,7 @@ firepad.ParseHtml = (function () {
         break;
       case Node.ELEMENT_NODE:
         var style = node.getAttribute('style') || '';
-        state = state.withTextFormatting(parseStyle(state.textFormatting, style));
+        state = parseStyle(state, style);
         switch (node.nodeName.toLowerCase()) {
           case 'div':
           case 'h1':
@@ -3895,6 +3895,12 @@ firepad.ParseHtml = (function () {
           case 'p':
             output.newlineIfNonEmpty(state);
             parseChildren(node, state, output);
+            output.newlineIfNonEmpty(state);
+            break;
+          case 'center':
+            state = state.withAlign('center');
+            output.newlineIfNonEmpty(state);
+            parseChildren(node, state.withAlign('center'), output);
             output.newlineIfNonEmpty(state);
             break;
           case 'b':
@@ -3907,15 +3913,6 @@ firepad.ParseHtml = (function () {
           case 'i':
           case 'em':
             parseChildren(node, state.withTextFormatting(state.textFormatting.italic(true)), output);
-            break;
-          case 'left':
-            parseChildren(node, state.withTextFormatting(state.textFormatting.align('left')), output);
-            break;
-          case 'center':
-            parseChildren(node, state.withTextFormatting(state.textFormatting.align('center')), output);
-            break;
-          case 'right':
-            parseChildren(node, state.withTextFormatting(state.textFormatting.align('right')), output);
             break;
           case 'font':
             var face = node.getAttribute('face');
@@ -3978,7 +3975,9 @@ firepad.ParseHtml = (function () {
     }
   }
 
-  function parseStyle(formatting, styleString) {
+  function parseStyle(state, styleString) {
+    var textFormatting = state.textFormatting;
+    var lineFormatting = state.lineFormatting;
     var styles = styleString.split(';');
     for(var i = 0; i < styles.length; i++) {
       var stylePieces = styles[i].split(':');
@@ -3989,58 +3988,58 @@ firepad.ParseHtml = (function () {
       switch (prop) {
         case 'text-decoration':
           var underline = val.indexOf('underline') >= 0;
-          formatting = formatting.underline(underline);
+          textFormatting = textFormatting.underline(underline);
           break;
         case 'font-weight':
           var bold = (val === 'bold') || parseInt(val) >= 600;
-          formatting = formatting.bold(bold);
+          textFormatting = textFormatting.bold(bold);
           break;
         case 'font-style':
           var italic = (val === 'italic' || val === 'oblique');
-          formatting = formatting.italic(italic);
+          textFormatting = textFormatting.italic(italic);
           break;
         case 'color':
-          formatting = formatting.color(val.toLowerCase());
+          textFormatting = textFormatting.color(val.toLowerCase());
           break;
         case 'text-align':
-          formatting = formatting.align(val.toLowerCase());
+          lineFormatting = lineFormatting.align(val.toLowerCase());
           break;
         case 'font-size':
           switch (val) {
             case 'xx-small':
-              formatting = formatting.fontSize(9);
+              textFormatting = textFormatting.fontSize(9);
               break;
             case 'x-small':
-              formatting = formatting.fontSize(10);
+              textFormatting = textFormatting.fontSize(10);
               break;
             case 'small':
-              formatting = formatting.fontSize(12);
+              textFormatting = textFormatting.fontSize(12);
               break;
             case 'medium':
-              formatting = formatting.fontSize(14);
+              textFormatting = textFormatting.fontSize(14);
               break;
             case 'large':
-              formatting = formatting.fontSize(18);
+              textFormatting = textFormatting.fontSize(18);
               break;
             case 'x-large':
-              formatting = formatting.fontSize(24);
+              textFormatting = textFormatting.fontSize(24);
               break;
             case 'xx-large':
-              formatting = formatting.fontSize(32);
+              textFormatting = textFormatting.fontSize(32);
               break;
             default:
-              formatting = formatting.fontSize(parseInt(val));
+              textFormatting = textFormatting.fontSize(parseInt(val));
           }
           break;
         case 'font-family':
           var font = val.split(',')[0].trim(); // get first font.
           font = font.replace(/['"]/g, ''); // remove quotes.
           font = font.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase() });
-          formatting = formatting.font(font);
+          textFormatting = textFormatting.font(font);
           break;
       }
     }
-    return formatting;
+    return state.withLineFormatting(lineFormatting).withTextFormatting(textFormatting);
   }
 
   return parseHtml;
