@@ -3837,23 +3837,27 @@ firepad.ParseHtml = (function () {
   }
 
   ParseOutput.prototype.newlineIfNonEmpty = function(state) {
+    this.cleanLine_();
     if (this.currentLine.length > 0) {
       this.newline(state);
     }
   };
 
   ParseOutput.prototype.newlineIfNonEmptyOrListItem = function(state) {
+    this.cleanLine_();
     if (this.currentLine.length > 0 || this.currentLineListItemType !== null) {
       this.newline(state);
     }
   };
 
   ParseOutput.prototype.newline = function(state) {
+    this.cleanLine_();
     var lineFormatting = state.lineFormatting;
     if (this.currentLineListItemType !== null) {
       lineFormatting = lineFormatting.listItem(this.currentLineListItemType);
       this.currentLineListItemType = null;
     }
+
     this.lines.push(firepad.Line(this.currentLine, lineFormatting));
     this.currentLine = [];
   };
@@ -3864,6 +3868,23 @@ firepad.ParseHtml = (function () {
 
   ParseOutput.prototype.isListItem = function() {
     return this.currentLineListItemType !== null;
+  };
+
+  ParseOutput.prototype.cleanLine_ = function() {
+    // Kinda' a hack, but we remove leading and trailing spaces (since these aren't significant in html) and
+    // replaces nbsp's with normal spaces.
+    if (this.currentLine.length > 0) {
+      var last = this.currentLine.length - 1;
+      this.currentLine[0].text = this.currentLine[0].text.replace(/^ +/, '');
+      this.currentLine[last].text = this.currentLine[last].text.replace(/ +$/g, '');
+      for(var i = 0; i < this.currentLine.length; i++) {
+        this.currentLine[i].text = this.currentLine[i].text.replace(/\u00a0/g, ' ');
+      }
+    }
+    // If after stripping trailing whitespace, there's nothing left, clear currentLine out.
+    if (this.currentLine.length === 1 && this.currentLine[0].text === '') {
+      this.currentLine = [];
+    }
   };
 
   function parseHtml(html) {
@@ -3881,7 +3902,8 @@ firepad.ParseHtml = (function () {
   function parseNode(node, state, output) {
     switch (node.nodeType) {
       case Node.TEXT_NODE:
-        var text = node.nodeValue.replace(/\s+/g, ' '); // Not sure this is 100% right, but mostly works.
+        // This probably isn't exactly right, but mostly works...
+        var text = node.nodeValue.replace(/[ \n\t]+/g, ' ');
         output.currentLine.push(firepad.Text(text, state.textFormatting));
         break;
       case Node.ELEMENT_NODE:
@@ -4224,6 +4246,8 @@ firepad.Firepad = (function(global) {
 
     var listTypeStack = [];
     var inListItem = false;
+    var firstLine = true;
+    var emptyLine = true;
     var i = 0, op = doc.ops[i];
     while(op) {
       utils.assert(op.isInsert());
@@ -4231,10 +4255,12 @@ firepad.Firepad = (function(global) {
 
       if (newLine) {
         newLine = false;
-        var indent = 0, listType = null;
+
+        var indent = 0, listType = null, lineAlign = 'left';
         if (ATTR.LINE_SENTINEL in attrs) {
           indent = attrs[ATTR.LINE_INDENT] || 0;
           listType = attrs[ATTR.LIST_TYPE] || null;
+          lineAlign = attrs[ATTR.LINE_ALIGN] || 'left';
         }
         if (listType) {
           indent = indent || 1; // lists are automatically indented at least 1.
@@ -4243,7 +4269,13 @@ firepad.Firepad = (function(global) {
         if (inListItem) {
           html += '</li>';
           inListItem = false;
+        } else if (!firstLine) {
+          if (emptyLine) {
+            html += '<br/>';
+          }
+          html += '</div>';
         }
+        firstLine = false;
 
         // Close any extra lists.
         function compatibleListType(l1, l2) {
@@ -4264,11 +4296,16 @@ firepad.Firepad = (function(global) {
           listTypeStack.push(toOpen);
         }
 
+        var style = (lineAlign !== 'left') ? ' style="text-align:' + lineAlign + '"': '';
         if (listType) {
-          var clazz = (listType === LIST_TYPE.TODOCHECKED) ? 'class="firepad-checked"' : '';
-          html += "<li " + clazz + " >";
+          var clazz = (listType === LIST_TYPE.TODOCHECKED) ? ' class="firepad-checked"' : '';
+          html += "<li" + clazz + style + ">";
           inListItem = true;
+        } else {
+          // start line div.
+          html += '<div' + style + '>';
         }
+        emptyLine = true;
       }
 
       if (ATTR.LINE_SENTINEL in attrs) {
@@ -4307,12 +4344,20 @@ firepad.Firepad = (function(global) {
         if (newLineIndex < text.length - 1) {
           // split op.
           op = new firepad.TextOp('insert', text.substr(newLineIndex+1), attrs);
-          text = text.substr(0, newLineIndex+1);
         } else {
           op = doc.ops[++i];
         }
+        text = text.substr(0, newLineIndex);
       } else {
         op = doc.ops[++i];
+      }
+
+      // Replace leading, trailing, and consecutive spaces with nbsp's to make sure they're preserved.
+      text = text.replace(/  +/g, function(str) {
+        return new Array(str.length + 1).join('\u00a0');
+      }).replace(/^ /, '\u00a0').replace(/ $/, '\u00a0');
+      if (text.length > 0) {
+        emptyLine = false;
       }
 
       html += prefix + this.textToHtml_(text) + suffix;
@@ -4320,6 +4365,11 @@ firepad.Firepad = (function(global) {
 
     if (inListItem) {
       html += '</li>';
+    } else if (!firstLine) {
+      if (emptyLine) {
+        html += '&nbsp;';
+      }
+      html += '</div>';
     }
 
     // Close any extra lists.
@@ -4338,7 +4388,7 @@ firepad.Firepad = (function(global) {
         .replace(/'/g, '&#39;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(/\n/g, '<br />');
+        .replace(/\u00a0/g, '&nbsp;')
   };
 
   Firepad.prototype.setHtml = function (html) {
