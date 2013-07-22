@@ -34,6 +34,8 @@
 .firepad-b { font-weight: bold; }
 .firepad-i { font-style: italic; }
 .firepad-u { text-decoration: underline; }
+.firepad-s { text-decoration: line-through; }
+.firepad-u.firepad-s { text-decoration: underline line-through; }
 
 .firepad-f-arial { font-family: Arial, Helvetica, sans-serif; }
 .firepad-f-comic-sans-ms { font-family: "Comic Sans MS", cursive, sans-serif; }
@@ -42,17 +44,14 @@
 .firepad-f-times-new-roman { font-family: "Times New Roman", Times, serif; }
 .firepad-f-verdana { font-family: Verdana, Geneva, sans-serif; }
 
+.firepad-la-left { text-align: left; }
+.firepad-la-center { text-align: center; }
+.firepad-la-right { text-align: right; }
+
 /** Line Styles */
 pre.firepad-lt-o, pre.firepad-lt-u, pre.firepad-lt-t, pre.firepad-lt-tc {
   margin-left: 30px;
 }
-
-pre.firepad-li-1 { margin-left: 30px; }
-pre.firepad-li-2 { margin-left: 60px; }
-pre.firepad-li-3 { margin-left: 90px; }
-pre.firepad-li-4 { margin-left: 120px; }
-pre.firepad-li-5 { margin-left: 150px; }
-pre.firepad-li-6 { margin-left: 180px; }
 
 .powered-by-firepad {
   position: absolute;
@@ -159,6 +158,11 @@ a.firepad-btn-italic {
 a.firepad-btn-underline {
   text-decoration: underline;
   width: 30px;
+}
+
+a.firepad-btn-strike {
+    text-decoration: line-through;
+    width: 30px;
 }
 
 a.firepad-btn-ul .firepad-btn-icon {
