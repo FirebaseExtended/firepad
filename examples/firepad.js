@@ -3649,6 +3649,10 @@ firepad.Formatting = (function() {
     return this.cloneWithNewAttribute_(ATTR.UNDERLINE, val);
   };
 
+  Formatting.prototype.strike = function(val) {
+    return this.cloneWithNewAttribute_(ATTR.STRIKE, val);
+  };
+
   Formatting.prototype.font = function(font) {
     return this.cloneWithNewAttribute_(ATTR.FONT, font);
   };
@@ -3936,6 +3940,9 @@ firepad.ParseHtml = (function () {
           case 'em':
             parseChildren(node, state.withTextFormatting(state.textFormatting.italic(true)), output);
             break;
+          case 's':
+            parseChildren(node, state.withTextFormatting(state.textFormatting.strike(true)), output);
+            break;
           case 'font':
             var face = node.getAttribute('face');
             var color = node.getAttribute('color');
@@ -4014,7 +4021,8 @@ firepad.ParseHtml = (function () {
       switch (prop) {
         case 'text-decoration':
           var underline = val.indexOf('underline') >= 0;
-          textFormatting = textFormatting.underline(underline);
+          var strike = val.indexOf('line-through') >= 0;
+          textFormatting = textFormatting.underline(underline).strike(strike);
           break;
         case 'font-weight':
           var bold = (val === 'bold') || parseInt(val) >= 600;
@@ -4298,7 +4306,16 @@ firepad.Firepad = (function(global) {
 
         var style = (lineAlign !== 'left') ? ' style="text-align:' + lineAlign + '"': '';
         if (listType) {
-          var clazz = (listType === LIST_TYPE.TODOCHECKED) ? ' class="firepad-checked"' : '';
+          var clazz = '';
+          switch (listType) 
+          {
+            case LIST_TYPE.TODOCHECKED:
+              clazz = ' class="firepad-checked"';
+              break;
+            case LIST_TYPE.TODO:
+              clazz = ' class="firepad-unchecked"';
+              break;
+          }
           html += "<li" + clazz + style + ">";
           inListItem = true;
         } else {
