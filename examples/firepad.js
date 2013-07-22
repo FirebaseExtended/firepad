@@ -40,8 +40,17 @@ firepad.utils.makeEventEmitter = function(clazz, opt_allowedEVents) {
   };
 
   clazz.prototype.validateEventType_ = function(eventType) {
-    if (this.allowedEvents_ && this.allowedEvents_.indexOf(eventType) === -1) {
-      throw new Error('Unknown event "' + eventType + '"');
+    if (this.allowedEvents_) {
+      var allowed = false;
+      for(var i = 0; i < this.allowedEvents_.length; i++) {
+        if (this.allowedEvents_[i] === eventType) {
+          allowed = true;
+          break;
+        }
+      }
+      if (!allowed) {
+        throw new Error('Unknown event "' + eventType + '"');
+      }
     }
   };
 };
@@ -108,6 +117,10 @@ firepad.utils.stopEventAnd = function(fn) {
     firepad.utils.stopEvent(e);
     return false;
   };
+};
+
+firepad.utils.trim = function(str) {
+  return str.replace(/^\s+/g, '').replace(/\s+$/g, '');
 };
 
 firepad.utils.assert = function assert (b, msg) {
@@ -1666,34 +1679,20 @@ firepad.RichTextToolbar = (function(global) {
     this.element_ = this.makeElement_();
   }
 
-  utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'strike', 'font', 'font-size', 'color', 'left', 'center', 'right', 'unordered-list', 'ordered-list', 'todo']);
+  utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'strike', 'font', 'font-size', 'color',
+    'left', 'center', 'right', 'unordered-list', 'ordered-list', 'todo-list', 'indent-increase', 'indent-decrease',
+    'undo', 'redo']);
 
   RichTextToolbar.prototype.element = function() { return this.element_; };
 
   RichTextToolbar.prototype.makeElement_ = function() {
     var self = this;
-    var bold = utils.elt('a', 'B', { 'class': 'firepad-btn firepad-btn-bold' });
-    utils.on(bold, 'click', utils.stopEventAnd(function() { self.trigger('bold'); }));
-    var italic = utils.elt('a', 'I', { 'class': 'firepad-btn firepad-btn-italic' });
-    utils.on(italic, 'click', utils.stopEventAnd(function() { self.trigger('italic'); }));
-    var underline = utils.elt('a', 'U', { 'class': 'firepad-btn firepad-btn-underline' });
-    utils.on(underline, 'click', utils.stopEventAnd(function() { self.trigger('underline'); }));
-    var strike = utils.elt('a', 'S', { 'class': 'firepad-btn firepad-btn-strike' });
-    utils.on(strike, 'click', utils.stopEventAnd(function() { self.trigger('strike'); }));
-
-    var left = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-left' });
-    utils.on(left, 'click', utils.stopEventAnd(function() { self.trigger('left'); }));
-    var center = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-center' });
-    utils.on(center, 'click', utils.stopEventAnd(function() { self.trigger('center'); }));
-    var right = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-right' });
-    utils.on(right, 'click', utils.stopEventAnd(function() { self.trigger('right'); }));
-
-    var ul = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-ul' });
-    utils.on(ul, 'click', utils.stopEventAnd(function() { self.trigger('unordered-list'); }));
-    var ol = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-ol' });
-    utils.on(ol, 'click', utils.stopEventAnd(function() { self.trigger('ordered-list'); }));
-    var todo = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-todo' });
-    utils.on(todo, 'click', utils.stopEventAnd(function() { self.trigger('todo'); }));
+    function btn(eventName, iconName) {
+      iconName = iconName || eventName;
+      var btn = utils.elt('a', [utils.elt('span', '', { 'class': 'firepad-tb-' + iconName } )], { 'class': 'firepad-btn' });
+      utils.on(btn, 'click', utils.stopEventAnd(function() { self.trigger(eventName); }));
+      return btn;
+    }
 
     var font = this.makeFontDropdown_();
     var fontSize = this.makeFontSizeDropdown_();
@@ -1703,12 +1702,11 @@ firepad.RichTextToolbar = (function(global) {
       utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [bold, italic, underline, strike], { 'class': 'firepad-btn-group'}),
-      // Add once you have icons
-      // utils.elt('div', [left, center, right], { 'class': 'firepad-btn-group'}),
-
-      // Removing 'todo' until we have a slightly better icon (or move to an icon font or something).
-      utils.elt('div', [ul, ol/*, todo*/], { 'class': 'firepad-btn-group'})
+      utils.elt('div', [btn('bold'), btn('italic'), btn('underline'), btn('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [btn('indent-decrease'), btn('indent-increase')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [btn('left', 'paragraph-left'), btn('center', 'paragraph-center'), btn('right', 'paragraph-right')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [btn('unordered-list', 'list-2'), btn('ordered-list', 'numbered-list'), btn('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [btn('undo'), btn('redo')], { 'class': 'firepad-btn-group'})
     ], { 'class': 'firepad-toolbar' });
 
     return toolbar;
@@ -1756,7 +1754,7 @@ firepad.RichTextToolbar = (function(global) {
   RichTextToolbar.prototype.makeDropdown_ = function(title, eventName, items, value_suffix) {
     value_suffix = value_suffix || "";
     var self = this;
-    var button = utils.elt('a', title + ' ▾', { 'class': 'firepad-btn firepad-dropdown' });
+    var button = utils.elt('a', title + ' \u25be', { 'class': 'firepad-btn firepad-dropdown' });
     var list = utils.elt('ul', [ ], { 'class': 'firepad-dropdown-menu' });
     button.appendChild(list);
 
@@ -2948,13 +2946,13 @@ firepad.RichTextCodeMirror = (function () {
 
   RichTextCodeMirror.prototype.makeOrderedListElement_ = function(number) {
     return utils.elt('div', number + '.', {
-      class: 'firepad-list-left'
+      'class': 'firepad-list-left'
     });
   };
 
   RichTextCodeMirror.prototype.makeUnorderedListElement_ = function() {
     return utils.elt('div', '\u2022', {
-      class: 'firepad-list-left'
+      'class': 'firepad-list-left'
     });
   };
 
@@ -2975,15 +2973,15 @@ firepad.RichTextCodeMirror = (function () {
   RichTextCodeMirror.prototype.makeTodoListElement_ = function(checked, getMarkerLine) {
   	var params = {
     	'type': "checkbox",
-      class: 'firepad-todo-left'
+      'class': 'firepad-todo-left'
     };
     if (checked) params['checked'] = true;
     var el = utils.elt('input', false, params);
-    el.onclick = function(e) {
-	  	e.preventDefault();
-	    this.codeMirror.setCursor({line: getMarkerLine(), ch: 0});
-	  	this.toggleTodo(true);
-		}.bind(this);
+    var self = this;
+    utils.on(el, 'click', utils.stopEventAnd(function(e) {
+	    self.codeMirror.setCursor({line: getMarkerLine(), ch: 0});
+	  	self.toggleTodo(true);
+		}));
     return el;
   };
 
@@ -3903,6 +3901,12 @@ firepad.ParseHtml = (function () {
     return output.lines;
   }
 
+  // Fix IE8.
+  var Node = Node || {
+    ELEMENT_NODE: 1,
+    TEXT_NODE: 3
+  };
+
   function parseNode(node, state, output) {
     switch (node.nodeType) {
       case Node.TEXT_NODE:
@@ -4016,8 +4020,8 @@ firepad.ParseHtml = (function () {
       var stylePieces = styles[i].split(':');
       if (stylePieces.length !== 2)
         continue;
-      var prop = stylePieces[0].trim().toLowerCase();
-      var val = stylePieces[1].trim();
+      var prop = firepad.utils.trim(stylePieces[0]).toLowerCase();
+      var val = firepad.utils.trim(stylePieces[1]).toLowerCase();
       switch (prop) {
         case 'text-decoration':
           var underline = val.indexOf('underline') >= 0;
@@ -4066,7 +4070,7 @@ firepad.ParseHtml = (function () {
           }
           break;
         case 'font-family':
-          var font = val.split(',')[0].trim(); // get first font.
+          var font = firepad.utils.trim(val.split(',')[0]); // get first font.
           font = font.replace(/['"]/g, ''); // remove quotes.
           font = font.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase() });
           textFormatting = textFormatting.font(font);
@@ -4149,6 +4153,21 @@ firepad.Firepad = (function(global) {
       self.ready_ = true;
       self.trigger('ready');
     });
+
+    // Hack for IE8 to make font icons work more reliably.
+    // http://stackoverflow.com/questions/9809351/ie8-css-font-face-fonts-only-working-for-before-content-on-over-and-sometimes
+    if (navigator.appName == 'Microsoft Internet Explorer' && navigator.userAgent.match(/MSIE 8\./)) {
+      window.onload = function() {
+        var head = document.getElementsByTagName('head')[0],
+          style = document.createElement('style');
+        style.type = 'text/css';
+        style.styleSheet.cssText = ':before,:after{content:none !important;}';
+        head.appendChild(style);
+        setTimeout(function() {
+          head.removeChild(style);
+        }, 0);
+      };
+    }
   }
   utils.makeEventEmitter(Firepad);
 
@@ -4490,10 +4509,20 @@ firepad.Firepad = (function(global) {
 
   Firepad.prototype.indent = function() {
     this.richTextCodeMirror_.indent();
+    this.codeMirror_.focus();
   };
 
   Firepad.prototype.unindent = function() {
     this.richTextCodeMirror_.unindent();
+    this.codeMirror_.focus();
+  };
+
+  Firepad.prototype.undo = function() {
+    this.codeMirror_.undo();
+  };
+
+  Firepad.prototype.redo = function() {
+    this.codeMirror_.redo();
   };
 
   Firepad.prototype.getOption = function(option, def) {
@@ -4512,6 +4541,8 @@ firepad.Firepad = (function(global) {
   Firepad.prototype.addToolbar_ = function() {
     var toolbar = new RichTextToolbar();
 
+    toolbar.on('undo', this.undo, this);
+    toolbar.on('redo', this.redo, this);
     toolbar.on('bold', this.bold, this);
     toolbar.on('italic', this.italic, this);
     toolbar.on('underline', this.underline, this);
@@ -4519,12 +4550,14 @@ firepad.Firepad = (function(global) {
     toolbar.on('font-size', this.fontSize, this);
     toolbar.on('font', this.font, this);
     toolbar.on('color', this.color, this);
-    toolbar.on('left', this.left, this);
-    toolbar.on('center', this.center, this);
-    toolbar.on('right', this.right, this);
+    toolbar.on('left', function() { this.align('left')}, this);
+    toolbar.on('center', function() { this.align('center')}, this);
+    toolbar.on('right', function() { this.align('right')}, this);
     toolbar.on('ordered-list', this.orderedList, this);
     toolbar.on('unordered-list', this.unorderedList, this);
-    toolbar.on('todo', this.todo, this);
+    toolbar.on('todo-list', this.todo, this);
+    toolbar.on('indent-increase', this.indent, this);
+    toolbar.on('indent-decrease', this.unindent, this);
 
     this.firepadWrapper_.insertBefore(toolbar.element(), this.firepadWrapper_.firstChild);
   };
