@@ -87,6 +87,9 @@ pre.firepad-lt-o, pre.firepad-lt-u, pre.firepad-lt-t, pre.firepad-lt-tc {
   position: absolute;
   top: 20px;
   left: 10px;
+  right: 0;
+  white-space: nowrap;
+  overflow: hidden;
 
   /* Don't select text when double-clicking in toolbar */
   -webkit-touch-callout: none;

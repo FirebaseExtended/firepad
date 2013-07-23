@@ -1703,9 +1703,9 @@ firepad.RichTextToolbar = (function(global) {
       utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [btn('bold'), btn('italic'), btn('underline'), btn('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [btn('unordered-list', 'list-2'), btn('ordered-list', 'numbered-list'), btn('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [btn('indent-decrease'), btn('indent-increase')], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [btn('left', 'paragraph-left'), btn('center', 'paragraph-center'), btn('right', 'paragraph-right')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [btn('unordered-list', 'list-2'), btn('ordered-list', 'numbered-list'), btn('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
       // Hide undo/redo for now, since they make the toolbar wrap on the firepad.io demo.  Should look into making the
       // toolbar more compact.
       /*utils.elt('div', [btn('undo'), btn('redo')], { 'class': 'firepad-btn-group'}) */
@@ -2425,10 +2425,6 @@ firepad.RichTextCodeMirror = (function () {
   // A special character we insert at the beginning of lines so we can attach attributes to it to represent
   // "line attributes."  E000 is from the unicode "private use" range.
   var LineSentinelCharacter = '\uE000';
-
-  // A special character used to represent any "entity" inserted into the document (e.g. an image).
-  var EntitySentinelCharacter = '\uE001';
-
   RichTextCodeMirror.LineSentinelCharacter = LineSentinelCharacter;
 
   RichTextCodeMirror.prototype.detach = function() {
