@@ -40,8 +40,17 @@ firepad.utils.makeEventEmitter = function(clazz, opt_allowedEVents) {
   };
 
   clazz.prototype.validateEventType_ = function(eventType) {
-    if (this.allowedEvents_ && this.allowedEvents_.indexOf(eventType) === -1) {
-      throw new Error('Unknown event "' + eventType + '"');
+    if (this.allowedEvents_) {
+      var allowed = false;
+      for(var i = 0; i < this.allowedEvents_.length; i++) {
+        if (this.allowedEvents_[i] === eventType) {
+          allowed = true;
+          break;
+        }
+      }
+      if (!allowed) {
+        throw new Error('Unknown event "' + eventType + '"');
+      }
     }
   };
 };
@@ -108,6 +117,10 @@ firepad.utils.stopEventAnd = function(fn) {
     firepad.utils.stopEvent(e);
     return false;
   };
+};
+
+firepad.utils.trim = function(str) {
+  return str.replace(/^\s+/g, '').replace(/\s+$/g, '');
 };
 
 firepad.utils.assert = function assert (b, msg) {
@@ -1666,25 +1679,20 @@ firepad.RichTextToolbar = (function(global) {
     this.element_ = this.makeElement_();
   }
 
-  utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'font', 'font-size', 'color', 'unordered-list', 'ordered-list', 'todo']);
+  utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'strike', 'font', 'font-size', 'color',
+    'left', 'center', 'right', 'unordered-list', 'ordered-list', 'todo-list', 'indent-increase', 'indent-decrease',
+    'undo', 'redo']);
 
   RichTextToolbar.prototype.element = function() { return this.element_; };
 
   RichTextToolbar.prototype.makeElement_ = function() {
     var self = this;
-    var bold = utils.elt('a', 'B', { 'class': 'firepad-btn firepad-btn-bold' });
-    utils.on(bold, 'click', utils.stopEventAnd(function() { self.trigger('bold'); }));
-    var italic = utils.elt('a', 'I', { 'class': 'firepad-btn firepad-btn-italic' });
-    utils.on(italic, 'click', utils.stopEventAnd(function() { self.trigger('italic'); }));
-    var underline = utils.elt('a', 'U', { 'class': 'firepad-btn firepad-btn-underline' });
-    utils.on(underline, 'click', utils.stopEventAnd(function() { self.trigger('underline'); }));
-
-    var ul = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-ul' });
-    utils.on(ul, 'click', utils.stopEventAnd(function() { self.trigger('unordered-list'); }));
-    var ol = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-ol' });
-    utils.on(ol, 'click', utils.stopEventAnd(function() { self.trigger('ordered-list'); }));
-    var todo = utils.elt('a', [ utils.elt('div', [], { 'class': 'firepad-btn-icon'}) ], { 'class': 'firepad-btn firepad-btn-todo' });
-    utils.on(todo, 'click', utils.stopEventAnd(function() { self.trigger('todo'); }));
+    function btn(eventName, iconName) {
+      iconName = iconName || eventName;
+      var btn = utils.elt('a', [utils.elt('span', '', { 'class': 'firepad-tb-' + iconName } )], { 'class': 'firepad-btn' });
+      utils.on(btn, 'click', utils.stopEventAnd(function() { self.trigger(eventName); }));
+      return btn;
+    }
 
     var font = this.makeFontDropdown_();
     var fontSize = this.makeFontSizeDropdown_();
@@ -1694,10 +1702,13 @@ firepad.RichTextToolbar = (function(global) {
       utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [bold, italic, underline], { 'class': 'firepad-btn-group'}),
-
-      // Removing 'todo' until we have a slightly better icon (or move to an icon font or something).
-      utils.elt('div', [ul, ol/*, todo*/], { 'class': 'firepad-btn-group'})
+      utils.elt('div', [btn('bold'), btn('italic'), btn('underline'), btn('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [btn('unordered-list', 'list-2'), btn('ordered-list', 'numbered-list'), btn('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [btn('indent-decrease'), btn('indent-increase')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [btn('left', 'paragraph-left'), btn('center', 'paragraph-center'), btn('right', 'paragraph-right')], { 'class': 'firepad-btn-group'}),
+      // Hide undo/redo for now, since they make the toolbar wrap on the firepad.io demo.  Should look into making the
+      // toolbar more compact.
+      /*utils.elt('div', [btn('undo'), btn('redo')], { 'class': 'firepad-btn-group'}) */
     ], { 'class': 'firepad-toolbar' });
 
     return toolbar;
@@ -1745,7 +1756,7 @@ firepad.RichTextToolbar = (function(global) {
   RichTextToolbar.prototype.makeDropdown_ = function(title, eventName, items, value_suffix) {
     value_suffix = value_suffix || "";
     var self = this;
-    var button = utils.elt('a', title + ' ▾', { 'class': 'firepad-btn firepad-dropdown' });
+    var button = utils.elt('a', title + ' \u25be', { 'class': 'firepad-btn firepad-dropdown' });
     var list = utils.elt('ul', [ ], { 'class': 'firepad-dropdown-menu' });
     button.appendChild(list);
 
@@ -2354,6 +2365,7 @@ firepad.AttributeConstants = {
   BOLD: 'b',
   ITALIC: 'i',
   UNDERLINE: 'u',
+  STRIKE: 's',
   FONT: 'f',
   FONT_SIZE: 'fs',
   COLOR: 'c',
@@ -2361,6 +2373,7 @@ firepad.AttributeConstants = {
 // Line Attributes
   LINE_SENTINEL: 'l',
   LINE_INDENT: 'li',
+  LINE_ALIGN: 'la',
   LIST_TYPE: 'lt'
 };
 
@@ -2377,8 +2390,9 @@ firepad.RichTextCodeMirror = (function () {
   // These attributes will have styles generated dynamically in the page.
   var DynamicStyleAttributes = {
     'c' : 'color', 
-    'fs' : 'font-size' 
-    };
+    'fs' : 'font-size',
+    'li' : function(indent) { return 'margin-left: ' + (indent * 40) + 'px'; }
+  };
 
   // A cache of dynamically-created styles so we can re-use them.
   var StyleCache_ = {};
@@ -2689,7 +2703,16 @@ firepad.RichTextCodeMirror = (function () {
             if (!StyleCache_[attr]) StyleCache_[attr] = {};
             if (!StyleCache_[attr][classVal]) {
               StyleCache_[attr][classVal] = true;
-              this.addStyleWithCSS_('.' + className + '{' + DynamicStyleAttributes[attr] + ':' + val + '}');
+              var dynStyle = DynamicStyleAttributes[attr];
+              var css = (typeof dynStyle === 'function') ?
+                  dynStyle(val) :
+                  dynStyle + ": " + val;
+
+              var selector = (attr == ATTR.LINE_INDENT) ?
+                  'pre.' + className :
+                  '.' + className;
+
+              this.addStyleWithCSS_(selector + ' { ' + css + ' }');
             }
           }
         }
@@ -2831,7 +2854,9 @@ firepad.RichTextCodeMirror = (function () {
       }
     }
 
-    var listNumber = [1, 1, 1, 1, 1, 1, 1]; // keeps track of the list number at each indent level.
+    // keeps track of the list number at each indent level.
+    var listNumber = [];
+
     var cm = this.codeMirror;
     for(var line = startLine; line <= endLine; line++) {
       var text = cm.getLine(line);
@@ -2862,9 +2887,7 @@ firepad.RichTextCodeMirror = (function () {
         }
       } else {
         // Reset all indents.
-        for(i = 0; i < listNumber.length; i++) {
-          listNumber[i] = 1;
-        }
+        listNumber = [];
       }
     }
   };
@@ -2885,7 +2908,9 @@ firepad.RichTextCodeMirror = (function () {
       var listType = attributes[ATTR.LIST_TYPE];
       var indent = attributes[ATTR.LINE_INDENT] || 0;
       if (listType && indent === 0) { indent = 1; }
-      if (indent >= listNumber.length) indent = listNumber.length - 1; // we don't support deeper indents.
+      while (indent >= listNumber.length) {
+        listNumber.push(1);
+      }
       if (listType === 'o') {
         element = this.makeOrderedListElement_(listNumber[indent]);
         listNumber[indent]++;
@@ -2906,9 +2931,7 @@ firepad.RichTextCodeMirror = (function () {
       }
 
       // Reset deeper indents back to 1.
-      for(var i = indent+1; i < listNumber.length; i++) {
-        listNumber[i] = 1;
-      }
+      listNumber = listNumber.slice(0, indent+1);
     }
 
     // Create a marker to cover this series of sentinel characters.
@@ -2925,13 +2948,13 @@ firepad.RichTextCodeMirror = (function () {
 
   RichTextCodeMirror.prototype.makeOrderedListElement_ = function(number) {
     return utils.elt('div', number + '.', {
-      style: "margin-left: -20px; display:inline-block; width:15px;"
+      'class': 'firepad-list-left'
     });
   };
 
   RichTextCodeMirror.prototype.makeUnorderedListElement_ = function() {
     return utils.elt('div', '\u2022', {
-      style: "margin-left: -20px; display:inline-block; width:15px;"
+      'class': 'firepad-list-left'
     });
   };
 
@@ -2952,15 +2975,15 @@ firepad.RichTextCodeMirror = (function () {
   RichTextCodeMirror.prototype.makeTodoListElement_ = function(checked, getMarkerLine) {
   	var params = {
     	'type': "checkbox",
-    	'style': "margin-left: -20px; display:inline-block; width:15px; margin-top: -2px;"
+      'class': 'firepad-todo-left'
     };
     if (checked) params['checked'] = true;
     var el = utils.elt('input', false, params);
-    el.onclick = function(e) {
-	  	e.preventDefault();
-	    this.codeMirror.setCursor({line: getMarkerLine(), ch: 0});
-	  	this.toggleTodo(true);
-		}.bind(this);
+    var self = this;
+    utils.on(el, 'click', utils.stopEventAnd(function(e) {
+	    self.codeMirror.setCursor({line: getMarkerLine(), ch: 0});
+	  	self.toggleTodo(true);
+		}));
     return el;
   };
 
@@ -3059,17 +3082,15 @@ firepad.RichTextCodeMirror = (function () {
       } else {
         cm.replaceSelection('\n', 'end', '+input');
 
-        if (listType) {
-          // Copy line attributes forward.
-          this.updateLineAttributes(cursorLine+1, cursorLine+1, function(attributes) {
-            for(var attr in lineAttributes) {
-              attributes[attr] = lineAttributes[attr];
-            }
+        // Copy line attributes forward.
+        this.updateLineAttributes(cursorLine+1, cursorLine+1, function(attributes) {
+          for(var attr in lineAttributes) {
+            attributes[attr] = lineAttributes[attr];
+          }
 
-            // Don't mark new todo items as completed.
-            if (listType === 'tc') attributes[ATTR.LIST_TYPE] = 't';
-          });
-        }
+          // Don't mark new todo items as completed.
+          if (listType === 'tc') attributes[ATTR.LIST_TYPE] = 't';
+        });
       }
     }
   };
@@ -3118,7 +3139,7 @@ firepad.RichTextCodeMirror = (function () {
       var indent = attributes[ATTR.LINE_INDENT];
       var listType = attributes[ATTR.LIST_TYPE];
 
-      if (indent && indent < 6) {
+      if (indent) {
         attributes[ATTR.LINE_INDENT]++;
       } else if (listType) {
         // lists are implicitly already indented once.
@@ -3628,6 +3649,10 @@ firepad.Formatting = (function() {
     return this.cloneWithNewAttribute_(ATTR.UNDERLINE, val);
   };
 
+  Formatting.prototype.strike = function(val) {
+    return this.cloneWithNewAttribute_(ATTR.STRIKE, val);
+  };
+
   Formatting.prototype.font = function(font) {
     return this.cloneWithNewAttribute_(ATTR.FONT, font);
   };
@@ -3710,6 +3735,10 @@ firepad.LineFormatting = (function() {
     return this.cloneWithNewAttribute_(ATTR.LINE_INDENT, indent);
   };
 
+  LineFormatting.prototype.align = function(align) {
+    return this.cloneWithNewAttribute_(ATTR.LINE_ALIGN, align);
+  };
+
   LineFormatting.prototype.listItem = function(val) {
     firepad.utils.assert(val === false || val === 'u' || val === 'o' || val === 't' || val === 'tc');
     return this.cloneWithNewAttribute_(ATTR.LIST_TYPE, val);
@@ -3717,6 +3746,10 @@ firepad.LineFormatting = (function() {
 
   LineFormatting.prototype.getIndent = function() {
     return this.attributes[ATTR.LINE_INDENT] || 0;
+  };
+
+  LineFormatting.prototype.getAlign = function() {
+    return this.attributes[ATTR.LINE_ALIGN] || 0;
   };
 
   LineFormatting.prototype.getListItem = function() {
@@ -3792,6 +3825,11 @@ firepad.ParseHtml = (function () {
     return new ParseState(this.listType, lineFormatting, this.textFormatting);
   };
 
+  ParseState.prototype.withAlign = function(align) {
+    var lineFormatting = this.lineFormatting.align(align);
+    return new ParseState(this.listType, lineFormatting, this.textFormatting);
+  };
+
   /**
    * Mutable structure representing the current parse output.
    * @constructor
@@ -3803,23 +3841,27 @@ firepad.ParseHtml = (function () {
   }
 
   ParseOutput.prototype.newlineIfNonEmpty = function(state) {
+    this.cleanLine_();
     if (this.currentLine.length > 0) {
       this.newline(state);
     }
   };
 
   ParseOutput.prototype.newlineIfNonEmptyOrListItem = function(state) {
+    this.cleanLine_();
     if (this.currentLine.length > 0 || this.currentLineListItemType !== null) {
       this.newline(state);
     }
   };
 
   ParseOutput.prototype.newline = function(state) {
+    this.cleanLine_();
     var lineFormatting = state.lineFormatting;
     if (this.currentLineListItemType !== null) {
       lineFormatting = lineFormatting.listItem(this.currentLineListItemType);
       this.currentLineListItemType = null;
     }
+
     this.lines.push(firepad.Line(this.currentLine, lineFormatting));
     this.currentLine = [];
   };
@@ -3830,6 +3872,23 @@ firepad.ParseHtml = (function () {
 
   ParseOutput.prototype.isListItem = function() {
     return this.currentLineListItemType !== null;
+  };
+
+  ParseOutput.prototype.cleanLine_ = function() {
+    // Kinda' a hack, but we remove leading and trailing spaces (since these aren't significant in html) and
+    // replaces nbsp's with normal spaces.
+    if (this.currentLine.length > 0) {
+      var last = this.currentLine.length - 1;
+      this.currentLine[0].text = this.currentLine[0].text.replace(/^ +/, '');
+      this.currentLine[last].text = this.currentLine[last].text.replace(/ +$/g, '');
+      for(var i = 0; i < this.currentLine.length; i++) {
+        this.currentLine[i].text = this.currentLine[i].text.replace(/\u00a0/g, ' ');
+      }
+    }
+    // If after stripping trailing whitespace, there's nothing left, clear currentLine out.
+    if (this.currentLine.length === 1 && this.currentLine[0].text === '') {
+      this.currentLine = [];
+    }
   };
 
   function parseHtml(html) {
@@ -3844,15 +3903,22 @@ firepad.ParseHtml = (function () {
     return output.lines;
   }
 
+  // Fix IE8.
+  var Node = Node || {
+    ELEMENT_NODE: 1,
+    TEXT_NODE: 3
+  };
+
   function parseNode(node, state, output) {
     switch (node.nodeType) {
       case Node.TEXT_NODE:
-        var text = node.nodeValue.replace(/\s+/g, ' '); // Not sure this is 100% right, but mostly works.
+        // This probably isn't exactly right, but mostly works...
+        var text = node.nodeValue.replace(/[ \n\t]+/g, ' ');
         output.currentLine.push(firepad.Text(text, state.textFormatting));
         break;
       case Node.ELEMENT_NODE:
         var style = node.getAttribute('style') || '';
-        state = state.withTextFormatting(parseStyle(state.textFormatting, style));
+        state = parseStyle(state, style);
         switch (node.nodeName.toLowerCase()) {
           case 'div':
           case 'h1':
@@ -3861,6 +3927,12 @@ firepad.ParseHtml = (function () {
           case 'p':
             output.newlineIfNonEmpty(state);
             parseChildren(node, state, output);
+            output.newlineIfNonEmpty(state);
+            break;
+          case 'center':
+            state = state.withAlign('center');
+            output.newlineIfNonEmpty(state);
+            parseChildren(node, state.withAlign('center'), output);
             output.newlineIfNonEmpty(state);
             break;
           case 'b':
@@ -3873,6 +3945,9 @@ firepad.ParseHtml = (function () {
           case 'i':
           case 'em':
             parseChildren(node, state.withTextFormatting(state.textFormatting.italic(true)), output);
+            break;
+          case 's':
+            parseChildren(node, state.withTextFormatting(state.textFormatting.strike(true)), output);
             break;
           case 'font':
             var face = node.getAttribute('face');
@@ -3888,7 +3963,8 @@ firepad.ParseHtml = (function () {
             break;
           case 'ul':
             output.newlineIfNonEmptyOrListItem(state);
-            parseChildren(node, state.withListType(LIST_TYPE.UNORDERED).withIncreasedIndent(), output);
+            var listType = node.getAttribute('class') === 'firepad-todo' ? LIST_TYPE.TODO : LIST_TYPE.UNORDERED;
+            parseChildren(node, state.withListType(listType).withIncreasedIndent(), output);
             output.newlineIfNonEmpty(state);
             break;
           case 'ol':
@@ -3898,6 +3974,8 @@ firepad.ParseHtml = (function () {
             break;
           case 'li':
             parseListItem(node, state, output);
+            break;
+          case 'style': // ignore.
             break;
           default:
             parseChildren(node, state, output);
@@ -3925,7 +4003,8 @@ firepad.ParseHtml = (function () {
 
     output.newlineIfNonEmptyOrListItem(state);
 
-    output.makeListItem(state.listType);
+    var listType = (node.getAttribute('class') === 'firepad-checked') ? LIST_TYPE.TODOCHECKED : state.listType;
+    output.makeListItem(listType);
     var oldLine = output.currentLine;
 
     parseChildren(node, state, output);
@@ -3935,66 +4014,72 @@ firepad.ParseHtml = (function () {
     }
   }
 
-  function parseStyle(formatting, styleString) {
+  function parseStyle(state, styleString) {
+    var textFormatting = state.textFormatting;
+    var lineFormatting = state.lineFormatting;
     var styles = styleString.split(';');
     for(var i = 0; i < styles.length; i++) {
       var stylePieces = styles[i].split(':');
       if (stylePieces.length !== 2)
         continue;
-      var prop = stylePieces[0].trim().toLowerCase();
-      var val = stylePieces[1].trim();
+      var prop = firepad.utils.trim(stylePieces[0]).toLowerCase();
+      var val = firepad.utils.trim(stylePieces[1]).toLowerCase();
       switch (prop) {
         case 'text-decoration':
           var underline = val.indexOf('underline') >= 0;
-          formatting = formatting.underline(underline);
+          var strike = val.indexOf('line-through') >= 0;
+          textFormatting = textFormatting.underline(underline).strike(strike);
           break;
         case 'font-weight':
           var bold = (val === 'bold') || parseInt(val) >= 600;
-          formatting = formatting.bold(bold);
+          textFormatting = textFormatting.bold(bold);
           break;
         case 'font-style':
           var italic = (val === 'italic' || val === 'oblique');
-          formatting = formatting.italic(italic);
+          textFormatting = textFormatting.italic(italic);
           break;
         case 'color':
-          formatting = formatting.color(val.toLowerCase());
+          textFormatting = textFormatting.color(val.toLowerCase());
+          break;
+        case 'text-align':
+          lineFormatting = lineFormatting.align(val.toLowerCase());
           break;
         case 'font-size':
           switch (val) {
             case 'xx-small':
-              formatting = formatting.fontSize(9);
+              textFormatting = textFormatting.fontSize(9);
               break;
             case 'x-small':
-              formatting = formatting.fontSize(10);
+              textFormatting = textFormatting.fontSize(10);
               break;
             case 'small':
-              formatting = formatting.fontSize(12);
+              textFormatting = textFormatting.fontSize(12);
               break;
             case 'medium':
-              formatting = formatting.fontSize(14);
+              textFormatting = textFormatting.fontSize(14);
               break;
             case 'large':
-              formatting = formatting.fontSize(18);
+              textFormatting = textFormatting.fontSize(18);
               break;
             case 'x-large':
-              formatting = formatting.fontSize(24);
+              textFormatting = textFormatting.fontSize(24);
               break;
             case 'xx-large':
-              formatting = formatting.fontSize(32);
+              textFormatting = textFormatting.fontSize(32);
               break;
             default:
-              formatting = formatting.fontSize(parseInt(val));
+              textFormatting = textFormatting.fontSize(parseInt(val));
           }
           break;
         case 'font-family':
-          var font = val.split(',')[0].trim(); // get first font.
+          var font = firepad.utils.trim(val.split(',')[0]); // get first font.
           font = font.replace(/['"]/g, ''); // remove quotes.
           font = font.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase() });
-          formatting = formatting.font(font);
+          textFormatting = textFormatting.font(font);
           break;
       }
     }
-    return formatting;
+    return state.withLineFormatting(lineFormatting).withTextFormatting(textFormatting);
   }
 
   return parseHtml;
@@ -4070,6 +4155,21 @@ firepad.Firepad = (function(global) {
       self.ready_ = true;
       self.trigger('ready');
     });
+
+    // Hack for IE8 to make font icons work more reliably.
+    // http://stackoverflow.com/questions/9809351/ie8-css-font-face-fonts-only-working-for-before-content-on-over-and-sometimes
+    if (navigator.appName == 'Microsoft Internet Explorer' && navigator.userAgent.match(/MSIE 8\./)) {
+      window.onload = function() {
+        var head = document.getElementsByTagName('head')[0],
+          style = document.createElement('style');
+        style.type = 'text/css';
+        style.styleSheet.cssText = ':before,:after{content:none !important;}';
+        head.appendChild(style);
+        setTimeout(function() {
+          head.removeChild(style);
+        }, 0);
+      };
+    }
   }
   utils.makeEventEmitter(Firepad);
 
@@ -4161,9 +4261,12 @@ firepad.Firepad = (function(global) {
   Firepad.prototype.getHtml = function() {
     var doc = this.firebaseAdapter_.getDocument();
     var html = '', newLine = true;
+    html += Firepad.EXPORT_HTML_STYLE;
 
     function open(listType) {
-      return (listType === LIST_TYPE.ORDERED) ? '<ol>' : '<ul>';
+      return (listType === LIST_TYPE.ORDERED) ? '<ol>' :
+             (listType === LIST_TYPE.UNORDERED) ? '<ul>' :
+             '<ul class="firepad-todo">';
     }
 
     function close(listType) {
@@ -4172,6 +4275,8 @@ firepad.Firepad = (function(global) {
 
     var listTypeStack = [];
     var inListItem = false;
+    var firstLine = true;
+    var emptyLine = true;
     var i = 0, op = doc.ops[i];
     while(op) {
       utils.assert(op.isInsert());
@@ -4179,10 +4284,12 @@ firepad.Firepad = (function(global) {
 
       if (newLine) {
         newLine = false;
-        var indent = 0, listType = null;
+
+        var indent = 0, listType = null, lineAlign = 'left';
         if (ATTR.LINE_SENTINEL in attrs) {
           indent = attrs[ATTR.LINE_INDENT] || 0;
           listType = attrs[ATTR.LIST_TYPE] || null;
+          lineAlign = attrs[ATTR.LINE_ALIGN] || 'left';
         }
         if (listType) {
           indent = indent || 1; // lists are automatically indented at least 1.
@@ -4191,12 +4298,23 @@ firepad.Firepad = (function(global) {
         if (inListItem) {
           html += '</li>';
           inListItem = false;
+        } else if (!firstLine) {
+          if (emptyLine) {
+            html += '<br/>';
+          }
+          html += '</div>';
         }
+        firstLine = false;
 
         // Close any extra lists.
+        function compatibleListType(l1, l2) {
+          return (l1 === l2) ||
+              (l1 === LIST_TYPE.TODO && l2 === LIST_TYPE.TODOCHECKED) ||
+              (l1 === LIST_TYPE.TODOCHECKED && l2 === LIST_TYPE.TODO);
+        }
         utils.assert(indent >= 0, "Indent must not be negative.");
         while (listTypeStack.length > indent ||
-            (indent === listTypeStack.length && listType !== null && listType !== listTypeStack[listTypeStack.length - 1])) {
+            (indent === listTypeStack.length && listType !== null && !compatibleListType(listType, listTypeStack[listTypeStack.length - 1]))) {
           html += close(listTypeStack.pop());
         }
 
@@ -4207,10 +4325,25 @@ firepad.Firepad = (function(global) {
           listTypeStack.push(toOpen);
         }
 
+        var style = (lineAlign !== 'left') ? ' style="text-align:' + lineAlign + '"': '';
         if (listType) {
-          html += "<li>";
+          var clazz = '';
+          switch (listType) 
+          {
+            case LIST_TYPE.TODOCHECKED:
+              clazz = ' class="firepad-checked"';
+              break;
+            case LIST_TYPE.TODO:
+              clazz = ' class="firepad-unchecked"';
+              break;
+          }
+          html += "<li" + clazz + style + ">";
           inListItem = true;
+        } else {
+          // start line div.
+          html += '<div' + style + '>';
         }
+        emptyLine = true;
       }
 
       if (ATTR.LINE_SENTINEL in attrs) {
@@ -4222,7 +4355,7 @@ firepad.Firepad = (function(global) {
       for(var attr in attrs) {
         var value = attrs[attr];
         var start, end;
-        if (attr === ATTR.BOLD || attr === ATTR.ITALIC || attr === ATTR.UNDERLINE) {
+        if (attr === ATTR.BOLD || attr === ATTR.ITALIC || attr === ATTR.UNDERLINE || attr === ATTR.STRIKE) {
           utils.assert(value === true);
           start = end = attr;
         } else if (attr === ATTR.FONT_SIZE) {
@@ -4249,12 +4382,20 @@ firepad.Firepad = (function(global) {
         if (newLineIndex < text.length - 1) {
           // split op.
           op = new firepad.TextOp('insert', text.substr(newLineIndex+1), attrs);
-          text = text.substr(0, newLineIndex+1);
         } else {
           op = doc.ops[++i];
         }
+        text = text.substr(0, newLineIndex);
       } else {
         op = doc.ops[++i];
+      }
+
+      // Replace leading, trailing, and consecutive spaces with nbsp's to make sure they're preserved.
+      text = text.replace(/  +/g, function(str) {
+        return new Array(str.length + 1).join('\u00a0');
+      }).replace(/^ /, '\u00a0').replace(/ $/, '\u00a0');
+      if (text.length > 0) {
+        emptyLine = false;
       }
 
       html += prefix + this.textToHtml_(text) + suffix;
@@ -4262,6 +4403,11 @@ firepad.Firepad = (function(global) {
 
     if (inListItem) {
       html += '</li>';
+    } else if (!firstLine) {
+      if (emptyLine) {
+        html += '&nbsp;';
+      }
+      html += '</div>';
     }
 
     // Close any extra lists.
@@ -4272,13 +4418,15 @@ firepad.Firepad = (function(global) {
     return html;
   };
 
+  Firepad.EXPORT_HTML_STYLE = '<style>ul.firepad-todo { list-style: none; margin-left: 0; padding-left: 0; } ul.firepad-todo > li { padding-left: 1em; text-indent: -1em; } ul.firepad-todo > li:before { content: "\\2610"; padding-right: 5px; } ul.firepad-todo > li.firepad-checked:before { content: "\\2611"; padding-right: 5px; }</style>\n';
+
   Firepad.prototype.textToHtml_ = function(text) {
     return text.replace(/&/g, '&amp;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(/\n/g, '<br />');
+        .replace(/\u00a0/g, '&nbsp;')
   };
 
   Firepad.prototype.setHtml = function (html) {
@@ -4306,6 +4454,11 @@ firepad.Firepad = (function(global) {
     this.codeMirror_.focus();
   };
 
+  Firepad.prototype.strike = function() {
+    this.richTextCodeMirror_.toggleAttribute(ATTR.STRIKE);
+    this.codeMirror_.focus();
+  };
+
   Firepad.prototype.fontSize = function(size) {
     this.richTextCodeMirror_.setAttribute(ATTR.FONT_SIZE, size);
     this.codeMirror_.focus();
@@ -4318,6 +4471,14 @@ firepad.Firepad = (function(global) {
 
   Firepad.prototype.color = function(color) {
     this.richTextCodeMirror_.setAttribute(ATTR.COLOR, color);
+    this.codeMirror_.focus();
+  };
+
+  Firepad.prototype.align = function(alignment) {
+    if (alignment !== 'left' && alignment !== 'center' && alignment !== 'right') {
+      throw new Error('align() must be passed "left", "center", or "right".');
+    }
+    this.richTextCodeMirror_.toggleLineAttribute(ATTR.LINE_ALIGN, alignment);
     this.codeMirror_.focus();
   };
 
@@ -4350,10 +4511,20 @@ firepad.Firepad = (function(global) {
 
   Firepad.prototype.indent = function() {
     this.richTextCodeMirror_.indent();
+    this.codeMirror_.focus();
   };
 
   Firepad.prototype.unindent = function() {
     this.richTextCodeMirror_.unindent();
+    this.codeMirror_.focus();
+  };
+
+  Firepad.prototype.undo = function() {
+    this.codeMirror_.undo();
+  };
+
+  Firepad.prototype.redo = function() {
+    this.codeMirror_.redo();
   };
 
   Firepad.prototype.getOption = function(option, def) {
@@ -4372,15 +4543,23 @@ firepad.Firepad = (function(global) {
   Firepad.prototype.addToolbar_ = function() {
     var toolbar = new RichTextToolbar();
 
+    toolbar.on('undo', this.undo, this);
+    toolbar.on('redo', this.redo, this);
     toolbar.on('bold', this.bold, this);
     toolbar.on('italic', this.italic, this);
     toolbar.on('underline', this.underline, this);
+    toolbar.on('strike', this.strike, this);
     toolbar.on('font-size', this.fontSize, this);
     toolbar.on('font', this.font, this);
     toolbar.on('color', this.color, this);
+    toolbar.on('left', function() { this.align('left')}, this);
+    toolbar.on('center', function() { this.align('center')}, this);
+    toolbar.on('right', function() { this.align('right')}, this);
     toolbar.on('ordered-list', this.orderedList, this);
     toolbar.on('unordered-list', this.unorderedList, this);
-    toolbar.on('todo', this.todo, this);
+    toolbar.on('todo-list', this.todo, this);
+    toolbar.on('indent-increase', this.indent, this);
+    toolbar.on('indent-decrease', this.unindent, this);
 
     this.firepadWrapper_.insertBefore(toolbar.element(), this.firepadWrapper_.firstChild);
   };
