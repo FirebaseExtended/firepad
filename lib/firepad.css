@@ -124,6 +124,7 @@ a.firepad-btn:hover {
   color: #fff;
   background-color: #ffbf86;
   border-color: #e6a165;
+  text-decoration: none;
 }
 
 a.firepad-btn:active {
