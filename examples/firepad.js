@@ -4258,6 +4258,7 @@ firepad.Firepad = (function(global) {
     }
   };
 
+  Firepad.TODO_STYLE = '<style>ul.firepad-todo { list-style: none; margin-left: 0; padding-left: 0; } ul.firepad-todo > li { padding-left: 1em; text-indent: -1em; } ul.firepad-todo > li:before { content: "\\2610"; padding-right: 5px; } ul.firepad-todo > li.firepad-checked:before { content: "\\2611"; padding-right: 5px; }</style>\n';
   Firepad.prototype.getHtml = function() {
     var doc = this.firebaseAdapter_.getDocument();
     var html = '', newLine = true;
@@ -4278,6 +4279,7 @@ firepad.Firepad = (function(global) {
     var firstLine = true;
     var emptyLine = true;
     var i = 0, op = doc.ops[i];
+    var usesTodo = false;
     while(op) {
       utils.assert(op.isInsert());
       var attrs = op.attributes;
@@ -4321,6 +4323,7 @@ firepad.Firepad = (function(global) {
         // Open any needed lists.
         while (listTypeStack.length < indent) {
           var toOpen = listType || LIST_TYPE.UNORDERED; // default to unordered lists for indenting non-list-item lines.
+          usesTodo = listType == LIST_TYPE.TODO || listType == LIST_TYPE.TODOCHECKED || usesTodo;
           html += open(toOpen);
           listTypeStack.push(toOpen);
         }
@@ -4415,10 +4418,14 @@ firepad.Firepad = (function(global) {
       html += close(listTypeStack.pop());
     }
 
+    if (usesTodo) {
+      html =  Firepad.TODO_STYLE + html;
+    }
+
     return html;
   };
 
-  Firepad.EXPORT_HTML_STYLE = '<style>ul.firepad-todo { list-style: none; margin-left: 0; padding-left: 0; } ul.firepad-todo > li { padding-left: 1em; text-indent: -1em; } ul.firepad-todo > li:before { content: "\\2610"; padding-right: 5px; } ul.firepad-todo > li.firepad-checked:before { content: "\\2611"; padding-right: 5px; }</style>\n';
+  Firepad.EXPORT_HTML_STYLE = '';
 
   Firepad.prototype.textToHtml_ = function(text) {
     return text.replace(/&/g, '&amp;')
