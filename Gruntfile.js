@@ -48,8 +48,12 @@ module.exports = function (grunt) {
       }
     },
     copy: {
-      css: {
+      toBuild: {
         files: [
+          {
+            src: 'font/firepad.eot',
+            dest: 'build/firepad.eot'
+          },
           {
             src: 'lib/firepad.css',
             dest: 'build/firepad.css'
@@ -65,7 +69,11 @@ module.exports = function (grunt) {
           {
             src: 'build/firepad.css',
             dest: 'examples/firepad.css'
-          }
+          },
+          {
+            src: 'build/firepad.eot',
+            dest: 'examples/firepad.eot'
+          },
         ]
       }
     },
@@ -78,7 +86,7 @@ module.exports = function (grunt) {
           {
             cwd: 'build/',
             expand: true,
-            src: ['firepad.js', 'firepad.css', 'firepad-min.js' ],
+            src: ['firepad.js', 'firepad.css', 'firepad-min.js', 'firepad.eot' ],
             dest: './'
           }
         ]
