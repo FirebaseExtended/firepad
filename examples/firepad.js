@@ -4196,7 +4196,6 @@ firepad.Firepad = (function(global) {
       self.ready_ = true;
       self.trigger('ready');
     });
-<<<<<<< HEAD
     
     this.firebaseAdapter_.on('cursors', function(id, cursor, color) {
       if (cursor) {
@@ -4215,7 +4214,6 @@ firepad.Firepad = (function(global) {
     this.firebaseAdapter_.on('checkpoint', function(point, append) {
       self.trigger('checkpoint', point, append);
     });
-=======
 
     // Hack for IE8 to make font icons work more reliably.
     // http://stackoverflow.com/questions/9809351/ie8-css-font-face-fonts-only-working-for-before-content-on-over-and-sometimes
@@ -4231,7 +4229,6 @@ firepad.Firepad = (function(global) {
         }, 0);
       };
     }
->>>>>>> firebase
   }
   utils.makeEventEmitter(Firepad);
 
