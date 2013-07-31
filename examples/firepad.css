@@ -49,11 +49,11 @@
 .firepad-la-right { text-align: right; }
 
 /** Line Styles */
-pre.firepad-lt-o, pre.firepad-lt-u, pre.firepad-lt-t, pre.firepad-lt-tc {
+.firepad pre.firepad-lt-o, pre.firepad-lt-u, pre.firepad-lt-t, pre.firepad-lt-tc {
   margin-left: 40px;
 }
 
-.firepad-list-left {
+.firepad .firepad-list-left {
   display:inline-block;
   margin-left: -40px;
   width: 40px;
@@ -61,9 +61,9 @@ pre.firepad-lt-o, pre.firepad-lt-u, pre.firepad-lt-t, pre.firepad-lt-tc {
   text-align: right;
 }
 
-.firepad-todo-left {
+.firepad .firepad-todo-left {
   display:inline-block;
-  margin-left: -20px;
+  margin: 3px 0.5ex 3px -20px;
   width: 20px;
 }
 

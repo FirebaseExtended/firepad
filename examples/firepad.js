@@ -517,7 +517,7 @@ firepad.TextOperation = (function () {
   // preserves the changes of both. Or, in other words, for each input string S
   // and a pair of consecutive operations A and B,
   // apply(apply(S, A), B) = apply(S, compose(A, B)) must hold.
-  TextOperation.prototype.compose = function (operation2) {
+  TextOperation.prototype.compose = function (operation2, diff, author) {
     var operation1 = this;
     if (operation1.targetLength !== operation2.baseLength) {
       throw new Error("The base length of the second operation has to be the target length of the first operation");
@@ -548,6 +548,11 @@ firepad.TextOperation = (function () {
       if (typeof op1 === 'undefined' && typeof op2 === 'undefined') {
         // end condition: both ops1 and ops2 have been processed
         break;
+      }
+      
+      if (diff && op2.type == 'insert') {
+        op2.attributes.diff = (op2.type == 'delete')? 'deleted': 'inserted';
+        op2.attributes.author = author;
       }
 
       if (op1 && op1.isDelete()) {
@@ -1302,9 +1307,11 @@ firepad.FirebaseAdapter = (function (global) {
   // Save a checkpoint every 100 edits.
   var CHECKPOINT_FREQUENCY = 100;
 
-  function FirebaseAdapter (ref, userId, userColor) {
+  function FirebaseAdapter (ref, userId, userColor, lastRevision, lastCheckpoint) {
     this.ref_ = ref;
     this.ready_ = false;
+    this.readOnly_ = false;
+    this.refreshing_ = false;
     this.firebaseCallbacks_ = [];
     this.zombie_ = false;
 
@@ -1314,6 +1321,10 @@ firepad.FirebaseAdapter = (function (global) {
 
     // The next expected revision.
     this.revision_ = 0;
+
+    // The last known revision
+    this.lastRevision_ = parseInt(lastRevision || 0);
+    this.lastCheckpoint_ = parseInt(lastCheckpoint || 0);
 
     // This is used for two purposes:
     // 1) On initialization, we fill this with the latest checkpoint and any subsequent operations and then
@@ -1343,8 +1354,17 @@ firepad.FirebaseAdapter = (function (global) {
       self.monitorCursors_();
     });
 
+    /// Also listen to "checkpoint" orders from caller
+    this.on('history', function() {
+      self.saveCheckpoint_(true);
+    });
+
+    /// Restart cursors when refreshed
+    this.on('refreshed', function() {
+      self.monitorCursors_();
+    });
   }
-  utils.makeEventEmitter(FirebaseAdapter, ['ready', 'cursor', 'operation', 'ack', 'retry']);
+  utils.makeEventEmitter(FirebaseAdapter, ['ready', 'cursor', 'operation', 'ack', 'retry', 'history', 'revision', 'checkpoint', 'refreshed', 'cursors']);
 
   FirebaseAdapter.prototype.dispose = function() {
     this.removeFirebaseCallbacks_();
@@ -1379,6 +1399,8 @@ firepad.FirebaseAdapter = (function (global) {
 
   FirebaseAdapter.prototype.sendOperation = function (operation, cursor) {
     var self = this;
+
+    if (self.readOnly_) return;
 
     // If we're not ready yet, do nothing right now, and trigger a retry when we're ready.
     if (!this.ready_) {
@@ -1456,10 +1478,11 @@ firepad.FirebaseAdapter = (function (global) {
 
     function childChanged(childSnap) {
       var userId = childSnap.name();
+      var userData = childSnap.val();
       if (userId !== self.userId_) {
-        var userData = childSnap.val();
         self.trigger('cursor', userId, userData.cursor, userData.color);
       }
+      self.trigger('cursors', userId, userData.cursor, userData.color);
     }
 
     this.firebaseOn_(usersRef, 'child_added', childChanged);
@@ -1475,10 +1498,14 @@ firepad.FirebaseAdapter = (function (global) {
   FirebaseAdapter.prototype.monitorHistory_ = function() {
     var self = this;
     // Get the latest checkpoint as a starting point so we don't have to re-play entire history.
-    this.ref_.child('checkpoint').once('value', function(s) {
+    // Or if lastCheckpoint > lastRevision, find closest checkpoint
+    var child = this.lastCheckpoint_? 'checkpoints/' + revisionToId(this.lastCheckpoint_): 'checkpoint';
+    this.ref_.child(child).once('value', function(s) {
       if (self.zombie_) { return; } // just in case we were cleaned up before we got the checkpoint data.
       var revisionId = s.child('id').val(),  op = s.child('o').val(), author = s.child('a').val();
-      if (op != null && revisionId != null && author !== null) {
+      // If checkpoint revision is greater than lastRevision_, skip and start from begining anyway
+      var skip = revisionId != null && self.lastRevision_ && self.lastRevision_ < revisionFromId(revisionId);
+      if (!skip && op != null && revisionId != null && author !== null) {
         self.pendingReceivedRevisions_[revisionId] = { o: op, a: author };
         self.checkpointRevision_ = revisionFromId(revisionId);
         self.monitorHistoryStartingAt_(self.checkpointRevision_ + 1);
@@ -1514,13 +1541,16 @@ firepad.FirebaseAdapter = (function (global) {
     // Compose the checkpoint and all subsequent revisions into a single operation to apply at once.
     this.revision_ = this.checkpointRevision_;
     var revisionId = revisionToId(this.revision_), pending = this.pendingReceivedRevisions_;
+    var lastRevisionId = revisionToId(this.lastRevision_);
     while (pending[revisionId] != null) {
       var revision = this.parseRevision_(pending[revisionId]);
       if (!revision) {
         // If a misbehaved client adds a bad operation, just ignore it.
         utils.log('Invalid operation.', this.ref_.toString(), revisionId, pending[revisionId]);
       } else {
-        this.document_ = this.document_.compose(revision.operation);
+        // Flag as 'diff' in operation composition if required
+        var diff = this.lastRevision_ > 0 && this.revision_ > this.lastRevision_;
+        this.document_ = this.document_.compose(revision.operation, diff, revision.author);
       }
 
       delete pending[revisionId];
@@ -1534,6 +1564,7 @@ firepad.FirebaseAdapter = (function (global) {
     var self = this;
     setTimeout(function() {
       self.trigger('ready');
+      self.trigger('revision', self.revision_ - 1, revisionToId(self.revision_ - 1));
     }, 0);
   };
 
@@ -1542,6 +1573,7 @@ firepad.FirebaseAdapter = (function (global) {
     var revisionId = revisionToId(this.revision_);
     var triggerRetry = false;
     while (pending[revisionId] != null) {
+      this.trigger('revision', this.revision_, revisionId);
       this.revision_++;
 
       var revision = this.parseRevision_(pending[revisionId]);
@@ -1549,7 +1581,8 @@ firepad.FirebaseAdapter = (function (global) {
         // If a misbehaved client adds a bad operation, just ignore it.
         utils.log('Invalid operation.', this.ref_.toString(), revisionId, pending[revisionId]);
       } else {
-        this.document_ = this.document_.compose(revision.operation);
+        var diff = this.lastRevision_ > 0 && this.revision_ > this.lastRevision_;
+        this.document_ = this.document_.compose(revision.operation, diff, revision.author);
         if (this.sent_ && revisionId === this.sent_.id) {
           // We have an outstanding change at this revision id.
           if (this.sent_.op.equals(revision.operation) && revision.author === this.userId_) {
@@ -1597,12 +1630,16 @@ firepad.FirebaseAdapter = (function (global) {
     return { author: data.a, operation: op }
   };
 
-  FirebaseAdapter.prototype.saveCheckpoint_ = function() {
-    this.ref_.child('checkpoint').set({
-      a: this.userId_,
-      o: this.document_.toJSON(),
-      id: revisionToId(this.revision_ - 1) // use the id for the revision we just wrote.
-    });
+  FirebaseAdapter.prototype.saveCheckpoint_ = function(append) {
+    var point = {
+        a:  this.userId_,
+        o:  this.document_.toJSON(),
+        r:  this.revision_ - 1,
+        id: revisionToId(this.revision_ - 1)
+    };
+    if (append) this.ref_.child('checkpoints/' + point.id).set(point);
+    else this.ref_.child('checkpoint').set(point);
+    this.trigger('checkpoint', point, append);
   };
 
   FirebaseAdapter.prototype.firebaseOn_ = function(ref, eventType, callback, context) {
@@ -4210,8 +4247,12 @@ firepad.Firepad = (function(global) {
     var userId = this.getOption('userId', ref.push().name());
     var userColor = this.getOption('userColor', colorFromUserId(userId));
 
+    /// Diff last revision
+    var lastRevision = this.getOption('lastRevision', 0);
+    var lastCheckpoint = this.getOption('lastCheckpoint', 0);
+
     this.richTextCodeMirror_ = new RichTextCodeMirror(this.codeMirror_, { cssPrefix: 'firepad-' });
-    this.firebaseAdapter_ = new FirebaseAdapter(ref, userId, userColor);
+    this.firebaseAdapter_ = new FirebaseAdapter(ref, userId, userColor, lastRevision, lastCheckpoint);
     this.cmAdapter_ = new RichTextCodeMirrorAdapter(this.richTextCodeMirror_);
     this.client_ = new EditorClient(this.firebaseAdapter_, this.cmAdapter_);
 
@@ -4219,6 +4260,24 @@ firepad.Firepad = (function(global) {
     this.firebaseAdapter_.on('ready', function() {
       self.ready_ = true;
       self.trigger('ready');
+    });
+    
+    this.firebaseAdapter_.on('cursors', function(id, cursor, color) {
+      if (cursor) {
+        var pos = self.codeMirror_.posFromIndex(cursor.position),
+            coords = self.codeMirror_.cursorCoords(pos);
+        self.trigger('cursor', id, cursor, coords, color);
+      } else {
+        self.trigger('cursor', id, cursor);
+      }
+    });
+    
+    this.firebaseAdapter_.on('revision', function(revision, revisionId) {
+      self.trigger('revision', revision, revisionId);
+    });
+    
+    this.firebaseAdapter_.on('checkpoint', function(point, append) {
+      self.trigger('checkpoint', point, append);
     });
 
     this.registerBuiltinEntities_();
@@ -4242,6 +4301,11 @@ firepad.Firepad = (function(global) {
 
   // For readability, this is the primary "constructor", even though right now they're just aliases for Firepad.
   Firepad.fromCodeMirror = Firepad;
+
+  // Append to revisions history
+  Firepad.prototype.history = function() {
+    this.firebaseAdapter_.trigger('history');
+  };
 
   Firepad.prototype.dispose = function() {
     this.zombie_ = true; // We've been disposed.  No longer valid to do anything.
