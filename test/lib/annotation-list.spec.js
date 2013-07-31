@@ -213,7 +213,7 @@ describe('AnnotationList', function() {
   
   });
   
-  it('Remove2', function() {
+  it('Remove3', function() {
     var list = new AnnotationList(changeHandler);
   
     // Insert into empty list.
@@ -252,7 +252,7 @@ describe('AnnotationList', function() {
   
   });
   
-  it('Remove3', function() {
+  it('Remove4', function() {
     var list = new AnnotationList(changeHandler);
   
     // Insert into empty list.
@@ -286,7 +286,7 @@ describe('AnnotationList', function() {
   });
   
   
-  it('Remove4', function() {
+  it('Remove5', function() {
     var removes = [
       {span: new Span(8, 12), resultLength: 18},  // part of first, all of 2nd
       {span: new Span(8, 14), resultLength: 16},  // part of first, all of 2nd, part of 3rd
@@ -316,7 +316,7 @@ describe('AnnotationList', function() {
   
   });
   
-  it('Remove5', function() {
+  it('Remove6', function() {
     function verify(opts) {
       var list = new AnnotationList(changeHandler);
       list.insertAnnotatedSpan(new Span(0, 10), new TestAnnotation('a'));
@@ -389,7 +389,7 @@ describe('AnnotationList', function() {
   
   });
   
-  it('Remove6', function() {
+  it('Remove7', function() {
     var list = new AnnotationList(changeHandler);
   
     list.insertAnnotatedSpan(new Span(0, 10), new TestAnnotation('a'));
@@ -410,7 +410,22 @@ describe('AnnotationList', function() {
     expect(list.count()).toBe(2);
   
   });
-  
+
+  it('Remove8', function() {
+    var list = new AnnotationList(changeHandler);
+
+    list.insertAnnotatedSpan(new Span(0, 3), new TestAnnotation('a'));
+    list.insertAnnotatedSpan(new Span(3, 1), new TestAnnotation('b'));
+    list.insertAnnotatedSpan(new Span(4, 3), new TestAnnotation('a'));
+    expect(list.count()).toBe(3);
+
+    // remove 'b' segment.
+    list.removeSpan(new Span(3, 1));
+    expect(oldSpans.length).toBe(3);
+    expect(newSpans.length).toBe(1);
+    testSpan(newSpans[0], 0, 6);
+  });
+
   it('BadRemove1', function() {
     var list = new AnnotationList(changeHandler);
     list.insertAnnotatedSpan(new Span(0, 10), new TestAnnotation('a'));
