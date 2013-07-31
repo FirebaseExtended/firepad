@@ -1056,7 +1056,7 @@ firepad.AnnotationList = (function () {
         res.beforePred.next = newSegment;
         newSegment.next = res.succ.next;
 
-        newNodes.push(new NewAnnotatedSpan(res.startPos - res.start.length, newSegment));
+        newNodes.push(new NewAnnotatedSpan(res.startPos - res.pred.length, newSegment));
       } else {
         // Just splice list back together.
         res.beforeStart.next = tail;
@@ -2369,6 +2369,7 @@ firepad.AttributeConstants = {
   FONT: 'f',
   FONT_SIZE: 'fs',
   COLOR: 'c',
+  ENTITY_SENTINEL: 'ent',
 
 // Line Attributes
   LINE_SENTINEL: 'l',
@@ -2419,6 +2420,7 @@ firepad.RichTextCodeMirror = (function () {
 
     this.changeId_ = 0;
     this.outstandingChanges_ = { };
+    this.entities_ = { };
   }
   utils.makeEventEmitter(RichTextCodeMirror, ['change', 'attributesChange']);
 
@@ -2426,6 +2428,9 @@ firepad.RichTextCodeMirror = (function () {
   // "line attributes."  E000 is from the unicode "private use" range.
   var LineSentinelCharacter = '\uE000';
   RichTextCodeMirror.LineSentinelCharacter = LineSentinelCharacter;
+
+  // A special character used to represent any "entity" inserted into the document (e.g. an image).
+  var EntitySentinelCharacter = '\uE001';
 
   RichTextCodeMirror.prototype.detach = function() {
     this.codeMirror.off('beforeChange', this.onCodeMirrorBeforeChange_);
@@ -2597,6 +2602,22 @@ firepad.RichTextCodeMirror = (function () {
     cm.replaceRange("", cm.posFromIndex(start), cm.posFromIndex(end), origin);
   };
 
+  RichTextCodeMirror.prototype.insertEntityAtCursor = function(type, info, origin) {
+    var cm = this.codeMirror;
+    var index = cm.indexFromPos(cm.getCursor('head'));
+    this.insertEntity(index, type, info);
+  };
+
+  RichTextCodeMirror.prototype.insertEntity = function(index, entityType, entityInfo, origin) {
+    var attrs = { };
+    attrs[ATTR.ENTITY_SENTINEL] = entityType;
+    var prefix = ATTR.ENTITY_SENTINEL + '_';
+    for(var i in entityInfo) {
+      attrs[prefix + i] = entityInfo[i];
+    }
+    this.replaceText(index, null, EntitySentinelCharacter, attrs, origin);
+  };
+
   RichTextCodeMirror.prototype.getAttributeSpans = function(start, end) {
     var spans = [];
     var annotatedSpans = this.annotationList_.getAnnotatedSpansForSpan(new Span(start, end - start));
@@ -2615,6 +2636,11 @@ firepad.RichTextCodeMirror = (function () {
   RichTextCodeMirror.prototype.getText = function(start, end) {
     var from = this.codeMirror.posFromIndex(start), to = this.codeMirror.posFromIndex(end);
     return this.codeMirror.getRange(from, to);
+  };
+
+  RichTextCodeMirror.prototype.registerEntity = function(entity, options) {
+    firepad.utils.assert(options.render, "Entity options should include a 'render' function!");
+    this.entities_[entity] = options;
   };
 
   RichTextCodeMirror.prototype.initAnnotationList_ = function() {
@@ -2643,14 +2669,17 @@ firepad.RichTextCodeMirror = (function () {
 
     for (i = 0; i < newNodes.length; i++) {
       var annotation = newNodes[i].annotation;
-      var className = this.getClassNameForAttributes_(annotation.attributes);
       var forLine = (ATTR.LINE_SENTINEL in annotation.attributes);
+      var entity = (ATTR.ENTITY_SENTINEL in annotation.attributes);
 
-      if (className !== '') {
-        var from = this.codeMirror.posFromIndex(newNodes[i].pos);
-        if (forLine) {
-          linesToReMark[from.line] = true;
-        } else {
+      var from = this.codeMirror.posFromIndex(newNodes[i].pos);
+      if (forLine) {
+        linesToReMark[from.line] = true;
+      } else if (entity) {
+        this.markEntity_(newNodes[i]);
+      } else {
+        var className = this.getClassNameForAttributes_(annotation.attributes);
+        if (className !== '') {
           var to = this.codeMirror.posFromIndex(newNodes[i].pos + newNodes[i].length);
           marker = this.codeMirror.markText(from, to, { className: className });
           newNodes[i].attachObject(marker);
@@ -2720,6 +2749,42 @@ firepad.RichTextCodeMirror = (function () {
       }
     }
     return globalClassName;
+  };
+
+  RichTextCodeMirror.prototype.markEntity_ = function(annotationNode) {
+    var attributes = annotationNode.annotation.attributes;
+    var type = attributes[ATTR.ENTITY_SENTINEL];
+
+    // Copy out the attributes that begin with the entity prefix.
+    var entityInfo = {};
+    var prefix = ATTR.ENTITY_SENTINEL + '_';
+    for(var attr in attributes) {
+      if (attr.substr(0, prefix.length) === prefix) {
+        entityInfo[attr.substr(prefix.length)] = attributes[attr];
+      }
+    }
+
+    var options = { collapsed: true, atomic: true };
+
+    var html = this.generateEntityHtml_(type, entityInfo);
+    if (html) {
+      var div = document.createElement('div');
+      div.innerHTML = html;
+      options.replacedWith = div.childNodes[0];
+    }
+
+    var from = this.codeMirror.posFromIndex(annotationNode.pos);
+    var to = this.codeMirror.posFromIndex(annotationNode.pos + annotationNode.length);
+    var marker = this.codeMirror.markText(from, to, options);
+    annotationNode.attachObject(marker);
+  };
+
+  RichTextCodeMirror.prototype.generateEntityHtml_ = function(type, info) {
+    var html;
+    if (type in this.entities_ && this.entities_[type]) {
+      html = this.entities_[type].render(info);
+    }
+    return html;
   };
 
   RichTextCodeMirror.prototype.lineClassRemover_ = function(lineNum) {
@@ -4156,6 +4221,8 @@ firepad.Firepad = (function(global) {
       self.trigger('ready');
     });
 
+    this.registerBuiltinEntities_();
+
     // Hack for IE8 to make font icons work more reliably.
     // http://stackoverflow.com/questions/9809351/ie8-css-font-face-fonts-only-working-for-before-content-on-over-and-sometimes
     if (navigator.appName == 'Microsoft Internet Explorer' && navigator.userAgent.match(/MSIE 8\./)) {
@@ -4527,6 +4594,14 @@ firepad.Firepad = (function(global) {
     this.codeMirror_.redo();
   };
 
+  Firepad.prototype.insertEntity = function(type, info) {
+    this.richTextCodeMirror_.insertEntityAtCursor(type, info);
+  };
+
+  Firepad.prototype.registerEntity = function(type, options) {
+    this.richTextCodeMirror_.registerEntity(type, options);
+  };
+  
   Firepad.prototype.getOption = function(option, def) {
     return (option in this.options_) ? this.options_[option] : def;
   };
@@ -4562,6 +4637,24 @@ firepad.Firepad = (function(global) {
     toolbar.on('indent-decrease', this.unindent, this);
 
     this.firepadWrapper_.insertBefore(toolbar.element(), this.firepadWrapper_.firstChild);
+  };
+
+  Firepad.prototype.registerBuiltinEntities_ = function() {
+    this.registerEntity('img', {
+      render: function(info) {
+        utils.assert(info.src, "image entity should have 'src'!");
+        var attrs = ['src', 'alt', 'width', 'height', 'style', 'class'];
+        var html = '<img ';
+        for(var i = 0; i < attrs.length; i++) {
+          var attr = attrs[i];
+          if (attr in info) {
+            html += ' ' + attr + '="' + info[attr] + '"';
+          }
+        }
+        html += ">";
+        return html;
+      }
+    });
   };
 
   Firepad.prototype.addPoweredByLogo_ = function() {
