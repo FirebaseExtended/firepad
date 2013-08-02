@@ -2866,6 +2866,19 @@ firepad.RichTextCodeMirror = (function () {
         }
       }
     });
+
+    // This probably shouldn't be necessary.  There must be a lurking CodeMirror bug.
+    this.queueRefresh_();
+  };
+
+  RichTextCodeMirror.prototype.queueRefresh_ = function() {
+    var self = this;
+    if (!this.refreshTimer_) {
+      this.refreshTimer_ = setTimeout(function() {
+        self.codeMirror.refresh();
+        self.refreshTimer_ = null;
+      }, 0);
+    }
   };
 
   RichTextCodeMirror.prototype.lineClassRemover_ = function(lineNum) {
