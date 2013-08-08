@@ -1306,6 +1306,7 @@ firepad.FirebaseAdapter = (function (global) {
 
   // Save a checkpoint every 100 edits.
   var CHECKPOINT_FREQUENCY = 100;
+  var localAttributes = ['author','diff'];
 
   function FirebaseAdapter (ref, userId, userColor, lastRevision, lastCheckpoint) {
     this.ref_ = ref;
@@ -1631,6 +1632,8 @@ firepad.FirebaseAdapter = (function (global) {
   };
 
   FirebaseAdapter.prototype.saveCheckpoint_ = function(append) {
+    console.log('DEBUG', this.document_);
+    var document_ = this.document_.clone();
     var point = {
         a:  this.userId_,
         o:  this.document_.toJSON(),
