@@ -188,7 +188,7 @@ describe('Parse HTML Tests', function() {
   }
 
   function parseTest(html, expLines) {
-    var actLines = parse(html);
+    var actLines = parse(html, new firepad.EntityManager());
     for(var i = 0; i < expLines.length; i++) {
       var expLine = dumpLine(expLines[i]);
       if (i >= actLines.length) {

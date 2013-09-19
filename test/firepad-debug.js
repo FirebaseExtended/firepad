@@ -16,6 +16,7 @@ load('../lib/undo-manager.js');
 load('../lib/client.js');
 load('../lib/editor-client.js');
 load('../lib/attribute-constants.js');
+load('../lib/entity-manager.js');
 load('../lib/rich-text-codemirror.js');
 load('../lib/codemirror-adapter.js');
 load('../lib/rich-text-codemirror-adapter.js');
