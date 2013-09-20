@@ -2391,8 +2391,8 @@ firepad.EntityManager = (function () {
     this.entities_[type] = options;
   };
 
-  EntityManager.prototype.renderToElement = function(entity) {
-    return this.tryRenderToElement_(entity, 'render');
+  EntityManager.prototype.renderToElement = function(entity, entityHandle) {
+    return this.tryRenderToElement_(entity, entityHandle, 'render');
   };
 
   EntityManager.prototype.exportToElement = function(entity) {
@@ -2415,10 +2415,10 @@ firepad.EntityManager = (function () {
     }
   };
 
-  EntityManager.prototype.tryRenderToElement_ = function(entity, renderFn) {
+  EntityManager.prototype.tryRenderToElement_ = function(entity, entityHandle, renderFn) {
     var type = entity.type, info = entity.info;
     if (this.entities_[type] && this.entities_[type][renderFn]) {
-      var res = this.entities_[type][renderFn](info);
+      var res = this.entities_[type][renderFn](info, entityHandle);
       if (res) {
         if (typeof res === 'string') {
           var div = document.createElement('div');
@@ -2708,10 +2708,15 @@ firepad.RichTextCodeMirror = (function () {
   RichTextCodeMirror.prototype.insertEntityAtCursor = function(type, info, origin) {
     var cm = this.codeMirror;
     var index = cm.indexFromPos(cm.getCursor('head'));
-    this.insertEntity(index, new firepad.Entity(type, info), origin);
+    this.insertEntityAt(index, type, info, origin);
   };
 
-  RichTextCodeMirror.prototype.insertEntity = function(index, entity, origin) {
+  RichTextCodeMirror.prototype.insertEntityAt = function(index, type, info, origin) {
+    var cm = this.codeMirror;
+    this.insertEntity_(index, new firepad.Entity(type, info), origin);
+  };
+
+  RichTextCodeMirror.prototype.insertEntity_ = function(index, entity, origin) {
     this.replaceText(index, null, EntitySentinelCharacter, entity.toAttributes(), origin);
   };
 
@@ -2865,20 +2870,27 @@ firepad.RichTextCodeMirror = (function () {
   RichTextCodeMirror.prototype.markEntity_ = function(annotationNode) {
     var attributes = annotationNode.annotation.attributes;
     var entity = firepad.Entity.fromAttributes(attributes);
+    var cm = this.codeMirror;
+    var self = this;
 
     var markers = [];
     for(var i = 0; i < annotationNode.length; i++) {
-      var from = this.codeMirror.posFromIndex(annotationNode.pos + i);
-      var to = this.codeMirror.posFromIndex(annotationNode.pos + i + 1);
+      var from = cm.posFromIndex(annotationNode.pos + i);
+      var to = cm.posFromIndex(annotationNode.pos + i + 1);
 
       var options = { collapsed: true, atomic: true, inclusiveLeft: false, inclusiveRight: false };
-      var element = this.entityManager_.renderToElement(entity);
+
+      var entityHandle = this.createEntityHandle_(entity, annotationNode.pos);
+
+      var element = this.entityManager_.renderToElement(entity, entityHandle);
       if (element) {
         options.replacedWith = element;
       }
-
-      markers.push(this.codeMirror.markText(from, to, options));
+      var marker = cm.markText(from, to, options);
+      markers.push(marker);
+      entityHandle.setMarker(marker);
     }
+
     annotationNode.attachObject({
       clear: function() {
         for(var i = 0; i < markers.length; i++) {
@@ -2899,6 +2911,38 @@ firepad.RichTextCodeMirror = (function () {
         self.refreshTimer_ = null;
       }, 0);
     }
+  };
+
+  RichTextCodeMirror.prototype.createEntityHandle_ = function(entity, location) {
+    var marker = null;
+    var self = this;
+
+    function find() {
+      if (marker) {
+        var where = marker.find();
+        return where ? self.codeMirror.indexFromPos(where.from) : null;
+      } else {
+        return location;
+      }
+    }
+
+    function remove() {
+      var at = find();
+      if (at)
+        self.removeText(at, at + 1);
+    }
+
+    function replace(info) {
+      var at = find();
+      remove();
+      self.insertEntity_(at, new firepad.Entity(entity.type, info));
+    }
+
+    function setMarker(m) {
+      marker = m;
+    }
+
+    return { find: find, remove: remove, replace: replace, setMarker: setMarker };
   };
 
   RichTextCodeMirror.prototype.lineClassRemover_ = function(lineNum) {
@@ -4747,6 +4791,10 @@ firepad.Firepad = (function(global) {
 
   Firepad.prototype.insertEntity = function(type, info, origin) {
     this.richTextCodeMirror_.insertEntityAtCursor(type, info, origin);
+  };
+
+  Firepad.prototype.insertEntityAt = function(index, type, info, origin) {
+    this.richTextCodeMirror_.insertEntityAt(index, type, info, origin);
   };
 
   Firepad.prototype.registerEntity = function(type, options) {
