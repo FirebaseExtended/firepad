@@ -2392,12 +2392,12 @@ firepad.EntityManager = (function () {
   };
 
   EntityManager.prototype.renderToElement = function(entity, entityHandle) {
-    return this.tryRenderToElement_(entity, entityHandle, 'render');
+    return this.tryRenderToElement_(entity, 'render', entityHandle);
   };
 
   EntityManager.prototype.exportToElement = function(entity) {
-    var elt = this.tryRenderToElement_(entity, null, 'export') ||
-              this.tryRenderToElement_(entity, null, 'render');
+    var elt = this.tryRenderToElement_(entity, 'export') ||
+              this.tryRenderToElement_(entity, 'render');
     elt.setAttribute('data-firepad-entity', entity.type);
     return elt;
   };
@@ -2415,7 +2415,7 @@ firepad.EntityManager = (function () {
     }
   };
 
-  EntityManager.prototype.tryRenderToElement_ = function(entity, entityHandle, renderFn) {
+  EntityManager.prototype.tryRenderToElement_ = function(entity, renderFn, entityHandle) {
     var type = entity.type, info = entity.info;
     if (this.entities_[type] && this.entities_[type][renderFn]) {
       var res = this.entities_[type][renderFn](info, entityHandle);
