@@ -2928,7 +2928,7 @@ firepad.RichTextCodeMirror = (function () {
 
     function remove() {
       var at = find();
-      if (at)
+      if (at != null)
         self.removeText(at, at + 1);
     }
 
