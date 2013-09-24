@@ -1456,10 +1456,8 @@ firepad.FirebaseAdapter = (function (global) {
 
     function childChanged(childSnap) {
       var userId = childSnap.name();
-      if (userId !== self.userId_) {
-        var userData = childSnap.val();
-        self.trigger('cursor', userId, userData.cursor, userData.color);
-      }
+      var userData = childSnap.val();
+      self.trigger('cursor', userId, userData.cursor, userData.color);
     }
 
     this.firebaseOn_(usersRef, 'child_added', childChanged);
@@ -2260,6 +2258,7 @@ firepad.EditorClient = (function () {
         self.applyServer(operation);
       },
       cursor: function (clientId, cursor, color) {
+        if (self.serverAdapter.userId_ === clientId) return;
         var client = self.getClientObject(clientId);
         if (cursor) {
           client.setColor(color);
@@ -4395,6 +4394,9 @@ firepad.Firepad = (function(global) {
     this.client_ = new EditorClient(this.firebaseAdapter_, this.cmAdapter_);
 
     var self = this;
+    this.firebaseAdapter_.on('cursor', function() {
+      self.trigger.apply(this, ['cursor'].concat(arguments));
+    });
     this.firebaseAdapter_.on('ready', function() {
       self.ready_ = true;
       self.trigger('ready');
