@@ -4395,7 +4395,7 @@ firepad.Firepad = (function(global) {
 
     var self = this;
     this.firebaseAdapter_.on('cursor', function() {
-      self.trigger.apply(this, ['cursor'].concat(arguments));
+      self.trigger.apply(self, ['cursor'].concat([].slice.call(arguments)));
     });
     this.firebaseAdapter_.on('ready', function() {
       self.ready_ = true;
