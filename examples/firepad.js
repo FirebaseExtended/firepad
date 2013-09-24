@@ -2288,7 +2288,8 @@ firepad.EditorClient = (function () {
     this.undoManager.add(this.editorAdapter.invertOperation(operation));
     this.editorAdapter.applyOperation(operation.wrapped);
     this.cursor = operation.meta.cursorAfter;
-    this.editorAdapter.setCursor(this.cursor);
+    if (this.cursor)
+      this.editorAdapter.setCursor(this.cursor);
     this.applyClient(operation.wrapped);
   };
 
@@ -2928,8 +2929,10 @@ firepad.RichTextCodeMirror = (function () {
 
     function remove() {
       var at = find();
-      if (at != null)
+      if (at != null) {
+        self.codeMirror.focus();
         self.removeText(at, at + 1);
+      }
     }
 
     function replace(info) {
