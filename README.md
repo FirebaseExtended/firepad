@@ -1,4 +1,6 @@
 # Visit [firepad.io](http://www.firepad.io/) for demo, examples, and embedding docs!
+Join our [Firepad Google Group](https://groups.google.com/forum/#!forum/firepad-io) to ask questions, request features, or share your Firepad apps with the community.
+
 Read on if you'd like to contribute to Firepad.
 
 ## Setting Up Your Environment
