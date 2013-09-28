@@ -2397,7 +2397,9 @@ firepad.EntityManager = (function () {
   };
 
   EntityManager.prototype.exportToElement = function(entity) {
+    // Turns out 'export' is a reserved keyword, so 'getHtml' is preferable.
     var elt = this.tryRenderToElement_(entity, 'export') ||
+              this.tryRenderToElement_(entity, 'getHtml') ||
               this.tryRenderToElement_(entity, 'render');
     elt.setAttribute('data-firepad-entity', entity.type);
     return elt;
