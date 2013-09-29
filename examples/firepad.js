@@ -2593,7 +2593,9 @@ firepad.RichTextCodeMirror = (function () {
         attributes[attr] = annotation.attributes[attr];
       }
 
-      updateFn(attributes);
+      // Don't modify if this is a line sentinel.
+      if (!attributes[ATTR.LINE_SENTINEL])
+        updateFn(attributes);
 
       // changedAttributes will be the attributes we changed, with their new values.
       // changedAttributesInverse will be the attributes we changed, with their old values.
@@ -2737,7 +2739,7 @@ firepad.RichTextCodeMirror = (function () {
     return this.codeMirror.indexFromPos({line: lastLine, ch: this.codeMirror.getLine(lastLine).length});
   };
 
-  RichTextCodeMirror.prototype.getText = function(start, end) {
+  RichTextCodeMirror.prototype.getRange = function(start, end) {
     var from = this.codeMirror.posFromIndex(start), to = this.codeMirror.posFromIndex(end);
     return this.codeMirror.getRange(from, to);
   };
@@ -3233,13 +3235,27 @@ firepad.RichTextCodeMirror = (function () {
   };
 
   RichTextCodeMirror.prototype.updateCurrentAttributes_ = function() {
-    var pos;
     var cm = this.codeMirror;
     var anchor = cm.indexFromPos(cm.getCursor('anchor')), head = cm.indexFromPos(cm.getCursor('head'));
+    var pos = head;
     if (anchor > head) { // backwards selection
-      pos = head + 1;
+      // Advance past any newlines or line sentinels.
+      while(pos < this.end()) {
+        var c = this.getRange(pos, pos+1);
+        if (c !== '\n' && c !== LineSentinelCharacter)
+          break;
+        pos++;
+      }
+      if (pos < this.end())
+        pos++; // since we're going to look at the annotation span to the left to decide what attributes to use.
     } else {
-      pos = head;
+      // Back up before any newlines or line sentinels.
+      while(pos > 0) {
+        c = this.getRange(pos-1, pos);
+        if (c !== '\n' && c !== LineSentinelCharacter)
+          break;
+        pos--;
+      }
     }
     var spans = this.annotationList_.getAnnotatedSpansForPos(pos);
     this.currentAttributes_ = {};
