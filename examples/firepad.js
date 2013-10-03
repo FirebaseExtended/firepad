@@ -2409,8 +2409,8 @@ firepad.EntityManager = (function () {
     var type = element.getAttribute('data-firepad-entity');
 
     // HACK.  This should be configurable through entity registration.
-    if (!type && element.nodeName.toLowerCase() === 'img')
-      type = 'img';
+    if (!type)
+      type = element.nodeName.toLowerCase();
 
     if (type && this.entities_[type]) {
       var info = this.entities_[type].fromElement(element);
