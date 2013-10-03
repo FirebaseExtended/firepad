@@ -2369,6 +2369,7 @@ firepad.AttributeConstants = {
   FONT: 'f',
   FONT_SIZE: 'fs',
   COLOR: 'c',
+  BACKGROUND_COLOR: 'bc',
   ENTITY_SENTINEL: 'ent',
 
 // Line Attributes
@@ -2494,6 +2495,7 @@ firepad.RichTextCodeMirror = (function () {
   // These attributes will have styles generated dynamically in the page.
   var DynamicStyleAttributes = {
     'c' : 'color', 
+    'bc': 'background-color',
     'fs' : 'font-size',
     'li' : function(indent) { return 'margin-left: ' + (indent * 40) + 'px'; }
   };
@@ -3908,6 +3910,10 @@ firepad.Formatting = (function() {
     return this.cloneWithNewAttribute_(ATTR.COLOR, color);
   };
 
+  Formatting.prototype.backgroundColor = function(color) {
+    return this.cloneWithNewAttribute_(ATTR.BACKGROUND_COLOR, color);
+  };
+
   return Formatting;
 })();
 
@@ -4301,6 +4307,9 @@ firepad.ParseHtml = (function () {
         case 'color':
           textFormatting = textFormatting.color(val.toLowerCase());
           break;
+        case 'background-color':
+          textFormatting = textFormatting.backgroundColor(val.toLowerCase());
+          break;
         case 'text-align':
           lineFormatting = lineFormatting.align(val.toLowerCase());
           break;
@@ -4649,7 +4658,11 @@ firepad.Firepad = (function(global) {
         } else if (attr === ATTR.COLOR) {
           start = 'span style="color: ' + value + '"';
           end = 'span';
-        } else {
+        } else if (attr === ATTR.BACKGROUND_COLOR) {
+          start = 'span style="background-color: ' + value + '"';
+          end = 'span';
+        }
+        else {
           utils.log(false, "Encountered unknown attribute while rendering html: " + attr);
         }
         if (start) prefix += '<' + start + '>';
