@@ -2546,18 +2546,19 @@ firepad.RichTextCodeMirror = (function () {
     this.clearAnnotations_();
   };
 
-  RichTextCodeMirror.prototype.toggleAttribute = function(attribute) {
+  RichTextCodeMirror.prototype.toggleAttribute = function(attribute, value) {
+    var trueValue = value || true;
     if (this.emptySelection_()) {
       var attrs = this.getCurrentAttributes_();
-      if (attrs[attribute] === true) {
+      if (attrs[attribute] === trueValue) {
         delete attrs[attribute];
       } else {
-        attrs[attribute] = true;
+        attrs[attribute] = trueValue;
       }
       this.currentAttributes_ = attrs;
     } else {
       var attributes = this.getCurrentAttributes_();
-      var newValue = (attributes[attribute] !== true);
+      var newValue = (attributes[attribute] !== trueValue) && trueValue;
       this.setAttribute(attribute, newValue);
     }
   };
@@ -4772,6 +4773,11 @@ firepad.Firepad = (function(global) {
     this.codeMirror_.focus();
   };
 
+  Firepad.prototype.highlight = function() {
+    this.richTextCodeMirror_.toggleAttribute(ATTR.BACKGROUND_COLOR, 'rgba(255,255,0,.65)');
+    this.codeMirror_.focus();
+  };
+
   Firepad.prototype.align = function(alignment) {
     if (alignment !== 'left' && alignment !== 'center' && alignment !== 'right') {
       throw new Error('align() must be passed "left", "center", or "right".');
@@ -4924,6 +4930,8 @@ firepad.Firepad = (function(global) {
       "Cmd-I": binder(this.italic),
       "Ctrl-U": binder(this.underline),
       "Cmd-U": binder(this.underline),
+      "Ctrl-H": binder(this.highlight),
+      "Cmd-H": binder(this.highlight),
       "Enter": binder(this.newline),
       "Delete": binder(this.deleteRight),
       "Backspace": binder(this.deleteLeft),
