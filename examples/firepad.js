@@ -2584,7 +2584,7 @@ firepad.RichTextCodeMirror = (function () {
     }
   };
 
-  RichTextCodeMirror.prototype.updateTextAttributes = function(start, end, updateFn, origin) {
+  RichTextCodeMirror.prototype.updateTextAttributes = function(start, end, updateFn, origin, doLineAttributes) {
     var newChangeList = { }, newChange = newChangeList;
     var pos = start, self = this;
     this.annotationList_.updateSpan(new Span(start, end - start), function(annotation, length) {
@@ -2594,7 +2594,7 @@ firepad.RichTextCodeMirror = (function () {
       }
 
       // Don't modify if this is a line sentinel.
-      if (!attributes[ATTR.LINE_SENTINEL])
+      if (!attributes[ATTR.LINE_SENTINEL] || doLineAttributes)
         updateFn(attributes);
 
       // changedAttributes will be the attributes we changed, with their new values.
@@ -2684,7 +2684,7 @@ firepad.RichTextCodeMirror = (function () {
         updateFn(attributes);
         this.insertText(lineStartIndex, LineSentinelCharacter, attributes);
       } else {
-        this.updateTextAttributes(lineStartIndex, lineStartIndex + 1, updateFn);
+        this.updateTextAttributes(lineStartIndex, lineStartIndex + 1, updateFn, /*origin=*/null, /*doLineAttributes=*/true);
       }
     }
   };
@@ -3470,6 +3470,7 @@ firepad.RichTextCodeMirror = (function () {
 
   return RichTextCodeMirror;
 })();
+
 var firepad = firepad || { };
 
 // TODO: Can this derive from CodeMirrorAdapter or similar?
