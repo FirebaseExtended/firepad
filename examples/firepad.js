@@ -2558,7 +2558,7 @@ firepad.RichTextCodeMirror = (function () {
       this.currentAttributes_ = attrs;
     } else {
       var attributes = this.getCurrentAttributes_();
-      var newValue = (attributes[attribute] !== trueValue) && trueValue;
+      var newValue = (attributes[attribute] !== trueValue) ? trueValue : false;
       this.setAttribute(attribute, newValue);
     }
   };
