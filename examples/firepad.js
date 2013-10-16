@@ -2369,6 +2369,7 @@ firepad.AttributeConstants = {
   FONT: 'f',
   FONT_SIZE: 'fs',
   COLOR: 'c',
+  BACKGROUND_COLOR: 'bc',
   ENTITY_SENTINEL: 'ent',
 
 // Line Attributes
@@ -2494,6 +2495,7 @@ firepad.RichTextCodeMirror = (function () {
   // These attributes will have styles generated dynamically in the page.
   var DynamicStyleAttributes = {
     'c' : 'color', 
+    'bc': 'background-color',
     'fs' : 'font-size',
     'li' : function(indent) { return 'margin-left: ' + (indent * 40) + 'px'; }
   };
@@ -2544,18 +2546,19 @@ firepad.RichTextCodeMirror = (function () {
     this.clearAnnotations_();
   };
 
-  RichTextCodeMirror.prototype.toggleAttribute = function(attribute) {
+  RichTextCodeMirror.prototype.toggleAttribute = function(attribute, value) {
+    var trueValue = value || true;
     if (this.emptySelection_()) {
       var attrs = this.getCurrentAttributes_();
-      if (attrs[attribute] === true) {
+      if (attrs[attribute] === trueValue) {
         delete attrs[attribute];
       } else {
-        attrs[attribute] = true;
+        attrs[attribute] = trueValue;
       }
       this.currentAttributes_ = attrs;
     } else {
       var attributes = this.getCurrentAttributes_();
-      var newValue = (attributes[attribute] !== true);
+      var newValue = (attributes[attribute] !== trueValue) && trueValue;
       this.setAttribute(attribute, newValue);
     }
   };
@@ -3909,6 +3912,10 @@ firepad.Formatting = (function() {
     return this.cloneWithNewAttribute_(ATTR.COLOR, color);
   };
 
+  Formatting.prototype.backgroundColor = function(color) {
+    return this.cloneWithNewAttribute_(ATTR.BACKGROUND_COLOR, color);
+  };
+
   return Formatting;
 })();
 
@@ -4302,6 +4309,9 @@ firepad.ParseHtml = (function () {
         case 'color':
           textFormatting = textFormatting.color(val.toLowerCase());
           break;
+        case 'background-color':
+          textFormatting = textFormatting.backgroundColor(val.toLowerCase());
+          break;
         case 'text-align':
           lineFormatting = lineFormatting.align(val.toLowerCase());
           break;
@@ -4653,7 +4663,11 @@ firepad.Firepad = (function(global) {
         } else if (attr === ATTR.COLOR) {
           start = 'span style="color: ' + value + '"';
           end = 'span';
-        } else {
+        } else if (attr === ATTR.BACKGROUND_COLOR) {
+          start = 'span style="background-color: ' + value + '"';
+          end = 'span';
+        }
+        else {
           utils.log(false, "Encountered unknown attribute while rendering html: " + attr);
         }
         if (start) prefix += '<' + start + '>';
@@ -4760,6 +4774,11 @@ firepad.Firepad = (function(global) {
 
   Firepad.prototype.color = function(color) {
     this.richTextCodeMirror_.setAttribute(ATTR.COLOR, color);
+    this.codeMirror_.focus();
+  };
+
+  Firepad.prototype.highlight = function() {
+    this.richTextCodeMirror_.toggleAttribute(ATTR.BACKGROUND_COLOR, 'rgba(255,255,0,.65)');
     this.codeMirror_.focus();
   };
 
@@ -4915,6 +4934,8 @@ firepad.Firepad = (function(global) {
       "Cmd-I": binder(this.italic),
       "Ctrl-U": binder(this.underline),
       "Cmd-U": binder(this.underline),
+      "Ctrl-H": binder(this.highlight),
+      "Cmd-H": binder(this.highlight),
       "Enter": binder(this.newline),
       "Delete": binder(this.deleteRight),
       "Backspace": binder(this.deleteLeft),

@@ -42,6 +42,7 @@ describe('Parse HTML Tests', function() {
     styleTest('font-style: italic', tf.italic(true));
     styleTest('font-style: oblique', tf.italic(true));
     styleTest('color: green', tf.color('green'));
+    styleTest('background-color: green', tf.backgroundColor('green'));
     styleTest('font-family: Times New Roman', tf.font('Times New Roman'));
 
     styleTest('font-size: xx-small', tf.fontSize(9));
@@ -87,16 +88,16 @@ describe('Parse HTML Tests', function() {
   }
 
   it('Nested divs', function() {
-    parseTest('<div style="color: green"><div style="font-weight: bold">Foo</div>bar</div><div><div>Baz</div></div>', [
+    parseTest('<div style="color: green"><div style="font-weight: bold">Foo</div>bar</div><div><div style="background-color: blue">Baz</div></div>', [
       Line([Text('Foo', tf.color('green').bold(true))], lf),
       Line([Text('bar', tf.color('green'))], lf),
-      Line([Text('Baz', tf)], lf)
+      Line([Text('Baz', tf.backgroundColor('blue'))], lf)
     ]);
   });
 
   it('Spans with styles', function() {
-    parseTest('<span style="font-weight: bold">Foo<span style="color: green">bar</span>baz</span>', [
-      Line([Text('Foo', tf.bold(true)), Text('bar', tf.bold(true).color('green')), Text('baz', tf.bold(true))], lf)
+    parseTest('<span style="font-weight: bold">Foo<span style="color: green">bar</span>baz</span><span style="background-color: blue">Lorem ipsum</span>', [
+      Line([Text('Foo', tf.bold(true)), Text('bar', tf.bold(true).color('green')), Text('baz', tf.bold(true)), Text('Lorem ipsum', tf.backgroundColor('blue'))], lf)
     ]);
   });
 
