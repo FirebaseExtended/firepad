@@ -40,13 +40,13 @@ module.exports = function (grunt) {
           "lib/parse-html.js",
           "lib/firepad.js"
         ],
-        "dest": "build/firepad.js"
+        "dest": "dist/firepad.js"
       }
     },
     uglify: {
       "firepad-min-js": {
-        src: "build/firepad.js",
-        dest: "build/firepad-min.js"
+        src: "dist/firepad.js",
+        dest: "dist/firepad-min.js"
       }
     },
     copy: {
@@ -54,26 +54,26 @@ module.exports = function (grunt) {
         files: [
           {
             src: 'font/firepad.eot',
-            dest: 'build/firepad.eot'
+            dest: 'dist/firepad.eot'
           },
           {
             src: 'lib/firepad.css',
-            dest: 'build/firepad.css'
+            dest: 'dist/firepad.css'
           }
         ]
       },
       toExamples: {
         files: [
           {
-            src: 'build/firepad.js',
+            src: 'dist/firepad.js',
             dest: 'examples/firepad.js'
           },
           {
-            src: 'build/firepad.css',
+            src: 'dist/firepad.css',
             dest: 'examples/firepad.css'
           },
           {
-            src: 'build/firepad.eot',
+            src: 'dist/firepad.eot',
             dest: 'examples/firepad.eot'
           },
         ]
@@ -82,11 +82,11 @@ module.exports = function (grunt) {
     compress: {
       zip: {
         options: {
-          archive: 'build/firepad.zip',
+          archive: 'dist/firepad.zip',
         },
         files: [
           {
-            cwd: 'build/',
+            cwd: 'dist/',
             expand: true,
             src: ['firepad.js', 'firepad.css', 'firepad-min.js', 'firepad.eot' ],
             dest: './'
@@ -103,4 +103,3 @@ module.exports = function (grunt) {
 
   grunt.registerTask('default', ['concat', 'uglify', 'copy', 'compress']);
 };
-
