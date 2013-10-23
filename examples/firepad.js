@@ -4861,27 +4861,27 @@ firepad.Firepad = (function(global) {
   };
 
   Firepad.prototype.addToolbar_ = function() {
-    var toolbar = new RichTextToolbar();
+    this.toolbar = new RichTextToolbar();
 
-    toolbar.on('undo', this.undo, this);
-    toolbar.on('redo', this.redo, this);
-    toolbar.on('bold', this.bold, this);
-    toolbar.on('italic', this.italic, this);
-    toolbar.on('underline', this.underline, this);
-    toolbar.on('strike', this.strike, this);
-    toolbar.on('font-size', this.fontSize, this);
-    toolbar.on('font', this.font, this);
-    toolbar.on('color', this.color, this);
-    toolbar.on('left', function() { this.align('left')}, this);
-    toolbar.on('center', function() { this.align('center')}, this);
-    toolbar.on('right', function() { this.align('right')}, this);
-    toolbar.on('ordered-list', this.orderedList, this);
-    toolbar.on('unordered-list', this.unorderedList, this);
-    toolbar.on('todo-list', this.todo, this);
-    toolbar.on('indent-increase', this.indent, this);
-    toolbar.on('indent-decrease', this.unindent, this);
+    this.toolbar.on('undo', this.undo, this);
+    this.toolbar.on('redo', this.redo, this);
+    this.toolbar.on('bold', this.bold, this);
+    this.toolbar.on('italic', this.italic, this);
+    this.toolbar.on('underline', this.underline, this);
+    this.toolbar.on('strike', this.strike, this);
+    this.toolbar.on('font-size', this.fontSize, this);
+    this.toolbar.on('font', this.font, this);
+    this.toolbar.on('color', this.color, this);
+    this.toolbar.on('left', function() { this.align('left')}, this);
+    this.toolbar.on('center', function() { this.align('center')}, this);
+    this.toolbar.on('right', function() { this.align('right')}, this);
+    this.toolbar.on('ordered-list', this.orderedList, this);
+    this.toolbar.on('unordered-list', this.unorderedList, this);
+    this.toolbar.on('todo-list', this.todo, this);
+    this.toolbar.on('indent-increase', this.indent, this);
+    this.toolbar.on('indent-decrease', this.unindent, this);
 
-    this.firepadWrapper_.insertBefore(toolbar.element(), this.firepadWrapper_.firstChild);
+    this.firepadWrapper_.insertBefore(this.toolbar.element(), this.firepadWrapper_.firstChild);
   };
 
   Firepad.prototype.registerBuiltinEntities_ = function() {
