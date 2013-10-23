@@ -23,5 +23,5 @@
     "url": "git://github.com/firebase/firepad.git"
   },
   "author": "Firebase",
-  "license": "BSD"
+  "license": "MIT"
 }
