@@ -1683,14 +1683,16 @@ firepad.RichTextToolbar = (function(global) {
 
   RichTextToolbar.prototype.element = function() { return this.element_; };
 
+  RichTextToolbar.prototype.makeButton_ = function(eventName, iconName) {
+    var self = this;
+    iconName = iconName || eventName;
+    var btn = utils.elt('a', [utils.elt('span', '', { 'class': 'firepad-tb-' + iconName } )], { 'class': 'firepad-btn' });
+    utils.on(btn, 'click', utils.stopEventAnd(function() { self.trigger(eventName); }));
+    return btn;
+  }
+
   RichTextToolbar.prototype.makeElement_ = function() {
     var self = this;
-    function btn(eventName, iconName) {
-      iconName = iconName || eventName;
-      var btn = utils.elt('a', [utils.elt('span', '', { 'class': 'firepad-tb-' + iconName } )], { 'class': 'firepad-btn' });
-      utils.on(btn, 'click', utils.stopEventAnd(function() { self.trigger(eventName); }));
-      return btn;
-    }
 
     var font = this.makeFontDropdown_();
     var fontSize = this.makeFontSizeDropdown_();
@@ -1700,13 +1702,13 @@ firepad.RichTextToolbar = (function(global) {
       utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [btn('bold'), btn('italic'), btn('underline'), btn('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [btn('unordered-list', 'list-2'), btn('ordered-list', 'numbered-list'), btn('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [btn('indent-decrease'), btn('indent-increase')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [btn('left', 'paragraph-left'), btn('center', 'paragraph-center'), btn('right', 'paragraph-right')], { 'class': 'firepad-btn-group'})
+      utils.elt('div', [self.makeButton_('bold'), self.makeButton_('italic'), self.makeButton_('underline'), self.makeButton_('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [self.makeButton_('unordered-list', 'list-2'), self.makeButton_('ordered-list', 'numbered-list'), self.makeButton_('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [self.makeButton_('indent-decrease'), self.makeButton_('indent-increase')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group'})
       // Hide undo/redo for now, since they make the toolbar wrap on the firepad.io demo.  Should look into making the
       // toolbar more compact.
-      /*utils.elt('div', [btn('undo'), btn('redo')], { 'class': 'firepad-btn-group'}) */
+      /*utils.elt('div', [self.makeButton_('undo'), self.makeButton_('redo')], { 'class': 'firepad-btn-group'}) */
     ], { 'class': 'firepad-toolbar' });
 
     return toolbar;
@@ -4861,27 +4863,27 @@ firepad.Firepad = (function(global) {
   };
 
   Firepad.prototype.addToolbar_ = function() {
-    var toolbar = new RichTextToolbar();
+    this.toolbar = new RichTextToolbar();
 
-    toolbar.on('undo', this.undo, this);
-    toolbar.on('redo', this.redo, this);
-    toolbar.on('bold', this.bold, this);
-    toolbar.on('italic', this.italic, this);
-    toolbar.on('underline', this.underline, this);
-    toolbar.on('strike', this.strike, this);
-    toolbar.on('font-size', this.fontSize, this);
-    toolbar.on('font', this.font, this);
-    toolbar.on('color', this.color, this);
-    toolbar.on('left', function() { this.align('left')}, this);
-    toolbar.on('center', function() { this.align('center')}, this);
-    toolbar.on('right', function() { this.align('right')}, this);
-    toolbar.on('ordered-list', this.orderedList, this);
-    toolbar.on('unordered-list', this.unorderedList, this);
-    toolbar.on('todo-list', this.todo, this);
-    toolbar.on('indent-increase', this.indent, this);
-    toolbar.on('indent-decrease', this.unindent, this);
+    this.toolbar.on('undo', this.undo, this);
+    this.toolbar.on('redo', this.redo, this);
+    this.toolbar.on('bold', this.bold, this);
+    this.toolbar.on('italic', this.italic, this);
+    this.toolbar.on('underline', this.underline, this);
+    this.toolbar.on('strike', this.strike, this);
+    this.toolbar.on('font-size', this.fontSize, this);
+    this.toolbar.on('font', this.font, this);
+    this.toolbar.on('color', this.color, this);
+    this.toolbar.on('left', function() { this.align('left')}, this);
+    this.toolbar.on('center', function() { this.align('center')}, this);
+    this.toolbar.on('right', function() { this.align('right')}, this);
+    this.toolbar.on('ordered-list', this.orderedList, this);
+    this.toolbar.on('unordered-list', this.unorderedList, this);
+    this.toolbar.on('todo-list', this.todo, this);
+    this.toolbar.on('indent-increase', this.indent, this);
+    this.toolbar.on('indent-decrease', this.unindent, this);
 
-    this.firepadWrapper_.insertBefore(toolbar.element(), this.firepadWrapper_.firstChild);
+    this.firepadWrapper_.insertBefore(this.toolbar.element(), this.firepadWrapper_.firstChild);
   };
 
   Firepad.prototype.registerBuiltinEntities_ = function() {
