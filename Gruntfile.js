@@ -27,12 +27,12 @@ module.exports = function (grunt) {
           "lib/undo-manager.js",
           "lib/client.js",
           "lib/editor-client.js",
-          /*"lib/codemirror-adapter.js",*/
+          "lib/codemirror-adapter.js",
           "lib/attribute-constants.js",
           "lib/entity-manager.js",
           "lib/entity.js",
-          "lib/rich-text-codemirror.js",
-          "lib/rich-text-codemirror-adapter.js",
+          /*"lib/rich-text-codemirror.js",
+          "lib/rich-text-codemirror-adapter.js",*/
           "lib/formatting.js",
           "lib/text.js",
           "lib/line-formatting.js",
