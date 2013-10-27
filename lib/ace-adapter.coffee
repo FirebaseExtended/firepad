@@ -82,20 +82,60 @@ firepad.ACEAdapter = class ACEAdapter
     @aceDoc.getValue()
 
   getCursor: ->
-    # Doing it how CodeMirrorAdapter does, but this is a bit weird; cursor pos isn't the same as selection start. Will have to implement setOtherCursor before I figure out of this makes sense.
-    cursorIndex = @indexFromPos @ace.getCursorPosition()
-    selectionEndIndex = @indexFromPos @aceSession.selection.getRange().end
-    new firepad.Cursor cursorIndex, selectionEndIndex
+    start = @indexFromPos @aceSession.selection.getRange().start
+    end = @indexFromPos @aceSession.selection.getRange().end
+    if start > end
+      [start, end] = [end, start]
+    new firepad.Cursor start, end
 
   setCursor: (cursor) ->
     @aceRange ?= (ace.require ? require)("ace/range").Range
     start = @posFromIndex cursor.position
     end = @posFromIndex cursor.selectionEnd
-    @aceSession.selection.setSelection new @aceRange(start, end)
-    #@ace.moveCursorTo @posFromIndex(cursor.position)
+    if cursor.position > cursor.selectionEnd
+      [start, end] = [end, start]
+    @aceSession.selection.setSelectionRange new @aceRange(start.row, start.column, end.row, end.column)
 
   setOtherCursor: (cursor, color, clientId) ->
-    # TODO
+    @otherCursors ?= {}
+    cursorRange = @otherCursors[clientId]
+    if cursorRange
+      cursorRange.start.detach()
+      cursorRange.end.detach()
+      @aceSession.removeMarker cursorRange.id
+    start = @posFromIndex cursor.position
+    end = @posFromIndex cursor.selectionEnd
+    if cursor.selectionEnd < cursor.position
+      [start, end] = [end, start]
+    clazz = "other-client-#{color.replace '#', ''}"
+    css = """.#{clazz} {
+      background-color: #{color};
+      position: absolute;
+      border-left: 1px solid green;
+      border-right: 1px solid blue;
+    }"""
+    @addStyleRule css
+
+    @otherCursors[clientId] = cursorRange = new @aceRange start.row, start.column, end.row, end.column
+    cursorRange.start = @aceDoc.createAnchor cursorRange.start
+    cursorRange.end = @aceDoc.createAnchor cursorRange.end
+    cursorRange.id = @aceSession.addMarker cursorRange, clazz, "text"
+    # Return something with a clear method to mimic expected API from CodeMirror
+    return clear: =>
+      cursorRange.start.detach()
+      cursorRange.end.detach()
+      @aceSession.removeMarker cursorRange.id
+
+  addStyleRule: (css) ->
+    return unless document?
+    unless @addedStyleRules
+      @addedStyleRules = {}
+      styleElement = document.createElement 'style'
+      document.documentElement.getElementsByTagName('head')[0].appendChild styleElement
+      @addedStyleSheet = styleElement.sheet
+    return if @addedStyleRules[css]
+    @addedStyleRules[css] = true
+    @addedStyleSheet.insertRule css, 0
 
   registerCallbacks: (@callbacks) ->
 
@@ -108,10 +148,10 @@ firepad.ACEAdapter = class ACEAdapter
     @ignoreChanges = false
 
   registerUndo: (undoFn) ->
-    @ace.undo = undoFn
+    @ace.undo = undoFn  # not tested (what should this do?)
 
   registerRedo: (redoFn) ->
-    @ace.redo = redoFn
+    @ace.redo = redoFn  # not tested (what should this do?)
 
   invertOperation: (operation) ->
     # TODO: Optimize to avoid copying entire text?
