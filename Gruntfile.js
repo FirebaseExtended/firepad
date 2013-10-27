@@ -1,5 +1,31 @@
 module.exports = function (grunt) {
   grunt.initConfig({
+    coffeelint: {
+      app: ['lib/*.coffee'],
+      options: {
+        max_line_length: {
+          level: 'ignore'
+        },
+        line_endings: {
+          value: "unix",
+          level: "error"
+        }
+      }
+    },
+    coffee: {
+      compile: {
+        files: [{
+          expand: true,         // Enable dynamic expansion.
+          cwd: 'lib/',          // Src matches are relative to this path.
+          src: ['**/*.coffee'], // Actual pattern(s) to match.
+          dest: 'lib/',         // Destination path prefix.
+          ext: '.js'            // Dest filepaths will have this extension.
+          }],
+        options: {
+          bare: true            // Skip surrounding IIFE in compiled output.
+        }
+      }
+    },
     concat: {
       "firepadjs": {
         options: {
@@ -28,6 +54,7 @@ module.exports = function (grunt) {
           "lib/client.js",
           "lib/editor-client.js",
           "lib/codemirror-adapter.js",
+          "lib/ace-adapter.js",
           "lib/attribute-constants.js",
           "lib/entity-manager.js",
           "lib/entity.js",
@@ -96,11 +123,13 @@ module.exports = function (grunt) {
     }
   });
 
+  grunt.loadNpmTasks('grunt-coffeelint');
+  grunt.loadNpmTasks('grunt-contrib-coffee');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-compress');
 
-  grunt.registerTask('default', ['concat', 'uglify', 'copy', 'compress']);
+  grunt.registerTask('default', ['coffeelint', 'coffee', 'concat', 'uglify', 'copy', 'compress']);
 };
 
