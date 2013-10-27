@@ -1683,14 +1683,16 @@ firepad.RichTextToolbar = (function(global) {
 
   RichTextToolbar.prototype.element = function() { return this.element_; };
 
+  RichTextToolbar.prototype.makeButton_ = function(eventName, iconName) {
+    var self = this;
+    iconName = iconName || eventName;
+    var btn = utils.elt('a', [utils.elt('span', '', { 'class': 'firepad-tb-' + iconName } )], { 'class': 'firepad-btn' });
+    utils.on(btn, 'click', utils.stopEventAnd(function() { self.trigger(eventName); }));
+    return btn;
+  }
+
   RichTextToolbar.prototype.makeElement_ = function() {
     var self = this;
-    function btn(eventName, iconName) {
-      iconName = iconName || eventName;
-      var btn = utils.elt('a', [utils.elt('span', '', { 'class': 'firepad-tb-' + iconName } )], { 'class': 'firepad-btn' });
-      utils.on(btn, 'click', utils.stopEventAnd(function() { self.trigger(eventName); }));
-      return btn;
-    }
 
     var font = this.makeFontDropdown_();
     var fontSize = this.makeFontSizeDropdown_();
@@ -1700,13 +1702,13 @@ firepad.RichTextToolbar = (function(global) {
       utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [btn('bold'), btn('italic'), btn('underline'), btn('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [btn('unordered-list', 'list-2'), btn('ordered-list', 'numbered-list'), btn('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [btn('indent-decrease'), btn('indent-increase')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [btn('left', 'paragraph-left'), btn('center', 'paragraph-center'), btn('right', 'paragraph-right')], { 'class': 'firepad-btn-group'})
+      utils.elt('div', [self.makeButton_('bold'), self.makeButton_('italic'), self.makeButton_('underline'), self.makeButton_('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [self.makeButton_('unordered-list', 'list-2'), self.makeButton_('ordered-list', 'numbered-list'), self.makeButton_('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [self.makeButton_('indent-decrease'), self.makeButton_('indent-increase')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group'})
       // Hide undo/redo for now, since they make the toolbar wrap on the firepad.io demo.  Should look into making the
       // toolbar more compact.
-      /*utils.elt('div', [btn('undo'), btn('redo')], { 'class': 'firepad-btn-group'}) */
+      /*utils.elt('div', [self.makeButton_('undo'), self.makeButton_('redo')], { 'class': 'firepad-btn-group'}) */
     ], { 'class': 'firepad-toolbar' });
 
     return toolbar;
@@ -2358,6 +2360,190 @@ firepad.EditorClient = (function () {
 
   return EditorClient;
 }());
+
+var ACEAdapter, firepad,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __slice = [].slice;
+
+if (typeof firepad === "undefined" || firepad === null) {
+  firepad = {};
+}
+
+firepad.ACEAdapter = ACEAdapter = (function() {
+  ACEAdapter.prototype.ignoreChanges = false;
+
+  function ACEAdapter(ace) {
+    this.ace = ace;
+    this.onCursorActivity = __bind(this.onCursorActivity, this);
+    this.onBlur = __bind(this.onBlur, this);
+    this.onChange = __bind(this.onChange, this);
+    this.aceSession = this.ace.getSession();
+    this.aceDoc = this.aceSession.getDocument();
+    this.aceDoc.setNewLineMode('unix');
+    this.ace.on('change', this.onChange);
+    this.ace.on('blur', this.onBlur);
+    this.ace.on('focus', this.onCursorActivity);
+    this.aceSession.selection.on('changeCursor', this.onCursorActivity);
+  }
+
+  ACEAdapter.prototype.detach = function() {
+    this.ace.removeListener('change', this.onChange);
+    this.ace.removeListener('blur', this.onBlur);
+    this.ace.removeListener('focus', this.onCursorActivity);
+    return this.aceSession.selection.removeListener('changeCursor', this.onCursorActivity);
+  };
+
+  ACEAdapter.prototype.onChange = function(change) {
+    var pair;
+    if (!this.ignoreChanges) {
+      pair = this.operationFromACEChange(change);
+      return this.trigger.apply(this, ['change'].concat(__slice.call(pair)));
+    }
+  };
+
+  ACEAdapter.prototype.onBlur = function() {
+    if (this.ace.selection.isEmpty()) {
+      return this.trigger('blur');
+    }
+  };
+
+  ACEAdapter.prototype.onCursorActivity = function() {
+    return this.trigger('cursorActivity');
+  };
+
+  ACEAdapter.prototype.operationFromACEChange = function(change) {
+    var action, delta, end, inverse, operation, restLength, start, text, _ref, _ref1;
+    delta = change.data;
+    if ((_ref = delta.action) === "insertLines" || _ref === "removeLines") {
+      text = delta.lines.join("\n") + "\n";
+      action = delta.action.replace("Lines", "");
+    } else {
+      text = delta.text;
+      action = delta.action.replace("Text", "");
+    }
+    start = this.indexFromPos(delta.range.start);
+    end = this.indexFromPos(delta.range.end);
+    restLength = this.getValue().length - start;
+    if (action === "insert") {
+      restLength -= text.length;
+    }
+    operation = new firepad.TextOperation().retain(start).insert(text).retain(restLength);
+    inverse = new firepad.TextOperation().retain(start)["delete"](text).retain(restLength);
+    if (action === 'remove') {
+      _ref1 = [inverse, operation], operation = _ref1[0], inverse = _ref1[1];
+    }
+    return [operation, inverse];
+  };
+
+  ACEAdapter.prototype.applyOperationToACE = function(operation) {
+    var from, index, op, range, to, _i, _len, _ref, _ref1, _results;
+    if (this.aceRange == null) {
+      this.aceRange = ((_ref = ace.require) != null ? _ref : require)("ace/range").Range;
+    }
+    index = 0;
+    _ref1 = operation.ops;
+    _results = [];
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      op = _ref1[_i];
+      if (op.isRetain()) {
+        _results.push(index += op.chars);
+      } else if (op.isInsert()) {
+        this.aceDoc.insert(this.posFromIndex(index), op.text);
+        _results.push(index += op.text.length);
+      } else if (op.isDelete()) {
+        from = this.posFromIndex(index);
+        to = this.posFromIndex(index + op.chars);
+        range = this.aceRange.fromPoints(from, to);
+        _results.push(this.aceDoc.remove(range));
+      } else {
+        _results.push(void 0);
+      }
+    }
+    return _results;
+  };
+
+  ACEAdapter.prototype.posFromIndex = function(index) {
+    var line, row, _i, _len, _ref;
+    _ref = this.aceDoc.$lines;
+    for (row = _i = 0, _len = _ref.length; _i < _len; row = ++_i) {
+      line = _ref[row];
+      if (index <= line.length) {
+        break;
+      }
+      index -= line.length + this.aceDoc.$autoNewLine.length;
+    }
+    return {
+      row: row,
+      column: index
+    };
+  };
+
+  ACEAdapter.prototype.indexFromPos = function(pos) {
+    var i, index, lines, _i, _ref;
+    lines = this.aceDoc.$lines;
+    index = 0;
+    for (i = _i = 0, _ref = pos.row; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+      index += lines[i].length + this.aceDoc.$autoNewLine.length;
+    }
+    return index += pos.column;
+  };
+
+  ACEAdapter.prototype.getValue = function() {
+    return this.aceDoc.getValue();
+  };
+
+  ACEAdapter.prototype.getCursor = function() {
+    var cursorIndex, selectionEndIndex;
+    cursorIndex = this.indexFromPos(this.ace.getCursorPosition());
+    selectionEndIndex = this.indexFromPos(this.aceSession.selection.getRange().end);
+    return new firepad.Cursor(cursorIndex, selectionEndIndex);
+  };
+
+  ACEAdapter.prototype.setCursor = function(cursor) {
+    var end, start, _ref;
+    if (this.aceRange == null) {
+      this.aceRange = ((_ref = ace.require) != null ? _ref : require)("ace/range").Range;
+    }
+    start = this.posFromIndex(cursor.position);
+    end = this.posFromIndex(cursor.selectionEnd);
+    return this.aceSession.selection.setSelection(new this.aceRange(start, end));
+  };
+
+  ACEAdapter.prototype.setOtherCursor = function(cursor, color, clientId) {};
+
+  ACEAdapter.prototype.registerCallbacks = function(callbacks) {
+    this.callbacks = callbacks;
+  };
+
+  ACEAdapter.prototype.trigger = function() {
+    var args, event, _ref, _ref1;
+    event = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    return (_ref = this.callbacks) != null ? (_ref1 = _ref[event]) != null ? _ref1.apply(this, args) : void 0 : void 0;
+  };
+
+  ACEAdapter.prototype.applyOperation = function(operation) {
+    if (!operation.isNoop()) {
+      this.ignoreChanges = true;
+    }
+    this.applyOperationToACE(operation);
+    return this.ignoreChanges = false;
+  };
+
+  ACEAdapter.prototype.registerUndo = function(undoFn) {
+    return this.ace.undo = undoFn;
+  };
+
+  ACEAdapter.prototype.registerRedo = function(redoFn) {
+    return this.ace.redo = redoFn;
+  };
+
+  ACEAdapter.prototype.invertOperation = function(operation) {
+    return operation.invert(this.getValue());
+  };
+
+  return ACEAdapter;
+
+})();
 
 var firepad = firepad || { };
 
@@ -4361,6 +4547,7 @@ firepad.Firepad = (function(global) {
   var RichTextCodeMirrorAdapter = firepad.RichTextCodeMirrorAdapter;
   var RichTextCodeMirror = firepad.RichTextCodeMirror;
   var RichTextToolbar = firepad.RichTextToolbar;
+  var ACEAdapter = firepad.ACEAdapter;
   var FirebaseAdapter = firepad.FirebaseAdapter;
   var EditorClient = firepad.EditorClient;
   var EntityManager = firepad.EntityManager;
@@ -4368,34 +4555,41 @@ firepad.Firepad = (function(global) {
   var utils = firepad.utils;
   var LIST_TYPE = firepad.LineFormatting.LIST_TYPE;
   var CodeMirror = global.CodeMirror;
+  var ace = global.ace;
 
   function Firepad(ref, place, options) {
     if (!(this instanceof Firepad)) { return new Firepad(ref, place, options); }
 
-    if (!CodeMirror) {
-      throw new Error('Couldn\'t find CodeMirror.  Did you forget to include codemirror.js?');
+    if (!CodeMirror && !ace) {
+      throw new Error('Couldn\'t find CodeMirror or ACE.  Did you forget to include codemirror.js or ace.js?');
     }
 
-    if (place instanceof CodeMirror) {
-      this.codeMirror_ = place;
+    if (CodeMirror && place instanceof CodeMirror) {
+      this.codeMirror_ = this.editor_ = place;
       var curValue = this.codeMirror_.getValue();
       if (curValue !== '') {
         throw new Error("Can't initialize Firepad with a CodeMirror instance that already contains text.");
       }
+    } else if (ace && place && place.session instanceof ace.EditSession) {
+      this.ace_ = this.editor_ = place;
+      curValue = this.ace_.getValue();
+      if (curValue !== '') {
+        throw new Error("Can't initialize Firepad with an ACE instance that already contains text.");
+      }
     } else {
-      this.codeMirror_ = new CodeMirror(place);
+      this.codeMirror_ = this.editor_ = new CodeMirror(place);
     }
 
-    var cmWrapper = this.codeMirror_.getWrapperElement();
+    var editorWrapper = this.codeMirror_ ? this.codeMirror_.getWrapperElement() : this.ace_.container;
     this.firepadWrapper_ = utils.elt("div", null, { 'class': 'firepad' });
-    cmWrapper.parentNode.replaceChild(this.firepadWrapper_, cmWrapper);
-    this.firepadWrapper_.appendChild(cmWrapper);
+    editorWrapper.parentNode.replaceChild(this.firepadWrapper_, editorWrapper);
+    this.firepadWrapper_.appendChild(editorWrapper);
 
     // Don't allow drag/drop because it causes issues.  See https://github.com/firebase/firepad/issues/36
-    utils.on(cmWrapper, 'dragstart', utils.stopEvent);
+    utils.on(editorWrapper, 'dragstart', utils.stopEvent);
 
     // Provide an easy way to get the firepad instance associated with this CodeMirror instance.
-    this.codeMirror_.firepad = this;
+    this.editor_.firepad = this;
 
     this.options_ = options || { };
 
@@ -4415,7 +4609,8 @@ firepad.Firepad = (function(global) {
     this.addPoweredByLogo_();
 
     // Now that we've mucked with CodeMirror, refresh it.
-    this.codeMirror_.refresh();
+    if (this.codeMirror_)
+      this.codeMirror_.refresh();
 
     var userId = this.getOption('userId', ref.push().name());
     var userColor = this.getOption('userColor', colorFromUserId(userId));
@@ -4423,10 +4618,14 @@ firepad.Firepad = (function(global) {
     this.entityManager_ = new EntityManager();
     this.registerBuiltinEntities_();
 
-    this.richTextCodeMirror_ = new RichTextCodeMirror(this.codeMirror_, this.entityManager_, { cssPrefix: 'firepad-' });
     this.firebaseAdapter_ = new FirebaseAdapter(ref, userId, userColor);
-    this.cmAdapter_ = new RichTextCodeMirrorAdapter(this.richTextCodeMirror_);
-    this.client_ = new EditorClient(this.firebaseAdapter_, this.cmAdapter_);
+    if (this.codeMirror_) {
+      this.richTextCodeMirror_ = new RichTextCodeMirror(this.codeMirror_, this.entityManager_, { cssPrefix: 'firepad-' });
+      this.editorAdapter_ = new RichTextCodeMirrorAdapter(this.richTextCodeMirror_);
+    } else {
+      this.editorAdapter_ = new ACEAdapter(this.ace_);
+    }
+    this.client_ = new EditorClient(this.firebaseAdapter_, this.editorAdapter_);
 
     var self = this;
     this.firebaseAdapter_.on('cursor', function() {
@@ -4454,26 +4653,28 @@ firepad.Firepad = (function(global) {
   }
   utils.makeEventEmitter(Firepad);
 
-  // For readability, this is the primary "constructor", even though right now they're just aliases for Firepad.
+  // For readability, these are the primary "constructors", even though right now they're just aliases for Firepad.
   Firepad.fromCodeMirror = Firepad;
+  Firepad.fromACE = Firepad;
 
   Firepad.prototype.dispose = function() {
     this.zombie_ = true; // We've been disposed.  No longer valid to do anything.
 
-    // Unwrap CodeMirror.
-    var cmWrapper = this.codeMirror_.getWrapperElement();
-    this.firepadWrapper_.removeChild(cmWrapper);
-    this.firepadWrapper_.parentNode.replaceChild(cmWrapper, this.firepadWrapper_);
+    // Unwrap the editor.
+    var editorWrapper = this.codeMirror_ ? this.codeMirror_.getWrapperElement() : this.ace_.container;
+    this.firepadWrapper_.removeChild(editorWrapper);
+    this.firepadWrapper_.parentNode.replaceChild(editorWrapper, this.firepadWrapper_);
 
-    this.codeMirror_.firepad = null;
+    this.editor_.firepad = null;
 
-    if (this.codeMirror_.getOption('keyMap') === 'richtext') {
+    if (this.codeMirror_ && this.codeMirror_.getOption('keyMap') === 'richtext') {
       this.codeMirror_.setOption('keyMap', 'default');
     }
 
     this.firebaseAdapter_.dispose();
-    this.cmAdapter_.detach();
-    this.richTextCodeMirror_.detach();
+    this.editorAdapter_.detach();
+    if (this.richTextCodeMirror_)
+      this.richTextCodeMirror_.detach();
   };
 
   Firepad.prototype.setUserId = function(userId) {
@@ -4486,55 +4687,62 @@ firepad.Firepad = (function(global) {
 
   Firepad.prototype.getText = function() {
     this.assertReady_('getText');
-    return this.richTextCodeMirror_.getText();
+    if (this.codeMirror_)
+      return this.richTextCodeMirror_.getText();
+    else
+      return this.ace_.getSession().getDocument.getValue();
   };
 
   Firepad.prototype.setText = function(textPieces) {
     this.assertReady_('setText');
-    // Wrap it in an array if it's not already.
-    if(Object.prototype.toString.call(textPieces) !== '[object Array]') {
-      textPieces = [textPieces];
-    }
-
-    // TODO: Batch this all into a single operation.
-    this.codeMirror_.setValue("");
-    var end = 0, atNewLine = true, self = this;
-
-    function insert(string, attributes) {
-      self.richTextCodeMirror_.insertText(end, string, attributes || null);
-      end += string.length;
-      atNewLine = string[string.length-1] === '\n';
-    }
-
-    function insertTextOrString(x) {
-      if (x instanceof firepad.Text) {
-        insert(x.text, x.formatting.attributes);
-      } else if (typeof x === 'string') {
-        insert(x);
-      } else {
-        console.error("Can't insert into firepad", x);
-        throw "Can't insert into firepad: " + x;
+    if (this.ace_) {
+      return this.ace_.getSession().getDocument().setValue(textPieces);
+    } else {
+      // Wrap it in an array if it's not already.
+      if(Object.prototype.toString.call(textPieces) !== '[object Array]') {
+        textPieces = [textPieces];
       }
-    }
 
-    function insertLine(line) {
-      if (!atNewLine)
+      // TODO: Batch this all into a single operation.
+      this.codeMirror_.setValue("");
+      var end = 0, atNewLine = true, self = this;
+
+      function insert(string, attributes) {
+        self.richTextCodeMirror_.insertText(end, string, attributes || null);
+        end += string.length;
+        atNewLine = string[string.length-1] === '\n';
+      }
+
+      function insertTextOrString(x) {
+        if (x instanceof firepad.Text) {
+          insert(x.text, x.formatting.attributes);
+        } else if (typeof x === 'string') {
+          insert(x);
+        } else {
+          console.error("Can't insert into firepad", x);
+          throw "Can't insert into firepad: " + x;
+        }
+      }
+
+      function insertLine(line) {
+        if (!atNewLine)
+          insert('\n');
+
+        insert(RichTextCodeMirror.LineSentinelCharacter, line.formatting.attributes);
+
+        for(var i = 0; i < line.textPieces.length; i++) {
+          insertTextOrString(line.textPieces[i]);
+        }
+
         insert('\n');
-
-      insert(RichTextCodeMirror.LineSentinelCharacter, line.formatting.attributes);
-
-      for(var i = 0; i < line.textPieces.length; i++) {
-        insertTextOrString(line.textPieces[i]);
       }
 
-      insert('\n');
-    }
-
-    for(var i = 0; i < textPieces.length; i++) {
-      if (textPieces[i] instanceof firepad.Line) {
-        insertLine(textPieces[i]);
-      } else {
-        insertTextOrString(textPieces[i]);
+      for(var i = 0; i < textPieces.length; i++) {
+        if (textPieces[i] instanceof firepad.Line) {
+          insertLine(textPieces[i]);
+        } else {
+          insertTextOrString(textPieces[i]);
+        }
       }
     }
   };
@@ -4861,27 +5069,27 @@ firepad.Firepad = (function(global) {
   };
 
   Firepad.prototype.addToolbar_ = function() {
-    var toolbar = new RichTextToolbar();
+    this.toolbar = new RichTextToolbar();
 
-    toolbar.on('undo', this.undo, this);
-    toolbar.on('redo', this.redo, this);
-    toolbar.on('bold', this.bold, this);
-    toolbar.on('italic', this.italic, this);
-    toolbar.on('underline', this.underline, this);
-    toolbar.on('strike', this.strike, this);
-    toolbar.on('font-size', this.fontSize, this);
-    toolbar.on('font', this.font, this);
-    toolbar.on('color', this.color, this);
-    toolbar.on('left', function() { this.align('left')}, this);
-    toolbar.on('center', function() { this.align('center')}, this);
-    toolbar.on('right', function() { this.align('right')}, this);
-    toolbar.on('ordered-list', this.orderedList, this);
-    toolbar.on('unordered-list', this.unorderedList, this);
-    toolbar.on('todo-list', this.todo, this);
-    toolbar.on('indent-increase', this.indent, this);
-    toolbar.on('indent-decrease', this.unindent, this);
+    this.toolbar.on('undo', this.undo, this);
+    this.toolbar.on('redo', this.redo, this);
+    this.toolbar.on('bold', this.bold, this);
+    this.toolbar.on('italic', this.italic, this);
+    this.toolbar.on('underline', this.underline, this);
+    this.toolbar.on('strike', this.strike, this);
+    this.toolbar.on('font-size', this.fontSize, this);
+    this.toolbar.on('font', this.font, this);
+    this.toolbar.on('color', this.color, this);
+    this.toolbar.on('left', function() { this.align('left')}, this);
+    this.toolbar.on('center', function() { this.align('center')}, this);
+    this.toolbar.on('right', function() { this.align('right')}, this);
+    this.toolbar.on('ordered-list', this.orderedList, this);
+    this.toolbar.on('unordered-list', this.unorderedList, this);
+    this.toolbar.on('todo-list', this.todo, this);
+    this.toolbar.on('indent-increase', this.indent, this);
+    this.toolbar.on('indent-decrease', this.unindent, this);
 
-    this.firepadWrapper_.insertBefore(toolbar.element(), this.firepadWrapper_.firstChild);
+    this.firepadWrapper_.insertBefore(this.toolbar.element(), this.firepadWrapper_.firstChild);
   };
 
   Firepad.prototype.registerBuiltinEntities_ = function() {
