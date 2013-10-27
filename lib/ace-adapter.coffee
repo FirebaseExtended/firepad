@@ -107,15 +107,17 @@ firepad.ACEAdapter = class ACEAdapter
     end = @posFromIndex cursor.selectionEnd
     if cursor.selectionEnd < cursor.position
       [start, end] = [end, start]
-    clazz = "other-client-#{color.replace '#', ''}"
+    clazz = "other-client-selection-#{color.replace '#', ''}"
+    justCursor = cursor.position is cursor.selectionEnd
+    if justCursor
+      end.column += 1  # hack to make it show up with empty range
+      clazz = clazz.replace 'selection', 'cursor'
     css = """.#{clazz} {
-      background-color: #{color};
       position: absolute;
-      border-left: 1px solid green;
-      border-right: 1px solid blue;
+      background-color: #{if justCursor then 'transparent' else color};
+      border-left: 2px solid #{color};
     }"""
     @addStyleRule css
-
     @otherCursors[clientId] = cursorRange = new @aceRange start.row, start.column, end.row, end.column
     cursorRange.start = @aceDoc.createAnchor cursorRange.start
     cursorRange.end = @aceDoc.createAnchor cursorRange.end
