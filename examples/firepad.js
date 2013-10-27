@@ -2798,23 +2798,78 @@ firepad.ACEAdapter = ACEAdapter = (function() {
   };
 
   ACEAdapter.prototype.getCursor = function() {
-    var cursorIndex, selectionEndIndex;
-    cursorIndex = this.indexFromPos(this.ace.getCursorPosition());
-    selectionEndIndex = this.indexFromPos(this.aceSession.selection.getRange().end);
-    return new firepad.Cursor(cursorIndex, selectionEndIndex);
+    var end, start, _ref;
+    start = this.indexFromPos(this.aceSession.selection.getRange().start);
+    end = this.indexFromPos(this.aceSession.selection.getRange().end);
+    if (start > end) {
+      _ref = [end, start], start = _ref[0], end = _ref[1];
+    }
+    return new firepad.Cursor(start, end);
   };
 
   ACEAdapter.prototype.setCursor = function(cursor) {
-    var end, start, _ref;
+    var end, start, _ref, _ref1;
     if (this.aceRange == null) {
       this.aceRange = ((_ref = ace.require) != null ? _ref : require)("ace/range").Range;
     }
     start = this.posFromIndex(cursor.position);
     end = this.posFromIndex(cursor.selectionEnd);
-    return this.aceSession.selection.setSelection(new this.aceRange(start, end));
+    if (cursor.position > cursor.selectionEnd) {
+      _ref1 = [end, start], start = _ref1[0], end = _ref1[1];
+    }
+    return this.aceSession.selection.setSelectionRange(new this.aceRange(start.row, start.column, end.row, end.column));
   };
 
-  ACEAdapter.prototype.setOtherCursor = function(cursor, color, clientId) {};
+  ACEAdapter.prototype.setOtherCursor = function(cursor, color, clientId) {
+    var clazz, css, cursorRange, end, start, _ref,
+      _this = this;
+    if (this.otherCursors == null) {
+      this.otherCursors = {};
+    }
+    cursorRange = this.otherCursors[clientId];
+    if (cursorRange) {
+      cursorRange.start.detach();
+      cursorRange.end.detach();
+      this.aceSession.removeMarker(cursorRange.id);
+    }
+    start = this.posFromIndex(cursor.position);
+    end = this.posFromIndex(cursor.selectionEnd);
+    if (cursor.selectionEnd < cursor.position) {
+      _ref = [end, start], start = _ref[0], end = _ref[1];
+    }
+    clazz = "other-client-" + (color.replace('#', ''));
+    css = "." + clazz + " {\n  background-color: " + color + ";\n  position: absolute;\n  border-left: 1px solid green;\n  border-right: 1px solid blue;\n}";
+    this.addStyleRule(css);
+    this.otherCursors[clientId] = cursorRange = new this.aceRange(start.row, start.column, end.row, end.column);
+    cursorRange.start = this.aceDoc.createAnchor(cursorRange.start);
+    cursorRange.end = this.aceDoc.createAnchor(cursorRange.end);
+    cursorRange.id = this.aceSession.addMarker(cursorRange, clazz, "text");
+    return {
+      clear: function() {
+        cursorRange.start.detach();
+        cursorRange.end.detach();
+        return _this.aceSession.removeMarker(cursorRange.id);
+      }
+    };
+  };
+
+  ACEAdapter.prototype.addStyleRule = function(css) {
+    var styleElement;
+    if (typeof document === "undefined" || document === null) {
+      return;
+    }
+    if (!this.addedStyleRules) {
+      this.addedStyleRules = {};
+      styleElement = document.createElement('style');
+      document.documentElement.getElementsByTagName('head')[0].appendChild(styleElement);
+      this.addedStyleSheet = styleElement.sheet;
+    }
+    if (this.addedStyleRules[css]) {
+      return;
+    }
+    this.addedStyleRules[css] = true;
+    return this.addedStyleSheet.insertRule(css, 0);
+  };
 
   ACEAdapter.prototype.registerCallbacks = function(callbacks) {
     this.callbacks = callbacks;
