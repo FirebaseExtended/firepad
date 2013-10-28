@@ -7,10 +7,15 @@ firepad.ACEAdapter = class ACEAdapter
     @aceSession = @ace.getSession()
     @aceDoc = @aceSession.getDocument()
     @aceDoc.setNewLineMode 'unix'
+    @grabDocumentState()
     @ace.on 'change', @onChange
     @ace.on 'blur', @onBlur
     @ace.on 'focus', @onCursorActivity
     @aceSession.selection.on 'changeCursor', @onCursorActivity
+
+  grabDocumentState: ->
+    @lastDocLines = @aceDoc.getAllLines()
+    @lastCursorRange = @aceSession.selection.getRange()
 
   # Removes all event listeners from the ACE editor instance
   detach: ->
@@ -23,6 +28,7 @@ firepad.ACEAdapter = class ACEAdapter
     unless @ignoreChanges
       pair = @operationFromACEChange change
       @trigger 'change', pair...
+      @grabDocumentState()
 
   onBlur: =>
     @trigger 'blur' if @ace.selection.isEmpty()
@@ -41,9 +47,8 @@ firepad.ACEAdapter = class ACEAdapter
       text = delta.text
       action = delta.action.replace "Text", ""
     start = @indexFromPos delta.range.start
-    end = @indexFromPos delta.range.end
-    restLength = @getValue().length - start
-    restLength -= text.length if action is "insert"
+    restLength = @lastDocLines.join(@aceDoc.$autoNewLine).length - start
+    restLength -= text.length if action is "remove"
     operation = new firepad.TextOperation().retain(start).insert(text).retain(restLength)
     inverse = new firepad.TextOperation().retain(start).delete(text).retain(restLength)
     [operation, inverse] = [inverse, operation] if action is 'remove'
@@ -64,6 +69,7 @@ firepad.ACEAdapter = class ACEAdapter
         to = @posFromIndex index + op.chars
         range = @aceRange.fromPoints from, to
         @aceDoc.remove range
+    @grabDocumentState()
 
   posFromIndex: (index) ->
     for line, row in @aceDoc.$lines
@@ -71,19 +77,24 @@ firepad.ACEAdapter = class ACEAdapter
       index -= line.length + @aceDoc.$autoNewLine.length
     row: row, column: index
 
-  indexFromPos: (pos) ->
-    lines = @aceDoc.$lines
+  indexFromPos: (pos, lines) ->
+    lines ?= @lastDocLines
     index = 0
     for i in [0 ... pos.row]
-      index += lines[i].length + @aceDoc.$autoNewLine.length
+      index += @lastDocLines[i].length + @aceDoc.$autoNewLine.length
     index += pos.column
 
   getValue: ->
     @aceDoc.getValue()
 
   getCursor: ->
-    start = @indexFromPos @aceSession.selection.getRange().start
-    end = @indexFromPos @aceSession.selection.getRange().end
+    try
+      start = @indexFromPos @aceSession.selection.getRange().start, @aceDoc.$lines
+      end = @indexFromPos @aceSession.selection.getRange().end, @aceDoc.$lines
+    catch e
+      # If the new range doesn't work (sometimes with setValue), we'll use the old range
+      start = @indexFromPos @lastCursorRange.start
+      end = @indexFromPos @lastCursorRange.end
     if start > end
       [start, end] = [end, start]
     new firepad.Cursor start, end
