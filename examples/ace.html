@@ -1,0 +1,63 @@
+<!doctype html>
+<!-- See http://www.firepad.io/docs/ for detailed embedding docs. -->
+<html>
+<head>
+  <meta charset="utf-8" />
+  <!-- Include Firebase -->
+  <script src="https://cdn.firebase.com/v0/firebase.js"></script>
+
+  <!-- Include ACE and its JavaScript mode and theme files -->
+  <script src="ace/ace.js"></script>
+  <script src="ace/mode-javascript.js"></script>
+  <script src="ace/theme-textmate.js"></script>
+
+  <!-- Include Firepad -->
+  <script src="firepad.js"></script>
+  <link rel="stylesheet" href="firepad.css" />
+
+  <!-- Helper for generating URLs / Firebase references for example purposes.
+       Not necessary in production apps. -->
+  <script src="example-helper.js"></script>
+
+  <style>
+    html { height: 100%; }
+    body { margin: 0; height: 100%; position: relative; }
+    /* Height / width / positioning can be customized for your use case.
+       For demo purposes, we make firepad fill the entire browser. */
+    #firepad-container {
+      position: absolute; left: 0; top: 0; bottom: 0; right: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="firepad-container"></div>
+
+  <script>
+    window.onload = function() {
+      //// Initialize Firebase.
+      var firepadRef = getExampleRef();
+      // TODO: Replace above line with:
+      // var ref = new Firebase('<YOUR FIREBASE URL>');
+  
+      //// Create ACE
+      var editor = ace.edit("firepad-container");
+      editor.setTheme("ace/theme/textmate");
+      var session = editor.getSession();
+      session.setUseWrapMode(true);
+      session.setUseWorker(false);
+      session.setMode("ace/mode/javascript");
+  
+      //// Create Firepad.
+      var firepad = Firepad.fromACE(firepadRef, editor);
+      
+      //// Initialize contents.
+      firepad.on('ready', function() {
+        if (firepad.isHistoryEmpty()) {
+          firepad.setText('// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}');
+        }
+      });
+    };
+  </script>
+</body>
+</html>
