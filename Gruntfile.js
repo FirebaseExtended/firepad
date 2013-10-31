@@ -134,4 +134,4 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-compress');
 
   grunt.registerTask('default', ['coffeelint', 'coffee', 'concat', 'uglify', 'copy', 'compress']);
-};
+}; 

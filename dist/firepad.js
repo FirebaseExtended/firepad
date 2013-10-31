@@ -2380,11 +2380,17 @@ firepad.ACEAdapter = ACEAdapter = (function() {
     this.aceSession = this.ace.getSession();
     this.aceDoc = this.aceSession.getDocument();
     this.aceDoc.setNewLineMode('unix');
+    this.grabDocumentState();
     this.ace.on('change', this.onChange);
     this.ace.on('blur', this.onBlur);
     this.ace.on('focus', this.onCursorActivity);
     this.aceSession.selection.on('changeCursor', this.onCursorActivity);
   }
+
+  ACEAdapter.prototype.grabDocumentState = function() {
+    this.lastDocLines = this.aceDoc.getAllLines();
+    return this.lastCursorRange = this.aceSession.selection.getRange();
+  };
 
   ACEAdapter.prototype.detach = function() {
     this.ace.removeListener('change', this.onChange);
@@ -2397,7 +2403,8 @@ firepad.ACEAdapter = ACEAdapter = (function() {
     var pair;
     if (!this.ignoreChanges) {
       pair = this.operationFromACEChange(change);
-      return this.trigger.apply(this, ['change'].concat(__slice.call(pair)));
+      this.trigger.apply(this, ['change'].concat(__slice.call(pair)));
+      return this.grabDocumentState();
     }
   };
 
@@ -2412,7 +2419,7 @@ firepad.ACEAdapter = ACEAdapter = (function() {
   };
 
   ACEAdapter.prototype.operationFromACEChange = function(change) {
-    var action, delta, end, inverse, operation, restLength, start, text, _ref, _ref1;
+    var action, delta, inverse, operation, restLength, start, text, _ref, _ref1;
     delta = change.data;
     if ((_ref = delta.action) === "insertLines" || _ref === "removeLines") {
       text = delta.lines.join("\n") + "\n";
@@ -2422,9 +2429,8 @@ firepad.ACEAdapter = ACEAdapter = (function() {
       action = delta.action.replace("Text", "");
     }
     start = this.indexFromPos(delta.range.start);
-    end = this.indexFromPos(delta.range.end);
-    restLength = this.getValue().length - start;
-    if (action === "insert") {
+    restLength = this.lastDocLines.join(this.aceDoc.$autoNewLine).length - start;
+    if (action === "remove") {
       restLength -= text.length;
     }
     operation = new firepad.TextOperation().retain(start).insert(text).retain(restLength);
@@ -2436,30 +2442,27 @@ firepad.ACEAdapter = ACEAdapter = (function() {
   };
 
   ACEAdapter.prototype.applyOperationToACE = function(operation) {
-    var from, index, op, range, to, _i, _len, _ref, _ref1, _results;
+    var from, index, op, range, to, _i, _len, _ref, _ref1;
     if (this.aceRange == null) {
       this.aceRange = ((_ref = ace.require) != null ? _ref : require)("ace/range").Range;
     }
     index = 0;
     _ref1 = operation.ops;
-    _results = [];
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
       op = _ref1[_i];
       if (op.isRetain()) {
-        _results.push(index += op.chars);
+        index += op.chars;
       } else if (op.isInsert()) {
         this.aceDoc.insert(this.posFromIndex(index), op.text);
-        _results.push(index += op.text.length);
+        index += op.text.length;
       } else if (op.isDelete()) {
         from = this.posFromIndex(index);
         to = this.posFromIndex(index + op.chars);
         range = this.aceRange.fromPoints(from, to);
-        _results.push(this.aceDoc.remove(range));
-      } else {
-        _results.push(void 0);
+        this.aceDoc.remove(range);
       }
     }
-    return _results;
+    return this.grabDocumentState();
   };
 
   ACEAdapter.prototype.posFromIndex = function(index) {
@@ -2478,12 +2481,14 @@ firepad.ACEAdapter = ACEAdapter = (function() {
     };
   };
 
-  ACEAdapter.prototype.indexFromPos = function(pos) {
-    var i, index, lines, _i, _ref;
-    lines = this.aceDoc.$lines;
+  ACEAdapter.prototype.indexFromPos = function(pos, lines) {
+    var i, index, _i, _ref;
+    if (lines == null) {
+      lines = this.lastDocLines;
+    }
     index = 0;
     for (i = _i = 0, _ref = pos.row; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-      index += lines[i].length + this.aceDoc.$autoNewLine.length;
+      index += this.lastDocLines[i].length + this.aceDoc.$autoNewLine.length;
     }
     return index += pos.column;
   };
@@ -2493,23 +2498,89 @@ firepad.ACEAdapter = ACEAdapter = (function() {
   };
 
   ACEAdapter.prototype.getCursor = function() {
-    var cursorIndex, selectionEndIndex;
-    cursorIndex = this.indexFromPos(this.ace.getCursorPosition());
-    selectionEndIndex = this.indexFromPos(this.aceSession.selection.getRange().end);
-    return new firepad.Cursor(cursorIndex, selectionEndIndex);
+    var e, end, start, _ref;
+    try {
+      start = this.indexFromPos(this.aceSession.selection.getRange().start, this.aceDoc.$lines);
+      end = this.indexFromPos(this.aceSession.selection.getRange().end, this.aceDoc.$lines);
+    } catch (_error) {
+      e = _error;
+      start = this.indexFromPos(this.lastCursorRange.start);
+      end = this.indexFromPos(this.lastCursorRange.end);
+    }
+    if (start > end) {
+      _ref = [end, start], start = _ref[0], end = _ref[1];
+    }
+    return new firepad.Cursor(start, end);
   };
 
   ACEAdapter.prototype.setCursor = function(cursor) {
-    var end, start, _ref;
+    var end, start, _ref, _ref1;
     if (this.aceRange == null) {
       this.aceRange = ((_ref = ace.require) != null ? _ref : require)("ace/range").Range;
     }
     start = this.posFromIndex(cursor.position);
     end = this.posFromIndex(cursor.selectionEnd);
-    return this.aceSession.selection.setSelection(new this.aceRange(start, end));
+    if (cursor.position > cursor.selectionEnd) {
+      _ref1 = [end, start], start = _ref1[0], end = _ref1[1];
+    }
+    return this.aceSession.selection.setSelectionRange(new this.aceRange(start.row, start.column, end.row, end.column));
   };
 
-  ACEAdapter.prototype.setOtherCursor = function(cursor, color, clientId) {};
+  ACEAdapter.prototype.setOtherCursor = function(cursor, color, clientId) {
+    var clazz, css, cursorRange, end, justCursor, start, _ref,
+      _this = this;
+    if (this.otherCursors == null) {
+      this.otherCursors = {};
+    }
+    cursorRange = this.otherCursors[clientId];
+    if (cursorRange) {
+      cursorRange.start.detach();
+      cursorRange.end.detach();
+      this.aceSession.removeMarker(cursorRange.id);
+    }
+    start = this.posFromIndex(cursor.position);
+    end = this.posFromIndex(cursor.selectionEnd);
+    if (cursor.selectionEnd < cursor.position) {
+      _ref = [end, start], start = _ref[0], end = _ref[1];
+    }
+    clazz = "other-client-selection-" + (color.replace('#', ''));
+    justCursor = cursor.position === cursor.selectionEnd;
+    if (justCursor) {
+      end.column += 1;
+      clazz = clazz.replace('selection', 'cursor');
+    }
+    css = "." + clazz + " {\n  position: absolute;\n  background-color: " + (justCursor ? 'transparent' : color) + ";\n  border-left: 2px solid " + color + ";\n}";
+    this.addStyleRule(css);
+    this.otherCursors[clientId] = cursorRange = new this.aceRange(start.row, start.column, end.row, end.column);
+    cursorRange.start = this.aceDoc.createAnchor(cursorRange.start);
+    cursorRange.end = this.aceDoc.createAnchor(cursorRange.end);
+    cursorRange.id = this.aceSession.addMarker(cursorRange, clazz, "text");
+    return {
+      clear: function() {
+        cursorRange.start.detach();
+        cursorRange.end.detach();
+        return _this.aceSession.removeMarker(cursorRange.id);
+      }
+    };
+  };
+
+  ACEAdapter.prototype.addStyleRule = function(css) {
+    var styleElement;
+    if (typeof document === "undefined" || document === null) {
+      return;
+    }
+    if (!this.addedStyleRules) {
+      this.addedStyleRules = {};
+      styleElement = document.createElement('style');
+      document.documentElement.getElementsByTagName('head')[0].appendChild(styleElement);
+      this.addedStyleSheet = styleElement.sheet;
+    }
+    if (this.addedStyleRules[css]) {
+      return;
+    }
+    this.addedStyleRules[css] = true;
+    return this.addedStyleSheet.insertRule(css, 0);
+  };
 
   ACEAdapter.prototype.registerCallbacks = function(callbacks) {
     this.callbacks = callbacks;
@@ -4633,6 +4704,8 @@ firepad.Firepad = (function(global) {
     });
     this.firebaseAdapter_.on('ready', function() {
       self.ready_ = true;
+      if (this.ace_)
+        this.editorAdapter_.grabDocumentState();
       self.trigger('ready');
     });
 
@@ -4690,7 +4763,7 @@ firepad.Firepad = (function(global) {
     if (this.codeMirror_)
       return this.richTextCodeMirror_.getText();
     else
-      return this.ace_.getSession().getDocument.getValue();
+      return this.ace_.getSession().getDocument().getValue();
   };
 
   Firepad.prototype.setText = function(textPieces) {
