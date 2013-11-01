@@ -1,6 +1,6 @@
 {
   "name": "firepad",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Collaborative Text Editing powered by Firebase",
   "main": "dist/firepad.js",
   "directories": {

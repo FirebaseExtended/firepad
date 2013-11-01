@@ -1,12 +1,12 @@
 {
   "name": "firepad",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "homepage": "http://www.firepad.io",
   "authors": [
     "Michael Lehenbauer"
   ],
   "description": "Collaborative Text Editing powered by Firebase",
-  "main": ["dist/firepad.js", "dist/firepad.min.js", "dist/firepad.css", "dist/firepad.css"],
+  "main": ["dist/firepad.js", "dist/firepad.min.js", "dist/firepad.css", "dist/firepad.eot"],
   "license": "MIT",
   "ignore": [
     "**/.*",

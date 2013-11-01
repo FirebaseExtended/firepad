@@ -4,3 +4,6 @@ node_modules
 build
 *.sw?
 .DS_Store
+
+# generated
+lib/ace-adapter.js
