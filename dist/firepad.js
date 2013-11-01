@@ -2498,17 +2498,23 @@ firepad.ACEAdapter = ACEAdapter = (function() {
   };
 
   ACEAdapter.prototype.getCursor = function() {
-    var e, end, start, _ref;
+    var e, e2, end, start, _ref, _ref1;
     try {
       start = this.indexFromPos(this.aceSession.selection.getRange().start, this.aceDoc.$lines);
       end = this.indexFromPos(this.aceSession.selection.getRange().end, this.aceDoc.$lines);
     } catch (_error) {
       e = _error;
-      start = this.indexFromPos(this.lastCursorRange.start);
-      end = this.indexFromPos(this.lastCursorRange.end);
+      try {
+        start = this.indexFromPos(this.lastCursorRange.start);
+        end = this.indexFromPos(this.lastCursorRange.end);
+      } catch (_error) {
+        e2 = _error;
+        console.log("Couldn't figure out the cursor range:", e2, "-- setting it to 0:0.");
+        _ref = [0, 0], start = _ref[0], end = _ref[1];
+      }
     }
     if (start > end) {
-      _ref = [end, start], start = _ref[0], end = _ref[1];
+      _ref1 = [end, start], start = _ref1[0], end = _ref1[1];
     }
     return new firepad.Cursor(start, end);
   };

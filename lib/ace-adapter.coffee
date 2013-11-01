@@ -93,8 +93,12 @@ firepad.ACEAdapter = class ACEAdapter
       end = @indexFromPos @aceSession.selection.getRange().end, @aceDoc.$lines
     catch e
       # If the new range doesn't work (sometimes with setValue), we'll use the old range
-      start = @indexFromPos @lastCursorRange.start
-      end = @indexFromPos @lastCursorRange.end
+      try
+        start = @indexFromPos @lastCursorRange.start
+        end = @indexFromPos @lastCursorRange.end
+      catch e2
+        console.log "Couldn't figure out the cursor range:", e2, "-- setting it to 0:0."
+        [start, end] = [0, 0]
     if start > end
       [start, end] = [end, start]
     new firepad.Cursor start, end
