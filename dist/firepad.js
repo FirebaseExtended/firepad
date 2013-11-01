@@ -3876,7 +3876,7 @@ firepad.RichTextCodeMirrorAdapter = (function () {
                   attributes[attr] = op.attributes[attr];
                 }
               }
-            }, 'RTCMADAPTER');
+            }, 'RTCMADAPTER', /*doLineAttributes=*/true);
           }
           index += op.chars;
         } else if (op.isInsert()) {
