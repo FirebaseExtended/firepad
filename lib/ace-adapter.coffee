@@ -161,10 +161,10 @@ firepad.ACEAdapter = class ACEAdapter
     @ignoreChanges = false
 
   registerUndo: (undoFn) ->
-    @ace.undo = undoFn  # not tested (what should this do?)
+    @ace.undo = undoFn
 
   registerRedo: (redoFn) ->
-    @ace.redo = redoFn  # not tested (what should this do?)
+    @ace.redo = redoFn 
 
   invertOperation: (operation) ->
     # TODO: Optimize to avoid copying entire text?
