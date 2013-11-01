@@ -7,3 +7,4 @@ build
 
 # generated
 lib/ace-adapter.js
+dist/firepad.zip
