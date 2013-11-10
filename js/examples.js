@@ -62,6 +62,28 @@ var examples = {
       this.firepad.dispose();
     }
   },
+  'ace' : {
+      create: function(div, ref) {
+          var editor = ace.edit(div);
+          editor.setTheme("ace/theme/textmate");
+          var session = editor.getSession();
+          session.setUseWrapMode(true);
+          session.setUseWorker(false);
+          session.setMode("ace/mode/javascript");
+
+          this.firepad = Firepad.fromACE(ref, editor);
+
+          var self = this;
+          this.firepad.on('ready', function() {
+                  if (self.firepad.isHistoryEmpty()) {
+                      self.firepad.setText('// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}');
+                  }
+              });
+      },
+      dispose: function() {
+          this.firepad.dispose();
+      }
+  },
   'userlist' : {
     create: function(div, ref) {
       var codeMirror = CodeMirror(div, { lineWrapping: true, mode: '' });

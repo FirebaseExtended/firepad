@@ -41,7 +41,8 @@
     <div class="span3 sidebar">
       <ul class="nav nav-list sidenav" data-spy="affix" data-offset-top="150">
         <li><a href="#richtext" id="richtext-link"><i class="icon-chevron-right"></i> Rich Text</a></li>
-        <li><a href="#code" id="code-link"><i class="icon-chevron-right"></i> Code Editing</a></li>
+        <li><a href="#code" id="code-link"><i class="icon-chevron-right"></i> Code Editing<br>(CodeMirror)</a></li>
+        <li><a href="#ace" id="ace-link"><i class="icon-chevron-right"></i> Code Editing<br>(Ace)</a></li>
         <li><a href="#userlist" id="userlist-link"><i class="icon-chevron-right"></i> User List</a></li>
       </ul>
     </div>
@@ -63,10 +64,18 @@
       </section>
 
       <section id="code">
-        <div class="example-title">2. Code Editing
+        <div class="example-title">2. Code Editing (CodeMirror)
           <a href="https://github.com/firebase/firepad/blob/master/examples/code.html" class="example-view-source" target="_blank"><img src="../images/view-source.png"></a>
         </div>
         <p>Combined with CodeMirror's extensive code editing features, Firepad is great for pair programming!</p>
+        <div class="example-container"></div>
+      </section>
+
+      <section id="ace">
+        <div class="example-title">3. Code Editing (Ace)
+          <a href="https://github.com/firebase/firepad/blob/master/examples/ace.html" class="example-view-source" target="_blank"><img src="../images/view-source.png"></a>
+        </div>
+        <p>You can code collaboratively with Ace too!</p>
         <div class="example-container"></div>
       </section>
 
@@ -101,6 +110,8 @@
   <script src="../js/jquery-1.9.1.min.js"></script>
   <script src="../js/bootstrap-affix.js"></script>
   <script src="https://cdn.firebase.com/v0/firebase.js"></script>
+  <script src="codemirror/lib/codemirror.js"></script>
+  <script src="codemirror/mode/javascript/javascript.js"></script>
   <script src="codemirror/lib/codemirror.js"></script>
   <script src="codemirror/mode/javascript/javascript.js"></script>
   <script src="firepad.js"></script>
