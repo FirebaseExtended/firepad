@@ -13,25 +13,28 @@ Here we'll explain how to do this.
 
 ## Prerequisites
 
-Firepad uses [CodeMirror](http://www.codemirror.net/) as the underlying text editor (though we'd love to add
-support for other editors in the future), and it uses Firebase for data storage and synchronization.
+Firepad uses [CodeMirror](http://www.codemirror.net/) as the underlying text editor for rich-text editing and can use either CodeMirror or [Ace](http://ace.c9.io/)
+for code editing (and we'd love to add support for other editors in the future). It uses Firebase for data storage and synchronization.
 
 Before getting started, you'll need to:
 
 - <a href="http://www.firepad.io/firepad.zip">Download Firepad</a>
-- <a href="http://codemirror.net/" target="_blank">Download CodeMirror</a>
+- Download <a href="http://codemirror.net/" target="_blank">CodeMirror</a> or <a href="http://ace.c9.io/">Ace</a>
 - <a href="https://www.firebase.com/signup/?utm_source=docs&utm_medium=email&utm_campaign=firepad" target="_blank">Create a Firebase account</a> (it's free)
 
 ## Adding Dependencies
 
-Include Firebase, CodeMirror, and Firepad in the &lt;head&gt; section of your page.
+Include Firebase, CodeMirror/Ace and Firepad in the &lt;head&gt; section of your page.
 
 {% highlight html %}
     <script src="https://cdn.firebase.com/v0/firebase.js"></script>
 
-    <!-- Download from http://codemirror.net/codemirror.zip -->
+    <!-- CODEMIRROR: Download from http://codemirror.net/codemirror.zip -->
     <link rel="stylesheet" href="codemirror.css" />
     <script src="codemirror.js"></script>
+
+    <!-- ACE: Download from https://github.com/ajaxorg/ace-builds/ -->
+    <script src="ace.js" type="text/javascript" charset="utf-8"></script>
 
     <!-- Download from http://www.firepad.io/firepad.zip -->
     <link rel="stylesheet" href="firepad.css" />
@@ -41,8 +44,8 @@ Include Firebase, CodeMirror, and Firepad in the &lt;head&gt; section of your pa
 
 ## Initializing Firepad
 
-To create a Firepad, you must initialize Firebase, CodeMirror, and then Firepad.  Here is a typical setup
-for rich-text editing:
+To create a Firepad, you must initialize Firebase, CodeMirror/Ace and then Firepad.
+For rich-text editing, you can only use CodeMirror. Here is a typical setup:
 
 {% highlight html %}
     <div id="firepad"></div>
@@ -54,15 +57,30 @@ for rich-text editing:
     </script>
 {% endhighlight %}
 
+For code editing, you can use either CodeMirror or Ace. Here is a typical setup for
+code editing with Ace:
+
+{% highlight html %}
+    <div id="firepad"></div>
+    <script>
+      var firepadRef = new Firebase('<FIREBASE URL>');
+      var editor = ace.edit('firepad');
+      editor.setTheme("ace/theme/monokai");
+      editor.getSession().setMode("ace/mode/javascript");    
+      var firepad = Firepad.fromACE(firepadRef, editor);
+    </script>
+{% endhighlight %}
+
 Make sure to replace `<FIREBASE_URL>` with a Firebase location. Note that you can easily store multiple
 Firepads in your Firebase by giving them each a unique URL
 (e.g. `https://<YOUR FIREBASE>/firepads/<unique id>`).
 
 ## Customizing Your Editor
 
-See the API section below for details on `Firepad.fromCodeMirror()` and the methods / events
-it provides.  You can check out [codemirror.net](http://codemirror.net/) for details on CodeMirror's API
-(for turning on/off line numbers, line wrapping, code syntax highlighting, etc.).
+See the API section below for details on `Firepad.fromCodeMirror()`/`Firepad.fromACE()` and the methods / events
+they provide.  You can check out [codemirror.net](http://codemirror.net/) for details on CodeMirror's API
+(for turning on/off line numbers, line wrapping, code syntax highlighting, etc.) and [Ace] (http://ace.c9.io/) for details on Ace's API (for setting themes,
+line highlighting, etc.)
 
 To customize the size / position of the Firepad or customize its look and feel, you can use CSS:
 
@@ -93,6 +111,7 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 
 ## Constructing a Firepad
 
+###From CodeMirror:
 `Firepad.fromCodeMirror(firebaseRef, codeMirror, options)`
 
 >Creates a new Firepad from the specified CodeMirror instance using the specified Firebase location to store data. The
@@ -104,6 +123,19 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 >* `richTextShortcuts` (default: false) - Maps Ctrl-B to bold, etc.
 >* `userId` (default: random) - The user ID for the person editing.
 >* `userColor` (default: generated from userId) - A css color (e.g. "#ccc") for this user's cursor.
+
+
+###From Ace:
+`Firepad.fromACE(firebaseRef, ace, options)`
+
+>Creates a new Firepad from the specified Ace instance using the specified Firebase location to store data. The
+>options hash can be used to customize behavior.
+>
+>Available Options:
+>
+>* `userId` (default: random) - The user ID for the person editing.
+>* `userColor` (default: generated from userId) - A css color (e.g. "#ccc") for this user's cursor.
+
 
 ## Firepad Methods
 
