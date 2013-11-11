@@ -13,10 +13,12 @@ Here we'll explain how to do this.
 
 Firepad uses CodeMirror as the underlying text editor. If you'd like to use Ace as your code editor instead, skip to [Getting Started with Ace](#getting_started_with_ace).
 
+
+<a name="getting_started_with_codemirror"> </a>
 ## Getting Started with CodeMirror
 ### Prerequisites
 
-Firepad uses [CodeMirror](http://www.codemirror.net/) as the underlying text editor, it uses Firebase for data storage and synchronization.
+Firepad uses <a href="http://codemirror.net/" target="_blank">CodeMirror</a> as the underlying text editor, it uses Firebase for data storage and synchronization.
 Before getting started, you'll need to:
 
 - <a href="http://www.firepad.io/firepad.zip">Download Firepad</a>
@@ -93,10 +95,9 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 
 
 <a name="getting_started_with_ace"> </a>
-
 ## Getting Started with Ace
-To use <a href="http://ace.c9.io/">Ace</a> as the underlying code editor, follow the steps below.
-Note that you cannot use Firepad with Ace for rich-text editing, go to [Getting Started](#getting_started) instead.
+To use <a href="http://ace.c9.io/" target="_blank">Ace</a> as the underlying code editor, follow the steps below.
+Note that you cannot use Firepad with Ace for rich-text editing, go to [Getting Started with CodeMirror](#getting_started_with_codemirror) instead.
 
 
 ### Prerequisites
@@ -104,7 +105,7 @@ Note that you cannot use Firepad with Ace for rich-text editing, go to [Getting 
 Before getting started, you'll need to:
 
 - <a href="http://www.firepad.io/firepad.zip">Download Firepad</a>
-- Download <a href="http://ace.c9.io/">Ace</a>
+- Download <a href="http://ace.c9.io/" target="_blank">Ace</a>
 - <a href="https://www.firebase.com/signup/?utm_source=docs&utm_medium=email&utm_campaign=firepad" target="_blank">Create a Firebase account</a> (it's free)
 
 
