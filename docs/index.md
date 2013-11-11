@@ -14,7 +14,7 @@ Here we'll explain how to do this.
 ## Prerequisites
 
 Firepad uses [CodeMirror](http://www.codemirror.net/) as the underlying text editor for rich-text editing and can use either CodeMirror or [Ace](http://ace.c9.io/)
-for code editing (and we'd love to add support for other editors in the future). It uses Firebase for data storage and synchronization.
+for code editing (we'd love to add support for other editors in the future!). It uses Firebase for data storage and synchronization.
 
 Before getting started, you'll need to:
 
