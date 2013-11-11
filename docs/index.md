@@ -11,7 +11,7 @@ Firepad was designed to be embedded inside larger applications. Since it uses [F
 requires no server-side code and can be added to any web app simply by including the JavaScript files.
 Here we'll explain how to do this.
 
-Firepad uses CodeMirror as the underlying text editor. If you'd like to use Ace as your code editor instead, skip to [Getting Started with Ace](#getting-started-with-ace).
+Firepad uses CodeMirror as the underlying text editor. If you'd like to use Ace as your code editor instead, skip to [Getting Started with Ace](#getting_started_with_ace).
 
 ## Getting Started
 ### Prerequisites
@@ -23,8 +23,8 @@ Before getting started, you'll need to:
 - Download <a href="http://codemirror.net/" target="_blank">CodeMirror</a>
 - <a href="https://www.firebase.com/signup/?utm_source=docs&utm_medium=email&utm_campaign=firepad" target="_blank">Create a Firebase account</a> (it's free)
 
-Note: To use the Ace editor for code editing instead of CodeMirror, see [Getting Started with Ace](#getting-started-with-ace)
-
+Note: To use the Ace editor for code editing instead of CodeMirror, see [Getting Started with Ace](#getting_started_with_ace)
+If you don't specifically need Ace support though, we recommend sticking with CodeMirror!
 
 ### Adding Dependencies
 
@@ -95,9 +95,8 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 <a name="getting_started_with_ace"> </a>
 
 ## Getting Started with Ace
-
-Firepad can use [Ace](http://ace.c9.io/) as the underlying editor for code editing (we'd love to add support for other editors in the future!).
-If you need rich-text editing or don't specifically need Ace for code-editing, go to [Getting Started](#getting-started).
+To use [Ace](http://ace.c9.io/) as the underlying code editor, follow the steps below.
+Note that you cannot use Firepad with Ace for rich-text editing, go to [Getting Started](#getting_started) instead.
 
 
 ### Prerequisites
