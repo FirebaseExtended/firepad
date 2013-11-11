@@ -13,7 +13,7 @@ Here we'll explain how to do this.
 
 Firepad uses CodeMirror as the underlying text editor. If you'd like to use Ace as your code editor instead, skip to [Getting Started with Ace](#getting_started_with_ace).
 
-## Getting Started
+## Getting Started with CodeMirror
 ### Prerequisites
 
 Firepad uses [CodeMirror](http://www.codemirror.net/) as the underlying text editor, it uses Firebase for data storage and synchronization.
@@ -95,7 +95,7 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 <a name="getting_started_with_ace"> </a>
 
 ## Getting Started with Ace
-To use [Ace](http://ace.c9.io/) as the underlying code editor, follow the steps below.
+To use <a href="http://ace.c9.io/">Ace</a> as the underlying code editor, follow the steps below.
 Note that you cannot use Firepad with Ace for rich-text editing, go to [Getting Started](#getting_started) instead.
 
 
@@ -160,8 +160,6 @@ To customize the size / position of the Firepad or customize its look and feel, 
       background-color: #f62; /* dark orange background */
     }
 {% endhighlight %}
-
-The toolbar and other aspects can also be customized.  Take a look at firepad.css for a starting point.
 
 <div class="emphasis-box">Firepad is also great for editing markdown, code, and just about anything else.
 Check out the <a href="../examples/">examples page</a> for more embedding examples.</div>
