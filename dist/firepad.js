@@ -4615,6 +4615,9 @@ firepad.ParseHtml = (function () {
 var firepad = firepad || { };
 
 firepad.Firepad = (function(global) {
+  if (!firepad.RichTextCodeMirrorAdapter) {
+    throw new Error("Oops! It looks like you're trying to include lib/firepad.js directly.  This is actually one of many source files that make up firepad.  You want dist/firepad.js instead.");
+  }
   var RichTextCodeMirrorAdapter = firepad.RichTextCodeMirrorAdapter;
   var RichTextCodeMirror = firepad.RichTextCodeMirror;
   var RichTextToolbar = firepad.RichTextToolbar;
@@ -4767,62 +4770,99 @@ firepad.Firepad = (function(global) {
   };
 
   Firepad.prototype.setText = function(textPieces) {
-    this.assertReady_('setText');
     if (this.ace_) {
       return this.ace_.getSession().getDocument().setValue(textPieces);
     } else {
-      // Wrap it in an array if it's not already.
-      if(Object.prototype.toString.call(textPieces) !== '[object Array]') {
-        textPieces = [textPieces];
-      }
-
-      // TODO: Batch this all into a single operation.
       this.codeMirror_.setValue("");
-      var end = 0, atNewLine = true, self = this;
-
-      function insert(string, attributes) {
-        self.richTextCodeMirror_.insertText(end, string, attributes || null);
-        end += string.length;
-        atNewLine = string[string.length-1] === '\n';
-      }
-
-      function insertTextOrString(x) {
-        if (x instanceof firepad.Text) {
-          insert(x.text, x.formatting.attributes);
-        } else if (typeof x === 'string') {
-          insert(x);
-        } else {
-          console.error("Can't insert into firepad", x);
-          throw "Can't insert into firepad: " + x;
-        }
-      }
-
-      function insertLine(line) {
-        if (!atNewLine)
-          insert('\n');
-
-        insert(RichTextCodeMirror.LineSentinelCharacter, line.formatting.attributes);
-
-        for(var i = 0; i < line.textPieces.length; i++) {
-          insertTextOrString(line.textPieces[i]);
-        }
-
-        insert('\n');
-      }
-
-      for(var i = 0; i < textPieces.length; i++) {
-        if (textPieces[i] instanceof firepad.Line) {
-          insertLine(textPieces[i]);
-        } else {
-          insertTextOrString(textPieces[i]);
-        }
-      }
+      this.insertText(0, textPieces);
     }
   };
 
+  Firepad.prototype.insertTextAtCursor = function(textPieces) {
+    this.insertText(this.codeMirror_.indexFromPos(this.codeMirror_.getCursor()), textPieces);
+  };
+  
+  Firepad.prototype.insertText = function(index, textPieces) {
+    utils.assert(!this.ace_, "Not supported for ace yet.");
+    this.assertReady_('insertText');
+
+    // Wrap it in an array if it's not already.
+    if(Object.prototype.toString.call(textPieces) !== '[object Array]') {
+      textPieces = [textPieces];
+    }
+
+    // TODO: Batch this all into a single operation.
+    // HACK: We should check if we're actually at the beginning of a line; but checking for index == 0 is sufficient
+    // for the setText() case.
+    var atNewLine = (index === 0), self = this;
+
+    function insert(string, attributes) {
+      self.richTextCodeMirror_.insertText(index, string, attributes || null);
+      index += string.length;
+      atNewLine = string[string.length-1] === '\n';
+    }
+
+    function insertTextOrString(x) {
+      if (x instanceof firepad.Text) {
+        insert(x.text, x.formatting.attributes);
+      } else if (typeof x === 'string') {
+        insert(x);
+      } else {
+        console.error("Can't insert into firepad", x);
+        throw "Can't insert into firepad: " + x;
+      }
+    }
+
+    function insertLine(line) {
+      // HACK: We should probably force a newline if there isn't one already.  But due to
+      // the way this is used for inserting HTML, we end up inserting a "line" in the middle
+      // of text, in which case we don't want to actually insert a newline.
+      if (atNewLine)
+        insert(RichTextCodeMirror.LineSentinelCharacter, line.formatting.attributes);
+
+      for(var i = 0; i < line.textPieces.length; i++) {
+        insertTextOrString(line.textPieces[i]);
+      }
+
+      insert('\n');
+    }
+
+    for(var i = 0; i < textPieces.length; i++) {
+      if (textPieces[i] instanceof firepad.Line) {
+        insertLine(textPieces[i]);
+      } else {
+        insertTextOrString(textPieces[i]);
+      }
+    }
+  };
+  
+  Firepad.prototype.getOperationForSpan = function(start, end) {
+    var text = this.richTextCodeMirror_.getRange(start, end);
+    var spans = this.richTextCodeMirror_.getAttributeSpans(start, end);
+    var pos = 0;
+    var op = new firepad.TextOperation();
+    for(var i = 0; i < spans.length; i++) {
+      op.insert(text.substr(pos, spans[i].length), spans[i].attributes);
+      pos += spans[i].length;
+    }
+    return op;
+  };
+
+
   Firepad.TODO_STYLE = '<style>ul.firepad-todo { list-style: none; margin-left: 0; padding-left: 0; } ul.firepad-todo > li { padding-left: 1em; text-indent: -1em; } ul.firepad-todo > li:before { content: "\\2610"; padding-right: 5px; } ul.firepad-todo > li.firepad-checked:before { content: "\\2611"; padding-right: 5px; }</style>\n';
+  
   Firepad.prototype.getHtml = function() {
-    var doc = this.firebaseAdapter_.getDocument();
+    this.getHtmlFromRange(null, null);
+  };
+
+  Firepad.prototype.getHtmlFromSelection = function() {
+    var startPos = this.codeMirror_.getCursor('start'), endPos = this.codeMirror_.getCursor('end');
+    var startIndex = this.codeMirror_.indexFromPos(startPos), endIndex = this.codeMirror_.indexFromPos(endPos);
+    return this.getHtmlFromRange(startIndex, endIndex);
+  };
+  
+  Firepad.prototype.getHtmlFromRange = function(start, end) {
+    var doc = (start != null && end != null) ? this.getOperationForSpan(start, end) : this.firebaseAdapter_.getDocument();
     var html = '', newLine = true;
     html += Firepad.EXPORT_HTML_STYLE;
 
@@ -5011,6 +5051,15 @@ firepad.Firepad = (function(global) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/\u00a0/g, '&nbsp;')
+  };
+
+  Firepad.prototype.insertHtml = function (index, html) {
+    var lines = firepad.ParseHtml(html, this.entityManager_);
+    this.insertText(index, lines);
+  };
+
+  Firepad.prototype.insertHtmlAtCursor = function (html) {
+    this.insertHtml(this.codeMirror_.indexFromPos(this.codeMirror_.getCursor()), html);
   };
 
   Firepad.prototype.setHtml = function (html) {
