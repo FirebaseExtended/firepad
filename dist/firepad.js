@@ -3861,31 +3861,39 @@ firepad.RichTextCodeMirrorAdapter = (function () {
 
   // Apply an operation to a CodeMirror instance.
   RichTextCodeMirrorAdapter.applyOperationToCodeMirror = function (operation, rtcm) {
-    var ops = operation.ops;
-    var index = 0; // holds the current index into CodeMirror's content
-    for (var i = 0, l = ops.length; i < l; i++) {
-      var op = ops[i];
-      if (op.isRetain()) {
-        if (!emptyAttributes(op.attributes)) {
-          rtcm.updateTextAttributes(index, index + op.chars, function(attributes) {
-            for(var attr in op.attributes) {
-              if (op.attributes[attr] === false) {
-                delete attributes[attr];
-              } else {
-                attributes[attr] = op.attributes[attr];
-              }
+
+  // HACK: If there are a lot of operations; hide CodeMirror so that it doesn't re-render constantly.
+  if (operation.ops.length > 10)
+    rtcm.codeMirror.getWrapperElement().setAttribute('style', 'display: none');
+
+  var ops = operation.ops;
+  var index = 0; // holds the current index into CodeMirror's content
+  for (var i = 0, l = ops.length; i < l; i++) {
+    var op = ops[i];
+    if (op.isRetain()) {
+      if (!emptyAttributes(op.attributes)) {
+        rtcm.updateTextAttributes(index, index + op.chars, function(attributes) {
+          for(var attr in op.attributes) {
+            if (op.attributes[attr] === false) {
+              delete attributes[attr];
+            } else {
+              attributes[attr] = op.attributes[attr];
             }
-          }, 'RTCMADAPTER', /*doLineAttributes=*/true);
-        }
-        index += op.chars;
-      } else if (op.isInsert()) {
-        rtcm.insertText(index, op.text, op.attributes, 'RTCMADAPTER');
-        index += op.text.length;
-      } else if (op.isDelete()) {
-        rtcm.removeText(index, index + op.chars, 'RTCMADAPTER');
+          }
+        }, 'RTCMADAPTER', /*doLineAttributes=*/true);
       }
+      index += op.chars;
+    } else if (op.isInsert()) {
+      rtcm.insertText(index, op.text, op.attributes, 'RTCMADAPTER');
+      index += op.text.length;
+    } else if (op.isDelete()) {
+      rtcm.removeText(index, index + op.chars, 'RTCMADAPTER');
     }
-  };
+  }
+
+  if (operation.ops.length > 10)
+    rtcm.codeMirror.getWrapperElement().setAttribute('style', '');
+};
 
   RichTextCodeMirrorAdapter.prototype.registerCallbacks = function (cb) {
     this.callbacks = cb;
@@ -4771,8 +4779,11 @@ firepad.Firepad = (function(global) {
     if (this.ace_) {
       return this.ace_.getSession().getDocument().setValue(textPieces);
     } else {
+      // HACK: Hide CodeMirror during setText to prevent lots of extra renders.
+      this.codeMirror_.getWrapperElement().setAttribute('style', 'display: none');
       this.codeMirror_.setValue("");
       this.insertText(0, textPieces);
+      this.codeMirror_.getWrapperElement().setAttribute('style', '');
     }
   };
 
