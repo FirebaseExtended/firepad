@@ -3861,32 +3861,36 @@ firepad.RichTextCodeMirrorAdapter = (function () {
 
   // Apply an operation to a CodeMirror instance.
   RichTextCodeMirrorAdapter.applyOperationToCodeMirror = function (operation, rtcm) {
-    rtcm.codeMirror.operation(function () {
       var ops = operation.ops;
       var index = 0; // holds the current index into CodeMirror's content
       for (var i = 0, l = ops.length; i < l; i++) {
         var op = ops[i];
         if (op.isRetain()) {
           if (!emptyAttributes(op.attributes)) {
-            rtcm.updateTextAttributes(index, index + op.chars, function(attributes) {
-              for(var attr in op.attributes) {
-                if (op.attributes[attr] === false) {
-                  delete attributes[attr];
-                } else {
-                  attributes[attr] = op.attributes[attr];
+            rtcm.codeMirror.operation(function () {
+              rtcm.updateTextAttributes(index, index + op.chars, function(attributes) {
+                for(var attr in op.attributes) {
+                  if (op.attributes[attr] === false) {
+                    delete attributes[attr];
+                  } else {
+                    attributes[attr] = op.attributes[attr];
+                  }
                 }
-              }
-            }, 'RTCMADAPTER', /*doLineAttributes=*/true);
+              }, 'RTCMADAPTER', /*doLineAttributes=*/true);
+            });
           }
           index += op.chars;
         } else if (op.isInsert()) {
-          rtcm.insertText(index, op.text, op.attributes, 'RTCMADAPTER');
+          rtcm.codeMirror.operation(function () {
+            rtcm.insertText(index, op.text, op.attributes, 'RTCMADAPTER');
+          });
           index += op.text.length;
         } else if (op.isDelete()) {
-          rtcm.removeText(index, index + op.chars, 'RTCMADAPTER');
+          rtcm.codeMirror.operation(function () {
+            rtcm.removeText(index, index + op.chars, 'RTCMADAPTER');
+          });
         }
       }
-    });
   };
 
   RichTextCodeMirrorAdapter.prototype.registerCallbacks = function (cb) {
@@ -4615,6 +4619,9 @@ firepad.ParseHtml = (function () {
 var firepad = firepad || { };
 
 firepad.Firepad = (function(global) {
+  if (!firepad.RichTextCodeMirrorAdapter) {
+    throw new Error("Oops! It looks like you're trying to include lib/firepad.js directly.  This is actually one of many source files that make up firepad.  You want dist/firepad.js instead.");
+  }
   var RichTextCodeMirrorAdapter = firepad.RichTextCodeMirrorAdapter;
   var RichTextCodeMirror = firepad.RichTextCodeMirror;
   var RichTextToolbar = firepad.RichTextToolbar;
