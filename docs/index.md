@@ -236,13 +236,17 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 `firepad.setUserId(userId)`
 > Sets the user id to use for writing operations and storing cursor data.
 
-`firebase.setUserColor(color)`
+`firepad.setUserColor(color)`
 > Sets the color (as a css color, e.g. "#333") to use for this user's cursor.
 
 `firepad.dispose()`
 > Cleans everything up (clears presence data, DOM elements, etc.) and returns CodeMirror
   to its original state.
 
+`firepad.insertEntity(type, attributes, origin)`
+> Inserts an entity of the specified type and with the specified attributes dictionary.
+  To insert images, type = 'img' and attributes must contain 'src'; other attributes 
+  that can be provided are 'alt', 'width', 'height', 'style' and 'class'.
 
 <a name="firebase"> </a>
 
