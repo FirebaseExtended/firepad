@@ -55,7 +55,7 @@
         if (!query || state.query) return;
         state.query = parseQuery(query);
         cm.removeOverlay(state.overlay);
-        state.overlay = searchOverlay(query);
+        state.overlay = searchOverlay(state.query);
         cm.addOverlay(state.overlay);
         state.posFrom = state.posTo = cm.getCursor();
         findNext(cm, rev);
@@ -70,6 +70,7 @@
       if (!cursor.find(rev)) return;
     }
     cm.setSelection(cursor.from(), cursor.to());
+    cm.scrollIntoView({from: cursor.from(), to: cursor.to()});
     state.posFrom = cursor.from(); state.posTo = cursor.to();
   });}
   function clearSearch(cm) {cm.operation(function() {
@@ -108,6 +109,7 @@
                   (start && cursor.from().line == start.line && cursor.from().ch == start.ch)) return;
             }
             cm.setSelection(cursor.from(), cursor.to());
+            cm.scrollIntoView({from: cursor.from(), to: cursor.to()});
             confirmDialog(cm, doReplaceConfirm, "Replace?",
                           [function() {doReplace(match);}, advance]);
           };

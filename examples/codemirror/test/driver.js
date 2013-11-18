@@ -26,7 +26,7 @@ function test(name, run, expectedFail) {
 var namespace = "";
 function testCM(name, run, opts, expectedFail) {
   return test(namespace + name, function() {
-    var place = document.getElementById("testground"), cm = CodeMirror(place, opts);
+    var place = document.getElementById("testground"), cm = window.cm = CodeMirror(place, opts);
     var successful = false;
     try {
       run(cm);
@@ -84,7 +84,7 @@ function runTests(callback) {
       if (expFail) callback("expected", test.name);
       else if (e instanceof Failure) callback("fail", test.name, e.message);
       else {
-        var pos = /\bat .*?([^\/:]+):(\d+):/.exec(e.stack);
+        var pos = /(?:\bat |@).*?([^\/:]+):(\d+)/.exec(e.stack);
         callback("error", test.name, e.toString() + (pos ? " (" + pos[1] + ":" + pos[2] + ")" : ""));
       }
     }
