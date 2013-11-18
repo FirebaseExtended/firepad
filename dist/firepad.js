@@ -1679,7 +1679,7 @@ firepad.RichTextToolbar = (function(global) {
 
   utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'strike', 'font', 'font-size', 'color',
     'left', 'center', 'right', 'unordered-list', 'ordered-list', 'todo-list', 'indent-increase', 'indent-decrease',
-    'undo', 'redo']);
+                                           'undo', 'redo', 'insert-image']);
 
   RichTextToolbar.prototype.element = function() { return this.element_; };
 
@@ -1697,6 +1697,7 @@ firepad.RichTextToolbar = (function(global) {
     var font = this.makeFontDropdown_();
     var fontSize = this.makeFontSizeDropdown_();
     var color = this.makeColorDropdown_();
+    //    var image = this.makeImageDialog_();
 
     var toolbar = utils.elt('div', [
       utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
@@ -1705,10 +1706,11 @@ firepad.RichTextToolbar = (function(global) {
       utils.elt('div', [self.makeButton_('bold'), self.makeButton_('italic'), self.makeButton_('underline'), self.makeButton_('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [self.makeButton_('unordered-list', 'list-2'), self.makeButton_('ordered-list', 'numbered-list'), self.makeButton_('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
       utils.elt('div', [self.makeButton_('indent-decrease'), self.makeButton_('indent-increase')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group'})
+      utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group'}),
       // Hide undo/redo for now, since they make the toolbar wrap on the firepad.io demo.  Should look into making the
       // toolbar more compact.
       /*utils.elt('div', [self.makeButton_('undo'), self.makeButton_('redo')], { 'class': 'firepad-btn-group'}) */
+      utils.elt('div', [self.makeButton_('insert-image')], { 'class': 'firepad-btn-group'})
     ], { 'class': 'firepad-toolbar' });
 
     return toolbar;
@@ -1808,6 +1810,17 @@ firepad.RichTextToolbar = (function(global) {
 
     return button;
   };
+
+  /*RichTextToolbar.prototype.makeImageDialog = function(cb) {
+      console.log("HERE!");
+      return this.makeDialog_('imgSrc', 'Insert image url');
+  }
+
+  RichTextToolbar.prototype.makeDialog_ = function(id, placeholder) {
+      console.log("AND HERE!");
+      var input = utils.elt('input', [], { 'class':'firepad-dialog-input', 'id':id, 'placeholder':placeholder });
+      var dialog = utils.elt('dialog', [input], { 'class': 'firepad-dialog' });
+  }*/
 
   return RichTextToolbar;
 })();
@@ -4615,6 +4628,9 @@ firepad.ParseHtml = (function () {
 var firepad = firepad || { };
 
 firepad.Firepad = (function(global) {
+  if (!firepad.RichTextCodeMirrorAdapter) {
+    throw new Error("Oops! It looks like you're trying to include lib/firepad.js directly.  This is actually one of many source files that make up firepad.  You want dist/firepad.js instead.");
+  }
   var RichTextCodeMirrorAdapter = firepad.RichTextCodeMirrorAdapter;
   var RichTextCodeMirror = firepad.RichTextCodeMirror;
   var RichTextToolbar = firepad.RichTextToolbar;
@@ -5141,6 +5157,42 @@ firepad.Firepad = (function(global) {
     }
   };
 
+  Firepad.prototype.insertImage = function() {
+    this.makeDialog_('img', 'Insert image url');
+  }
+
+  Firepad.prototype.makeDialog_ = function(id, placeholder) {
+   var self = this;
+
+   var hideDialog = function() {
+     var dialog = document.getElementById('overlay');
+     dialog.style.visibility = "hidden";
+     self.firepadWrapper_.removeChild(dialog); 
+   };
+
+   var cb = function() {
+     var dialog = document.getElementById('overlay');
+     dialog.style.visibility = "hidden";
+     var src = document.getElementById(id).value;
+     if (src !== null)
+       self.insertEntity(id, { 'src': src });
+     self.firepadWrapper_.removeChild(dialog);
+   };
+
+   var input = utils.elt('input', null, { 'class':'firepad-dialog-input', 'id':id, 'type':'text', 'placeholder':placeholder });
+
+   var submit = utils.elt('a', 'Submit', { 'class': 'firepad-btn' });
+   utils.on(submit, 'click', utils.stopEventAnd(cb));
+
+   var cancel = utils.elt('a', 'Cancel', { 'class': 'firepad-btn' });
+   utils.on(cancel, 'click', utils.stopEventAnd(hideDialog));
+
+   var div = utils.elt('div', [input, submit, cancel], { 'class':'firepad-dialog-div' });
+   var dialog = utils.elt('div', [div], { 'class': 'firepad-dialog', id:'overlay' });
+
+   this.firepadWrapper_.appendChild(dialog);
+  }
+
   Firepad.prototype.addToolbar_ = function() {
     this.toolbar = new RichTextToolbar();
 
@@ -5161,6 +5213,7 @@ firepad.Firepad = (function(global) {
     this.toolbar.on('todo-list', this.todo, this);
     this.toolbar.on('indent-increase', this.indent, this);
     this.toolbar.on('indent-decrease', this.unindent, this);
+    this.toolbar.on('insert-image', this.insertImage, this);
 
     this.firepadWrapper_.insertBefore(this.toolbar.element(), this.firepadWrapper_.firstChild);
   };
