@@ -5211,7 +5211,7 @@ firepad.Firepad = (function(global) {
     }
   };
 
-  Firepad.prototype.insertImage = function() {
+  Firepad.prototype.makeImageDialog_ = function() {
     this.makeDialog_('img', 'Insert image url');
   }
 
@@ -5269,7 +5269,7 @@ firepad.Firepad = (function(global) {
     this.toolbar.on('todo-list', this.todo, this);
     this.toolbar.on('indent-increase', this.indent, this);
     this.toolbar.on('indent-decrease', this.unindent, this);
-    this.toolbar.on('insert-image', this.insertImage, this);
+    this.toolbar.on('insert-image', this.makeImageDialog_, this);
 
     this.firepadWrapper_.insertBefore(this.toolbar.element(), this.firepadWrapper_.firstChild);
   };
