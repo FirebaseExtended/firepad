@@ -1673,7 +1673,8 @@ var firepad = firepad || { };
 firepad.RichTextToolbar = (function(global) {
   var utils = firepad.utils;
 
-  function RichTextToolbar() {
+  function RichTextToolbar(imageInsertionUI) {
+    this.imageInsertionUI = imageInsertionUI;
     this.element_ = this.makeElement_();
   }
 
@@ -1697,21 +1698,23 @@ firepad.RichTextToolbar = (function(global) {
     var font = this.makeFontDropdown_();
     var fontSize = this.makeFontSizeDropdown_();
     var color = this.makeColorDropdown_();
-    //    var image = this.makeImageDialog_();
 
-    var toolbar = utils.elt('div', [
-      utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [self.makeButton_('bold'), self.makeButton_('italic'), self.makeButton_('underline'), self.makeButton_('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [self.makeButton_('unordered-list', 'list-2'), self.makeButton_('ordered-list', 'numbered-list'), self.makeButton_('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [self.makeButton_('indent-decrease'), self.makeButton_('indent-increase')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group'}),
-      // Hide undo/redo for now, since they make the toolbar wrap on the firepad.io demo.  Should look into making the
-      // toolbar more compact.
-      /*utils.elt('div', [self.makeButton_('undo'), self.makeButton_('redo')], { 'class': 'firepad-btn-group'}) */
-      utils.elt('div', [self.makeButton_('insert-image')], { 'class': 'firepad-btn-group'})
-    ], { 'class': 'firepad-toolbar' });
+    var toolbarOptions = [utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
+                          utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
+                          utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
+                          utils.elt('div', [self.makeButton_('bold'), self.makeButton_('italic'), self.makeButton_('underline'), self.makeButton_('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
+                          utils.elt('div', [self.makeButton_('unordered-list', 'list-2'), self.makeButton_('ordered-list', 'numbered-list'), self.makeButton_('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
+                          utils.elt('div', [self.makeButton_('indent-decrease'), self.makeButton_('indent-increase')], { 'class': 'firepad-btn-group'}),
+                          utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group'}),
+                          // Hide undo/redo for now, since they make the toolbar wrap on the firepad.io demo.  Should look into making the                                                                                   
+                          // toolbar more compact.                                                                                                                                                                                   
+                          /*utils.elt('div', [self.makeButton_('undo'), self.makeButton_('redo')], { 'class': 'firepad-btn-group'}) */
+                          ];
+
+    if (self.imageInsertionUI)
+        toolbarOptions.push(utils.elt('div', [self.makeButton_('insert-image')], { 'class': 'firepad-btn-group' }));
+
+    var toolbar = utils.elt('div', toolbarOptions , { 'class': 'firepad-toolbar' });
 
     return toolbar;
   };
@@ -1810,17 +1813,6 @@ firepad.RichTextToolbar = (function(global) {
 
     return button;
   };
-
-  /*RichTextToolbar.prototype.makeImageDialog = function(cb) {
-      console.log("HERE!");
-      return this.makeDialog_('imgSrc', 'Insert image url');
-  }
-
-  RichTextToolbar.prototype.makeDialog_ = function(id, placeholder) {
-      console.log("AND HERE!");
-      var input = utils.elt('input', [], { 'class':'firepad-dialog-input', 'id':id, 'placeholder':placeholder });
-      var dialog = utils.elt('dialog', [input], { 'class': 'firepad-dialog' });
-  }*/
 
   return RichTextToolbar;
 })();
@@ -4694,6 +4686,8 @@ firepad.Firepad = (function(global) {
       this.firepadWrapper_.className += ' firepad-richtext';
     }
 
+    this.imageInsertionUI = this.getOption('imageInsertionUI', true);
+
     if (this.getOption('richTextToolbar', false)) {
       this.addToolbar_();
       this.firepadWrapper_.className += ' firepad-richtext firepad-with-toolbar';
@@ -5234,7 +5228,7 @@ firepad.Firepad = (function(global) {
      self.firepadWrapper_.removeChild(dialog);
    };
 
-   var input = utils.elt('input', null, { 'class':'firepad-dialog-input', 'id':id, 'type':'text', 'placeholder':placeholder });
+   var input = utils.elt('input', null, { 'class':'firepad-dialog-input', 'id':id, 'type':'text', 'placeholder':placeholder, 'autofocus':'autofocus' });
 
    var submit = utils.elt('a', 'Submit', { 'class': 'firepad-btn' });
    utils.on(submit, 'click', utils.stopEventAnd(cb));
@@ -5242,14 +5236,16 @@ firepad.Firepad = (function(global) {
    var cancel = utils.elt('a', 'Cancel', { 'class': 'firepad-btn' });
    utils.on(cancel, 'click', utils.stopEventAnd(hideDialog));
 
-   var div = utils.elt('div', [input, submit, cancel], { 'class':'firepad-dialog-div' });
+   var buttonsdiv = utils.elt('div', [submit, cancel], { 'class':'firepad-btn-group' });
+
+   var div = utils.elt('div', [input, buttonsdiv], { 'class':'firepad-dialog-div' });
    var dialog = utils.elt('div', [div], { 'class': 'firepad-dialog', id:'overlay' });
 
    this.firepadWrapper_.appendChild(dialog);
   }
 
   Firepad.prototype.addToolbar_ = function() {
-    this.toolbar = new RichTextToolbar();
+    this.toolbar = new RichTextToolbar(this.imageInsertionUI);
 
     this.toolbar.on('undo', this.undo, this);
     this.toolbar.on('redo', this.redo, this);
