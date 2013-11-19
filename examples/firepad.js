@@ -1679,7 +1679,7 @@ firepad.RichTextToolbar = (function(global) {
 
   utils.makeEventEmitter(RichTextToolbar, ['bold', 'italic', 'underline', 'strike', 'font', 'font-size', 'color',
     'left', 'center', 'right', 'unordered-list', 'ordered-list', 'todo-list', 'indent-increase', 'indent-decrease',
-    'undo', 'redo']);
+                                           'undo', 'redo', 'insert-image']);
 
   RichTextToolbar.prototype.element = function() { return this.element_; };
 
@@ -1699,16 +1699,17 @@ firepad.RichTextToolbar = (function(global) {
     var color = this.makeColorDropdown_();
 
     var toolbar = utils.elt('div', [
-      utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [self.makeButton_('bold'), self.makeButton_('italic'), self.makeButton_('underline'), self.makeButton_('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [self.makeButton_('unordered-list', 'list-2'), self.makeButton_('ordered-list', 'numbered-list'), self.makeButton_('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [self.makeButton_('indent-decrease'), self.makeButton_('indent-increase')], { 'class': 'firepad-btn-group'}),
-      utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group'})
+      utils.elt('div', [font], { 'class': 'firepad-btn-group' }),
+      utils.elt('div', [fontSize], { 'class': 'firepad-btn-group' }),
+      utils.elt('div', [color], { 'class': 'firepad-btn-group' }),
+      utils.elt('div', [self.makeButton_('bold'), self.makeButton_('italic'), self.makeButton_('underline'), self.makeButton_('strike', 'strikethrough')], { 'class': 'firepad-btn-group' }),
+      utils.elt('div', [self.makeButton_('unordered-list', 'list-2'), self.makeButton_('ordered-list', 'numbered-list'), self.makeButton_('todo-list', 'list')], { 'class': 'firepad-btn-group' }),
+      utils.elt('div', [self.makeButton_('indent-decrease'), self.makeButton_('indent-increase')], { 'class': 'firepad-btn-group' }),
+      utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group' }),
       // Hide undo/redo for now, since they make the toolbar wrap on the firepad.io demo.  Should look into making the
       // toolbar more compact.
       /*utils.elt('div', [self.makeButton_('undo'), self.makeButton_('redo')], { 'class': 'firepad-btn-group'}) */
+      utils.elt('div', [self.makeButton_('insert-image')], { 'class': 'firepad-btn-group' })
     ], { 'class': 'firepad-toolbar' });
 
     return toolbar;
@@ -5127,6 +5128,10 @@ firepad.Firepad = (function(global) {
   Firepad.prototype.registerEntity = function(type, options) {
     this.entityManager_.register(type, options);
   };
+
+  Firepad.prototype.insertImage = function() {
+    this.insertEntity('img', { 'src': 'http://farm9.staticflickr.com/8076/8359513601_92c6653a5c_z.jpg' });
+  };
   
   Firepad.prototype.getOption = function(option, def) {
     return (option in this.options_) ? this.options_[option] : def;
@@ -5161,6 +5166,7 @@ firepad.Firepad = (function(global) {
     this.toolbar.on('todo-list', this.todo, this);
     this.toolbar.on('indent-increase', this.indent, this);
     this.toolbar.on('indent-decrease', this.unindent, this);
+    this.toolbar.on('insert-image', this.insertImage, this);
 
     this.firepadWrapper_.insertBefore(this.toolbar.element(), this.firepadWrapper_.firstChild);
   };
