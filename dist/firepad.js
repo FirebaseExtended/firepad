@@ -4720,13 +4720,9 @@ firepad.Firepad = (function(global) {
     this.firebaseAdapter_.on('cursor', function() {
       self.trigger.apply(self, ['cursor'].concat([].slice.call(arguments)));
     });
-
-    if (this.codeMirror_) {
-      this.richTextCodeMirror_.on('newLine', function() {
-        self.trigger.apply(self, ['newLine'].concat([].slice.call(arguments)));
-      });
-    }
-
+    this.richTextCodeMirror_.on('newLine', function() {
+      self.trigger.apply(self, ['newLine'].concat([].slice.call(arguments)));
+    });
     this.firebaseAdapter_.on('ready', function() {
       self.ready_ = true;
       if (this.ace_)
