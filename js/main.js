@@ -24,10 +24,7 @@
     codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
     var userId = firepadRef.push().name(); // Just a random ID.
     firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
-                                     { richTextToolbar: true, richTextShortcuts: true, userId: userId, imageInsertionUI:false });
-    
-    //    var imageBtn = Firepad.utils.elt('div', [firepad.toolbar.makeButton_('insert-image')], { 'class': 'firepad-btn-group' });
-
+        { richTextToolbar: true, richTextShortcuts: true, userId: userId});
     userList = FirepadUserList.fromDiv(firepadRef.child('users'),
         document.getElementById('firepad-userlist'), userId);
 
