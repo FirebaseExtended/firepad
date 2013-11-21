@@ -9,6 +9,6 @@ To generate the docs, you'll need jekyll.
     sudo gem install rdiscount -v 1.6.8
     sudo gem install RedCloth -v 4.2.9
 
-Then you can run: jekyll --server --auto
+Then you can run: jekyll serve --watch
 
 And browse the site at http://localhost:4000/
