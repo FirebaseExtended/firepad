@@ -1673,7 +1673,8 @@ var firepad = firepad || { };
 firepad.RichTextToolbar = (function(global) {
   var utils = firepad.utils;
 
-  function RichTextToolbar() {
+  function RichTextToolbar(imageInsertionUI) {
+    this.imageInsertionUI = imageInsertionUI;
     this.element_ = this.makeElement_();
   }
 
@@ -1698,19 +1699,22 @@ firepad.RichTextToolbar = (function(global) {
     var fontSize = this.makeFontSizeDropdown_();
     var color = this.makeColorDropdown_();
 
-    var toolbar = utils.elt('div', [
-      utils.elt('div', [font], { 'class': 'firepad-btn-group' }),
-      utils.elt('div', [fontSize], { 'class': 'firepad-btn-group' }),
-      utils.elt('div', [color], { 'class': 'firepad-btn-group' }),
-      utils.elt('div', [self.makeButton_('bold'), self.makeButton_('italic'), self.makeButton_('underline'), self.makeButton_('strike', 'strikethrough')], { 'class': 'firepad-btn-group' }),
-      utils.elt('div', [self.makeButton_('unordered-list', 'list-2'), self.makeButton_('ordered-list', 'numbered-list'), self.makeButton_('todo-list', 'list')], { 'class': 'firepad-btn-group' }),
-      utils.elt('div', [self.makeButton_('indent-decrease'), self.makeButton_('indent-increase')], { 'class': 'firepad-btn-group' }),
-      utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group' }),
-      // Hide undo/redo for now, since they make the toolbar wrap on the firepad.io demo.  Should look into making the
-      // toolbar more compact.
-      /*utils.elt('div', [self.makeButton_('undo'), self.makeButton_('redo')], { 'class': 'firepad-btn-group'}) */
-      utils.elt('div', [self.makeButton_('insert-image')], { 'class': 'firepad-btn-group' })
-    ], { 'class': 'firepad-toolbar' });
+    var toolbarOptions = [utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
+                          utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
+                          utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
+                          utils.elt('div', [self.makeButton_('bold'), self.makeButton_('italic'), self.makeButton_('underline'), self.makeButton_('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
+                          utils.elt('div', [self.makeButton_('unordered-list', 'list-2'), self.makeButton_('ordered-list', 'numbered-list'), self.makeButton_('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
+                          utils.elt('div', [self.makeButton_('indent-decrease'), self.makeButton_('indent-increase')], { 'class': 'firepad-btn-group'}),
+                          utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group'}),
+                          // Hide undo/redo for now, since they make the toolbar wrap on the firepad.io demo.  Should look into making the                                                                                   
+                          // toolbar more compact.                                                                                                                                                                                   
+                          /*utils.elt('div', [self.makeButton_('undo'), self.makeButton_('redo')], { 'class': 'firepad-btn-group'}) */
+                          ];
+
+    if (self.imageInsertionUI)
+        toolbarOptions.push(utils.elt('div', [self.makeButton_('insert-image')], { 'class': 'firepad-btn-group' }));
+
+    var toolbar = utils.elt('div', toolbarOptions , { 'class': 'firepad-toolbar' });
 
     return toolbar;
   };
@@ -2786,7 +2790,7 @@ firepad.RichTextCodeMirror = (function () {
     this.outstandingChanges_ = { };
     this.dirtyLines_ = [];
   }
-  utils.makeEventEmitter(RichTextCodeMirror, ['change', 'attributesChange']);
+  utils.makeEventEmitter(RichTextCodeMirror, ['change', 'attributesChange', 'newLine']);
 
   // A special character we insert at the beginning of lines so we can attach attributes to it to represent
   // "line attributes."  E000 is from the unicode "private use" range.
@@ -3570,6 +3574,7 @@ firepad.RichTextCodeMirror = (function () {
 
   RichTextCodeMirror.prototype.newline = function() {
     var cm = this.codeMirror;
+    var self = this;
     if (!this.emptySelection_()) {
       cm.replaceSelection('\n', 'end', '+input');
     } else {
@@ -3594,6 +3599,7 @@ firepad.RichTextCodeMirror = (function () {
 
           // Don't mark new todo items as completed.
           if (listType === 'tc') attributes[ATTR.LIST_TYPE] = 't';
+          self.trigger('newLine', {line: cursorLine+1, attr: attributes});
         });
       }
     }
@@ -3862,33 +3868,39 @@ firepad.RichTextCodeMirrorAdapter = (function () {
 
   // Apply an operation to a CodeMirror instance.
   RichTextCodeMirrorAdapter.applyOperationToCodeMirror = function (operation, rtcm) {
-    rtcm.codeMirror.operation(function () {
-      var ops = operation.ops;
-      var index = 0; // holds the current index into CodeMirror's content
-      for (var i = 0, l = ops.length; i < l; i++) {
-        var op = ops[i];
-        if (op.isRetain()) {
-          if (!emptyAttributes(op.attributes)) {
-            rtcm.updateTextAttributes(index, index + op.chars, function(attributes) {
-              for(var attr in op.attributes) {
-                if (op.attributes[attr] === false) {
-                  delete attributes[attr];
-                } else {
-                  attributes[attr] = op.attributes[attr];
-                }
-              }
-            }, 'RTCMADAPTER', /*doLineAttributes=*/true);
+
+  // HACK: If there are a lot of operations; hide CodeMirror so that it doesn't re-render constantly.
+  if (operation.ops.length > 10)
+    rtcm.codeMirror.getWrapperElement().setAttribute('style', 'display: none');
+
+  var ops = operation.ops;
+  var index = 0; // holds the current index into CodeMirror's content
+  for (var i = 0, l = ops.length; i < l; i++) {
+    var op = ops[i];
+    if (op.isRetain()) {
+      if (!emptyAttributes(op.attributes)) {
+        rtcm.updateTextAttributes(index, index + op.chars, function(attributes) {
+          for(var attr in op.attributes) {
+            if (op.attributes[attr] === false) {
+              delete attributes[attr];
+            } else {
+              attributes[attr] = op.attributes[attr];
+            }
           }
-          index += op.chars;
-        } else if (op.isInsert()) {
-          rtcm.insertText(index, op.text, op.attributes, 'RTCMADAPTER');
-          index += op.text.length;
-        } else if (op.isDelete()) {
-          rtcm.removeText(index, index + op.chars, 'RTCMADAPTER');
-        }
+        }, 'RTCMADAPTER', /*doLineAttributes=*/true);
       }
-    });
-  };
+      index += op.chars;
+    } else if (op.isInsert()) {
+      rtcm.insertText(index, op.text, op.attributes, 'RTCMADAPTER');
+      index += op.text.length;
+    } else if (op.isDelete()) {
+      rtcm.removeText(index, index + op.chars, 'RTCMADAPTER');
+    }
+  }
+
+  if (operation.ops.length > 10)
+    rtcm.codeMirror.getWrapperElement().setAttribute('style', '');
+};
 
   RichTextCodeMirrorAdapter.prototype.registerCallbacks = function (cb) {
     this.callbacks = cb;
@@ -4616,6 +4628,9 @@ firepad.ParseHtml = (function () {
 var firepad = firepad || { };
 
 firepad.Firepad = (function(global) {
+  if (!firepad.RichTextCodeMirrorAdapter) {
+    throw new Error("Oops! It looks like you're trying to include lib/firepad.js directly.  This is actually one of many source files that make up firepad.  You want dist/firepad.js instead.");
+  }
   var RichTextCodeMirrorAdapter = firepad.RichTextCodeMirrorAdapter;
   var RichTextCodeMirror = firepad.RichTextCodeMirror;
   var RichTextToolbar = firepad.RichTextToolbar;
@@ -4673,6 +4688,8 @@ firepad.Firepad = (function(global) {
       this.firepadWrapper_.className += ' firepad-richtext';
     }
 
+    this.imageInsertionUI = this.getOption('imageInsertionUI', true);
+
     if (this.getOption('richTextToolbar', false)) {
       this.addToolbar_();
       this.firepadWrapper_.className += ' firepad-richtext firepad-with-toolbar';
@@ -4703,6 +4720,13 @@ firepad.Firepad = (function(global) {
     this.firebaseAdapter_.on('cursor', function() {
       self.trigger.apply(self, ['cursor'].concat([].slice.call(arguments)));
     });
+
+    if (this.codeMirror_) {
+      this.richTextCodeMirror_.on('newLine', function() {
+        self.trigger.apply(self, ['newLine'].concat([].slice.call(arguments)));
+      });
+    }
+
     this.firebaseAdapter_.on('ready', function() {
       self.ready_ = true;
       if (this.ace_)
@@ -4768,62 +4792,102 @@ firepad.Firepad = (function(global) {
   };
 
   Firepad.prototype.setText = function(textPieces) {
-    this.assertReady_('setText');
     if (this.ace_) {
       return this.ace_.getSession().getDocument().setValue(textPieces);
     } else {
-      // Wrap it in an array if it's not already.
-      if(Object.prototype.toString.call(textPieces) !== '[object Array]') {
-        textPieces = [textPieces];
-      }
-
-      // TODO: Batch this all into a single operation.
+      // HACK: Hide CodeMirror during setText to prevent lots of extra renders.
+      this.codeMirror_.getWrapperElement().setAttribute('style', 'display: none');
       this.codeMirror_.setValue("");
-      var end = 0, atNewLine = true, self = this;
-
-      function insert(string, attributes) {
-        self.richTextCodeMirror_.insertText(end, string, attributes || null);
-        end += string.length;
-        atNewLine = string[string.length-1] === '\n';
-      }
-
-      function insertTextOrString(x) {
-        if (x instanceof firepad.Text) {
-          insert(x.text, x.formatting.attributes);
-        } else if (typeof x === 'string') {
-          insert(x);
-        } else {
-          console.error("Can't insert into firepad", x);
-          throw "Can't insert into firepad: " + x;
-        }
-      }
-
-      function insertLine(line) {
-        if (!atNewLine)
-          insert('\n');
-
-        insert(RichTextCodeMirror.LineSentinelCharacter, line.formatting.attributes);
-
-        for(var i = 0; i < line.textPieces.length; i++) {
-          insertTextOrString(line.textPieces[i]);
-        }
-
-        insert('\n');
-      }
-
-      for(var i = 0; i < textPieces.length; i++) {
-        if (textPieces[i] instanceof firepad.Line) {
-          insertLine(textPieces[i]);
-        } else {
-          insertTextOrString(textPieces[i]);
-        }
-      }
+      this.insertText(0, textPieces);
+      this.codeMirror_.getWrapperElement().setAttribute('style', '');
     }
   };
 
+  Firepad.prototype.insertTextAtCursor = function(textPieces) {
+    this.insertText(this.codeMirror_.indexFromPos(this.codeMirror_.getCursor()), textPieces);
+  };
+  
+  Firepad.prototype.insertText = function(index, textPieces) {
+    utils.assert(!this.ace_, "Not supported for ace yet.");
+    this.assertReady_('insertText');
+
+    // Wrap it in an array if it's not already.
+    if(Object.prototype.toString.call(textPieces) !== '[object Array]') {
+      textPieces = [textPieces];
+    }
+
+    // TODO: Batch this all into a single operation.
+    // HACK: We should check if we're actually at the beginning of a line; but checking for index == 0 is sufficient
+    // for the setText() case.
+    var atNewLine = (index === 0), self = this;
+
+    function insert(string, attributes) {
+      self.richTextCodeMirror_.insertText(index, string, attributes || null);
+      index += string.length;
+      atNewLine = string[string.length-1] === '\n';
+    }
+
+    function insertTextOrString(x) {
+      if (x instanceof firepad.Text) {
+        insert(x.text, x.formatting.attributes);
+      } else if (typeof x === 'string') {
+        insert(x);
+      } else {
+        console.error("Can't insert into firepad", x);
+        throw "Can't insert into firepad: " + x;
+      }
+    }
+
+    function insertLine(line) {
+      // HACK: We should probably force a newline if there isn't one already.  But due to
+      // the way this is used for inserting HTML, we end up inserting a "line" in the middle
+      // of text, in which case we don't want to actually insert a newline.
+      if (atNewLine)
+        insert(RichTextCodeMirror.LineSentinelCharacter, line.formatting.attributes);
+
+      for(var i = 0; i < line.textPieces.length; i++) {
+        insertTextOrString(line.textPieces[i]);
+      }
+
+      insert('\n');
+    }
+
+    for(var i = 0; i < textPieces.length; i++) {
+      if (textPieces[i] instanceof firepad.Line) {
+        insertLine(textPieces[i]);
+      } else {
+        insertTextOrString(textPieces[i]);
+      }
+    }
+  };
+  
+  Firepad.prototype.getOperationForSpan = function(start, end) {
+    var text = this.richTextCodeMirror_.getRange(start, end);
+    var spans = this.richTextCodeMirror_.getAttributeSpans(start, end);
+    var pos = 0;
+    var op = new firepad.TextOperation();
+    for(var i = 0; i < spans.length; i++) {
+      op.insert(text.substr(pos, spans[i].length), spans[i].attributes);
+      pos += spans[i].length;
+    }
+    return op;
+  };
+
+
   Firepad.TODO_STYLE = '<style>ul.firepad-todo { list-style: none; margin-left: 0; padding-left: 0; } ul.firepad-todo > li { padding-left: 1em; text-indent: -1em; } ul.firepad-todo > li:before { content: "\\2610"; padding-right: 5px; } ul.firepad-todo > li.firepad-checked:before { content: "\\2611"; padding-right: 5px; }</style>\n';
+  
   Firepad.prototype.getHtml = function() {
-    var doc = this.firebaseAdapter_.getDocument();
+    return this.getHtmlFromRange(null, null);
+  };
+
+  Firepad.prototype.getHtmlFromSelection = function() {
+    var startPos = this.codeMirror_.getCursor('start'), endPos = this.codeMirror_.getCursor('end');
+    var startIndex = this.codeMirror_.indexFromPos(startPos), endIndex = this.codeMirror_.indexFromPos(endPos);
+    return this.getHtmlFromRange(startIndex, endIndex);
+  };
+  
+  Firepad.prototype.getHtmlFromRange = function(start, end) {
+    var doc = (start != null && end != null) ? this.getOperationForSpan(start, end) : this.firebaseAdapter_.getDocument();
     var html = '', newLine = true;
     html += Firepad.EXPORT_HTML_STYLE;
 
@@ -5014,6 +5078,15 @@ firepad.Firepad = (function(global) {
         .replace(/\u00a0/g, '&nbsp;')
   };
 
+  Firepad.prototype.insertHtml = function (index, html) {
+    var lines = firepad.ParseHtml(html, this.entityManager_);
+    this.insertText(index, lines);
+  };
+
+  Firepad.prototype.insertHtmlAtCursor = function (html) {
+    this.insertHtml(this.codeMirror_.indexFromPos(this.codeMirror_.getCursor()), html);
+  };
+
   Firepad.prototype.setHtml = function (html) {
     var lines = firepad.ParseHtml(html, this.entityManager_);
     this.setText(lines);
@@ -5128,10 +5201,6 @@ firepad.Firepad = (function(global) {
   Firepad.prototype.registerEntity = function(type, options) {
     this.entityManager_.register(type, options);
   };
-
-  Firepad.prototype.insertImage = function() {
-    this.insertEntity('img', { 'src': 'http://farm9.staticflickr.com/8076/8359513601_92c6653a5c_z.jpg' });
-  };
   
   Firepad.prototype.getOption = function(option, def) {
     return (option in this.options_) ? this.options_[option] : def;
@@ -5146,8 +5215,46 @@ firepad.Firepad = (function(global) {
     }
   };
 
+  Firepad.prototype.makeImageDialog_ = function() {
+    this.makeDialog_('img', 'Insert image url');
+  }
+
+  Firepad.prototype.makeDialog_ = function(id, placeholder) {
+   var self = this;
+
+   var hideDialog = function() {
+     var dialog = document.getElementById('overlay');
+     dialog.style.visibility = "hidden";
+     self.firepadWrapper_.removeChild(dialog); 
+   };
+
+   var cb = function() {
+     var dialog = document.getElementById('overlay');
+     dialog.style.visibility = "hidden";
+     var src = document.getElementById(id).value;
+     if (src !== null)
+       self.insertEntity(id, { 'src': src });
+     self.firepadWrapper_.removeChild(dialog);
+   };
+
+   var input = utils.elt('input', null, { 'class':'firepad-dialog-input', 'id':id, 'type':'text', 'placeholder':placeholder, 'autofocus':'autofocus' });
+
+   var submit = utils.elt('a', 'Submit', { 'class': 'firepad-btn', 'id':'submitbtn' });
+   utils.on(submit, 'click', utils.stopEventAnd(cb));
+
+   var cancel = utils.elt('a', 'Cancel', { 'class': 'firepad-btn' });
+   utils.on(cancel, 'click', utils.stopEventAnd(hideDialog));
+
+   var buttonsdiv = utils.elt('div', [submit, cancel], { 'class':'firepad-btn-group' });
+
+   var div = utils.elt('div', [input, buttonsdiv], { 'class':'firepad-dialog-div' });
+   var dialog = utils.elt('div', [div], { 'class': 'firepad-dialog', id:'overlay' });
+
+   this.firepadWrapper_.appendChild(dialog);
+  }
+
   Firepad.prototype.addToolbar_ = function() {
-    this.toolbar = new RichTextToolbar();
+    this.toolbar = new RichTextToolbar(this.imageInsertionUI);
 
     this.toolbar.on('undo', this.undo, this);
     this.toolbar.on('redo', this.redo, this);
@@ -5166,7 +5273,7 @@ firepad.Firepad = (function(global) {
     this.toolbar.on('todo-list', this.todo, this);
     this.toolbar.on('indent-increase', this.indent, this);
     this.toolbar.on('indent-decrease', this.unindent, this);
-    this.toolbar.on('insert-image', this.insertImage, this);
+    this.toolbar.on('insert-image', this.makeImageDialog_, this);
 
     this.firepadWrapper_.insertBefore(this.toolbar.element(), this.firepadWrapper_.firstChild);
   };

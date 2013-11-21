@@ -24,7 +24,22 @@
     codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
     var userId = firepadRef.push().name(); // Just a random ID.
     firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
-        { richTextToolbar: true, richTextShortcuts: true, userId: userId});
+                                     { richTextToolbar: true, richTextShortcuts: true, userId: userId, imageInsertionUI:false });
+
+    var func = function() { console.log("ARGH!"); firepad.insertEntity('img', { 'src':'http://farm9.staticflickr.com/8076/8359513601_92c6653a5c_z.jpg' }) };
+
+    var span = document.createElement('span');
+    span.className = 'firepad-tb-insert-image';
+    var a = document.createElement('a');
+    a.className = 'firepad-btn';
+    a.onclick = func;
+    a.appendChild(span);
+    var div = document.createElement('div');
+    div.className = 'firepad-btn-group';
+    div.appendChild(a);
+
+    document.getElementsByClassName('firepad-toolbar')[0].appendChild(div);
+
     userList = FirepadUserList.fromDiv(firepadRef.child('users'),
         document.getElementById('firepad-userlist'), userId);
 
