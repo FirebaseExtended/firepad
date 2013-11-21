@@ -26,7 +26,7 @@
     firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
                                      { richTextToolbar: true, richTextShortcuts: true, userId: userId, imageInsertionUI:false });
 
-    var func = function() { console.log("ARGH!"); firepad.insertEntity('img', { 'src':'http://farm9.staticflickr.com/8076/8359513601_92c6653a5c_z.jpg' }) };
+    var func = function() { firepad.insertEntity('img', { 'src':'http://farm9.staticflickr.com/8076/8359513601_92c6653a5c_z.jpg' }) };
 
     var span = document.createElement('span');
     span.className = 'firepad-tb-insert-image';
