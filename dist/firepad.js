@@ -3898,8 +3898,10 @@ firepad.RichTextCodeMirrorAdapter = (function () {
     }
   }
 
-  if (operation.ops.length > 10)
+  if (operation.ops.length > 10) {
     rtcm.codeMirror.getWrapperElement().setAttribute('style', '');
+    rtcm.codeMirror.refresh();
+  }
 };
 
   RichTextCodeMirrorAdapter.prototype.registerCallbacks = function (cb) {
@@ -4796,6 +4798,7 @@ firepad.Firepad = (function(global) {
       this.codeMirror_.setValue("");
       this.insertText(0, textPieces);
       this.codeMirror_.getWrapperElement().setAttribute('style', '');
+      this.codeMirror_.refresh();
     }
   };
 
