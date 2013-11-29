@@ -4722,9 +4722,13 @@ firepad.Firepad = (function(global) {
     this.firebaseAdapter_.on('cursor', function() {
       self.trigger.apply(self, ['cursor'].concat([].slice.call(arguments)));
     });
-    this.richTextCodeMirror_.on('newLine', function() {
-      self.trigger.apply(self, ['newLine'].concat([].slice.call(arguments)));
-    });
+
+    if (this.codeMirror_) {
+      this.richTextCodeMirror_.on('newLine', function() {
+        self.trigger.apply(self, ['newLine'].concat([].slice.call(arguments)));
+      });
+    }
+
     this.firebaseAdapter_.on('ready', function() {
       self.ready_ = true;
       if (this.ace_)
@@ -5214,7 +5218,7 @@ firepad.Firepad = (function(global) {
     }
   };
 
-  Firepad.prototype.insertImage = function() {
+  Firepad.prototype.makeImageDialog_ = function() {
     this.makeDialog_('img', 'Insert image url');
   }
 
@@ -5272,7 +5276,7 @@ firepad.Firepad = (function(global) {
     this.toolbar.on('todo-list', this.todo, this);
     this.toolbar.on('indent-increase', this.indent, this);
     this.toolbar.on('indent-decrease', this.unindent, this);
-    this.toolbar.on('insert-image', this.insertImage, this);
+    this.toolbar.on('insert-image', this.makeImageDialog_, this);
 
     this.firepadWrapper_.insertBefore(this.toolbar.element(), this.firepadWrapper_.firstChild);
   };
