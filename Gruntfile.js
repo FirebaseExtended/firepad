@@ -91,22 +91,6 @@ module.exports = function (grunt) {
             dest: 'dist/firepad.css'
           }
         ]
-      },
-      toExamples: {
-        files: [
-          {
-            src: 'dist/firepad.js',
-            dest: 'examples/firepad.js'
-          },
-          {
-            src: 'dist/firepad.css',
-            dest: 'examples/firepad.css'
-          },
-          {
-            src: 'dist/firepad.eot',
-            dest: 'examples/firepad.eot'
-          },
-        ]
       }
     },
     compress: {
