@@ -6,7 +6,7 @@
     "Michael Lehenbauer"
   ],
   "description": "Collaborative Text Editing powered by Firebase",
-  "main": ["dist/firepad.js", "dist/firepad.min.js", "dist/firepad.css", "dist/firepad.eot"],
+  "main": ["dist/firepad.js", "dist/firepad.css", "dist/firepad.eot"],
   "license": "MIT",
   "ignore": [
     "**/.*",
