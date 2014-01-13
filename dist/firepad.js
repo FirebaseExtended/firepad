@@ -2420,7 +2420,10 @@ firepad.ACEAdapter = ACEAdapter = (function() {
   };
 
   ACEAdapter.prototype.onCursorActivity = function() {
-    return this.trigger('cursorActivity');
+    var _this = this;
+    return setTimeout((function() {
+      return _this.trigger('cursorActivity');
+    }), 0);
   };
 
   ACEAdapter.prototype.operationFromACEChange = function(change) {

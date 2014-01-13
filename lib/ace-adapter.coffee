@@ -34,7 +34,9 @@ firepad.ACEAdapter = class ACEAdapter
     @trigger 'blur' if @ace.selection.isEmpty()
 
   onCursorActivity: =>
-    @trigger 'cursorActivity'
+    setTimeout ( =>
+      @trigger 'cursorActivity'
+    ), 0
 
   # Converts an ACE change object into a TextOperation and its inverse
   # and returns them as a two-element array.
