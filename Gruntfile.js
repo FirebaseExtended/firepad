@@ -56,7 +56,6 @@ module.exports = function (grunt) {
           "lib/undo-manager.js",
           "lib/client.js",
           "lib/editor-client.js",
-          /*"lib/codemirror-adapter.js",*/
           "lib/ace-adapter.js",
           "lib/attribute-constants.js",
           "lib/entity-manager.js",
@@ -118,4 +117,4 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-compress');
 
   grunt.registerTask('default', ['coffeelint', 'coffee', 'concat', 'uglify', 'copy', 'compress']);
-}; 
+};
