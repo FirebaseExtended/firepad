@@ -4049,20 +4049,22 @@ firepad.RichTextCodeMirrorAdapter = (function () {
     );
   };
 
-  var addStyleRule = (function () {
-    if (typeof document !== 'undefined') {
-      var added = {};
+  RichTextCodeMirrorAdapter.prototype.addStyleRule = function(css) {
+    if (typeof document === "undefined" || document === null) {
+      return;
+    }
+    if (!this.addedStyleRules) {
+      this.addedStyleRules = {};
       var styleElement = document.createElement('style');
       document.documentElement.getElementsByTagName('head')[0].appendChild(styleElement);
-      var styleSheet = styleElement.sheet;
-
-      return function (css) {
-        if (added[css]) { return; }
-        added[css] = true;
-        styleSheet.insertRule(css, (styleSheet.cssRules || styleSheet.rules).length);
-      };
+      this.addedStyleSheet = styleElement.sheet;
     }
-  }());
+    if (this.addedStyleRules[css]) {
+      return;
+    }
+    this.addedStyleRules[css] = true;
+    return this.addedStyleSheet.insertRule(css, 0);
+  };
 
   RichTextCodeMirrorAdapter.prototype.setOtherCursor = function (cursor, color, clientId) {
     var cursorPos = this.cm.posFromIndex(cursor.position);
@@ -4101,7 +4103,7 @@ firepad.RichTextCodeMirrorAdapter = (function () {
       // show selection
       var selectionClassName = 'selection-' + color.replace('#', '');
       var rule = '.' + selectionClassName + ' { background: ' + color + '; }';
-      addStyleRule(rule);
+      this.addStyleRule(rule);
 
       var fromPos, toPos;
       if (cursor.selectionEnd > cursor.position) {
@@ -4900,7 +4902,7 @@ firepad.Firepad = (function(global) {
   Firepad.prototype.insertTextAtCursor = function(textPieces) {
     this.insertText(this.codeMirror_.indexFromPos(this.codeMirror_.getCursor()), textPieces);
   };
-  
+
   Firepad.prototype.insertText = function(index, textPieces) {
     utils.assert(!this.ace_, "Not supported for ace yet.");
     this.assertReady_('insertText');
@@ -4954,7 +4956,7 @@ firepad.Firepad = (function(global) {
       }
     }
   };
-  
+
   Firepad.prototype.getOperationForSpan = function(start, end) {
     var text = this.richTextCodeMirror_.getRange(start, end);
     var spans = this.richTextCodeMirror_.getAttributeSpans(start, end);
@@ -4969,7 +4971,7 @@ firepad.Firepad = (function(global) {
 
 
   Firepad.TODO_STYLE = '<style>ul.firepad-todo { list-style: none; margin-left: 0; padding-left: 0; } ul.firepad-todo > li { padding-left: 1em; text-indent: -1em; } ul.firepad-todo > li:before { content: "\\2610"; padding-right: 5px; } ul.firepad-todo > li.firepad-checked:before { content: "\\2611"; padding-right: 5px; }</style>\n';
-  
+
   Firepad.prototype.getHtml = function() {
     return this.getHtmlFromRange(null, null);
   };
@@ -4979,7 +4981,7 @@ firepad.Firepad = (function(global) {
     var startIndex = this.codeMirror_.indexFromPos(startPos), endIndex = this.codeMirror_.indexFromPos(endPos);
     return this.getHtmlFromRange(startIndex, endIndex);
   };
-  
+
   Firepad.prototype.getHtmlFromRange = function(start, end) {
     var doc = (start != null && end != null) ? this.getOperationForSpan(start, end) : this.firebaseAdapter_.getDocument();
     var html = '', newLine = true;
@@ -5052,7 +5054,7 @@ firepad.Firepad = (function(global) {
         var style = (lineAlign !== 'left') ? ' style="text-align:' + lineAlign + '"': '';
         if (listType) {
           var clazz = '';
-          switch (listType) 
+          switch (listType)
           {
             case LIST_TYPE.TODOCHECKED:
               clazz = ' class="firepad-checked"';
@@ -5295,7 +5297,7 @@ firepad.Firepad = (function(global) {
   Firepad.prototype.registerEntity = function(type, options) {
     this.entityManager_.register(type, options);
   };
-  
+
   Firepad.prototype.getOption = function(option, def) {
     return (option in this.options_) ? this.options_[option] : def;
   };
@@ -5319,7 +5321,7 @@ firepad.Firepad = (function(global) {
    var hideDialog = function() {
      var dialog = document.getElementById('overlay');
      dialog.style.visibility = "hidden";
-     self.firepadWrapper_.removeChild(dialog); 
+     self.firepadWrapper_.removeChild(dialog);
    };
 
    var cb = function() {
@@ -5469,13 +5471,16 @@ firepad.Firepad = (function(global) {
   return Firepad;
 })(this);
 
-// Export Text class.
+// Export Text classes
 firepad.Firepad.Formatting = firepad.Formatting;
 firepad.Firepad.Text = firepad.Text;
 firepad.Firepad.Entity = firepad.Entity;
 firepad.Firepad.LineFormatting = firepad.LineFormatting;
 firepad.Firepad.Line = firepad.Line;
-
 firepad.Firepad.TextOperation = firepad.TextOperation;
+
+// Export adapters
+firepad.Firepad.RichTextCodeMirrorAdapter = firepad.RichTextCodeMirrorAdapter;
+firepad.Firepad.ACEAdapter = firepad.ACEAdapter;
 
 return firepad.Firepad; })();
