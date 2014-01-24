@@ -5313,7 +5313,7 @@ firepad.Firepad = (function(global) {
 
   Firepad.prototype.makeImageDialog_ = function() {
     this.makeDialog_('img', 'Insert image url');
-  }
+  };
 
   Firepad.prototype.makeDialog_ = function(id, placeholder) {
    var self = this;
@@ -5413,7 +5413,12 @@ firepad.Firepad = (function(global) {
   Firepad.prototype.initializeKeyMap_ = function() {
     function binder(fn) {
       return function(cm) {
-        fn.call(cm.firepad);
+        // HACK: CodeMirror will often call our key handlers within a cm.operation(), and that
+        // can mess us up (we rely on events being triggered synchronously when we make CodeMirror
+        // edits).  So to escape any cm.operation(), we do a setTimeout.
+        setTimeout(function() {
+          fn.call(cm.firepad);
+        }, 0);
       }
     }
 
