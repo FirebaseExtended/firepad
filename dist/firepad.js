@@ -2433,11 +2433,11 @@ firepad.ACEAdapter = ACEAdapter = (function() {
       text = delta.lines.join("\n") + "\n";
       action = delta.action.replace("Lines", "");
     } else {
-      text = delta.text;
+      text = delta.text.replace(this.aceDoc.getNewLineCharacter(), '\n');
       action = delta.action.replace("Text", "");
     }
     start = this.indexFromPos(delta.range.start);
-    restLength = this.lastDocLines.join(this.aceDoc.$autoNewLine).length - start;
+    restLength = this.lastDocLines.join('\n').length - start;
     if (action === "remove") {
       restLength -= text.length;
     }
@@ -2481,7 +2481,7 @@ firepad.ACEAdapter = ACEAdapter = (function() {
       if (index <= line.length) {
         break;
       }
-      index -= line.length + this.aceDoc.$autoNewLine.length;
+      index -= line.length + 1;
     }
     return {
       row: row,
@@ -2496,7 +2496,7 @@ firepad.ACEAdapter = ACEAdapter = (function() {
     }
     index = 0;
     for (i = _i = 0, _ref = pos.row; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-      index += this.lastDocLines[i].length + this.aceDoc.$autoNewLine.length;
+      index += this.lastDocLines[i].length + 1;
     }
     return index += pos.column;
   };

@@ -46,10 +46,10 @@ firepad.ACEAdapter = class ACEAdapter
       text = delta.lines.join("\n") + "\n"
       action = delta.action.replace "Lines", ""
     else
-      text = delta.text
+      text = delta.text.replace(@aceDoc.getNewLineCharacter(), '\n')
       action = delta.action.replace "Text", ""
     start = @indexFromPos delta.range.start
-    restLength = @lastDocLines.join(@aceDoc.$autoNewLine).length - start
+    restLength = @lastDocLines.join('\n').length - start
     restLength -= text.length if action is "remove"
     operation = new firepad.TextOperation().retain(start).insert(text).retain(restLength)
     inverse = new firepad.TextOperation().retain(start).delete(text).retain(restLength)
@@ -76,14 +76,14 @@ firepad.ACEAdapter = class ACEAdapter
   posFromIndex: (index) ->
     for line, row in @aceDoc.$lines
       break if index <= line.length
-      index -= line.length + @aceDoc.$autoNewLine.length
+      index -= line.length + 1
     row: row, column: index
 
   indexFromPos: (pos, lines) ->
     lines ?= @lastDocLines
     index = 0
     for i in [0 ... pos.row]
-      index += @lastDocLines[i].length + @aceDoc.$autoNewLine.length
+      index += @lastDocLines[i].length + 1
     index += pos.column
 
   getValue: ->
