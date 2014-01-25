@@ -4703,8 +4703,11 @@ firepad.ParseHtml = (function () {
             case 'xx-large':
               textFormatting = textFormatting.fontSize(32);
               break;
+            // TODO: Handle relative sizes (larger, smaller, 80%, etc. ?)
             default:
-              textFormatting = textFormatting.fontSize(parseInt(val));
+              var size = parseInt(val);
+              if (size)
+                textFormatting = textFormatting.fontSize(size);
           }
           break;
         case 'font-family':
