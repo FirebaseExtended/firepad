@@ -123,6 +123,15 @@ firepad.utils.trim = function(str) {
   return str.replace(/^\s+/g, '').replace(/\s+$/g, '');
 };
 
+firepad.utils.stringEndsWith = function(str, suffix) {
+  var list = (typeof suffix == 'string') ? [suffix] : suffix;
+  for (var i in list) {
+    var a = list[i];
+    if (str.indexOf(a, str.length - a.length) !== -1) return true;
+  }
+  return false;
+};
+
 firepad.utils.assert = function assert (b, msg) {
   if (!b) {
     throw new Error(msg || "assertion error");
@@ -3116,7 +3125,8 @@ firepad.RichTextCodeMirror = (function () {
         var className = (this.options_['cssPrefix'] || RichTextClassPrefixDefault) + attr;
         if (val !== true) {
           // Append "px" to font size if it's missing.
-          if (attr === ATTR.FONT_SIZE && (typeof val !== "string" || val.indexOf("px", val.length - 2) === -1)) {
+          // Probablt could be removed now as parseHtml automaticallt adds px when required
+          if (attr === ATTR.FONT_SIZE && typeof val !== "string") {
             val = val + "px";
           }
 
@@ -4672,42 +4682,25 @@ firepad.ParseHtml = (function () {
           textFormatting = textFormatting.italic(italic);
           break;
         case 'color':
-          textFormatting = textFormatting.color(val.toLowerCase());
+          textFormatting = textFormatting.color(val);
           break;
         case 'background-color':
-          textFormatting = textFormatting.backgroundColor(val.toLowerCase());
+          textFormatting = textFormatting.backgroundColor(val);
           break;
         case 'text-align':
-          lineFormatting = lineFormatting.align(val.toLowerCase());
+          lineFormatting = lineFormatting.align(val);
           break;
         case 'font-size':
-          switch (val) {
-            case 'xx-small':
-              textFormatting = textFormatting.fontSize(9);
-              break;
-            case 'x-small':
-              textFormatting = textFormatting.fontSize(10);
-              break;
-            case 'small':
-              textFormatting = textFormatting.fontSize(12);
-              break;
-            case 'medium':
-              textFormatting = textFormatting.fontSize(14);
-              break;
-            case 'large':
-              textFormatting = textFormatting.fontSize(18);
-              break;
-            case 'x-large':
-              textFormatting = textFormatting.fontSize(24);
-              break;
-            case 'xx-large':
-              textFormatting = textFormatting.fontSize(32);
-              break;
-            // TODO: Handle relative sizes (larger, smaller, 80%, etc. ?)
-            default:
-              var size = parseInt(val);
-              if (size)
-                textFormatting = textFormatting.fontSize(size);
+          var size = null;
+          var allowedValues = ['px','%','em','xx-small','x-small','small','medium','large','x-large','xx-large','smaller','larger'];
+          if (firepad.utils.stringEndsWith(val, allowedValues)) {
+            size = val;
+          }
+          else if (parseInt(val)) {
+            size = parseInt(val)+'px';
+          }
+          if (size) {
+            textFormatting = textFormatting.fontSize(size);
           }
           break;
         case 'font-family':
