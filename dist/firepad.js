@@ -125,9 +125,10 @@ firepad.utils.trim = function(str) {
 
 firepad.utils.stringEndsWith = function(str, suffix) {
   var list = (typeof suffix == 'string') ? [suffix] : suffix;
-  for (var i in list) {
-    var a = list[i];
-    if (str.indexOf(a, str.length - a.length) !== -1) return true;
+  for (var i = 0; i < list.length; i++) {
+    var suffix = list[i];
+    if (str.indexOf(suffix, str.length - suffix.length) !== -1) 
+      return true;
   }
   return false;
 };
@@ -3125,7 +3126,7 @@ firepad.RichTextCodeMirror = (function () {
         var className = (this.options_['cssPrefix'] || RichTextClassPrefixDefault) + attr;
         if (val !== true) {
           // Append "px" to font size if it's missing.
-          // Probablt could be removed now as parseHtml automaticallt adds px when required
+          // Probably could be removed now as parseHtml automatically adds px when required
           if (attr === ATTR.FONT_SIZE && typeof val !== "string") {
             val = val + "px";
           }
