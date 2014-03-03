@@ -106,6 +106,15 @@ module.exports = function (grunt) {
           }
         ]
       }
+    },
+    watch: {
+      scripts: {
+        files: ['lib/*'],
+        tasks: ['default'],
+        options: {
+          spawn: false
+        }
+      }
     }
   });
 
@@ -115,6 +124,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-compress');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
   grunt.registerTask('default', ['coffeelint', 'coffee', 'concat', 'uglify', 'copy', 'compress']);
 };
