@@ -35,9 +35,9 @@
 
   <script>
     //// Initialize Firebase.
-    var firepadRef = getExampleRef();
+    //var firepadRef = getExampleRef();
     // TODO: Replace above line with:
-    // var ref = new Firebase('<YOUR FIREBASE URL>');
+    var firepadRef = new Firebase('https://atom-firepad.firebaseio.com/test');
 
     //// Create CodeMirror (with line numbers and the JavaScript mode).
     var codeMirror = CodeMirror(document.getElementById('firepad-container'), {

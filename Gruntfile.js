@@ -41,7 +41,7 @@ module.exports = function (grunt) {
             ' */\n',
             'var Firepad = (function() {\n'
           ].join('\n'),
-          footer: "\nreturn firepad.Firepad; })();"
+          footer: "\nreturn firepad.Firepad; })();\nif (module && module.exports) { module.exports = Firepad; }"
         },
         "src": [
           "lib/utils.js",
@@ -57,6 +57,7 @@ module.exports = function (grunt) {
           "lib/client.js",
           "lib/editor-client.js",
           "lib/ace-adapter.js",
+          "lib/atom-adapter.js",
           "lib/attribute-constants.js",
           "lib/entity-manager.js",
           "lib/entity.js",

@@ -1312,11 +1312,12 @@ firepad.FirebaseAdapter = (function (global) {
   // Save a checkpoint every 100 edits.
   var CHECKPOINT_FREQUENCY = 100;
 
-  function FirebaseAdapter (ref, userId, userColor) {
+  function FirebaseAdapter (ref, userId, userColor, sv) {
     this.ref_ = ref;
     this.ready_ = false;
     this.firebaseCallbacks_ = [];
     this.zombie_ = false;
+    this.sv_ = sv;
 
     // We store the current document state as a TextOperation so we can write checkpoints to Firebase occasionally.
     // TODO: Consider more efficient ways to do this. (composing text operations is ~linear in the length of the document).
@@ -1429,7 +1430,7 @@ firepad.FirebaseAdapter = (function (global) {
     }
 
     this.sent_ = { id: revisionId, op: operation };
-    doTransaction(revisionId, { a: self.userId_, o: operation.toJSON(), t: Firebase.ServerValue.TIMESTAMP }, cursor);
+    doTransaction(revisionId, { a: self.userId_, o: operation.toJSON(), t: self.sv_ }, cursor);
   };
 
   FirebaseAdapter.prototype.sendCursor = function (obj) {
@@ -2637,6 +2638,132 @@ firepad.ACEAdapter = ACEAdapter = (function() {
   };
 
   return ACEAdapter;
+
+})();
+
+var AtomAdapter, Range, firepad,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+Range = require('atom').Range;
+
+if (typeof firepad === "undefined" || firepad === null) {
+  firepad = {};
+}
+
+firepad.AtomAdapter = AtomAdapter = (function() {
+  AtomAdapter.prototype.ignoreChanges = false;
+
+  function AtomAdapter(atom) {
+    this.atom = atom;
+    this.onChange = __bind(this.onChange, this);
+    this.buffer = this.atom.buffer;
+    this.grabDocumentState();
+    this.buffer.on('changed', this.onChange);
+  }
+
+  AtomAdapter.prototype.grabDocumentState = function() {
+    this.lastDocState = this.atom.getText();
+    return this.lastDocLines = this.buffer.getLines();
+  };
+
+  AtomAdapter.prototype.detach = function() {
+    return this.buffer.off('changed');
+  };
+
+  AtomAdapter.prototype.onChange = function(change) {
+    var pair;
+    if (!this.ignoreChanges) {
+      pair = this.operationFromAtomChange(change);
+      this.firepadTriggers['change'].apply(this, pair);
+      return this.grabDocumentState();
+    }
+  };
+
+  AtomAdapter.prototype.operationFromAtomChange = function(change) {
+    var current, inverse, operation, remaining, start;
+    current = this.buffer.getMaxCharacterIndex();
+    start = this.buffer.characterIndexForPosition(change.newRange.start);
+    remaining = current - this.buffer.characterIndexForPosition(change.newRange.end);
+    operation = new firepad.TextOperation().retain(start)["delete"](change.oldText).insert(change.newText).retain(remaining);
+    inverse = new firepad.TextOperation().retain(start)["delete"](change.newText).insert(change.oldText).retain(remaining);
+    return [operation, inverse];
+  };
+
+  AtomAdapter.prototype.applyOperationToAtom = function(operation) {
+    var from, index, op, to, _i, _len, _ref;
+    index = 0;
+    _ref = operation.ops;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      op = _ref[_i];
+      if (op.isRetain()) {
+        index += op.chars;
+      } else if (op.isInsert()) {
+        this.buffer.insert(this.buffer.positionForCharacterIndex(index), op.text);
+        index += op.text.length;
+      } else if (op.isDelete()) {
+        from = this.buffer.positionForCharacterIndex(index);
+        to = this.buffer.positionForCharacterIndex(index + op.chars);
+        this.buffer["delete"](new Range(from, to));
+      }
+    }
+    return this.grabDocumentState();
+  };
+
+  AtomAdapter.prototype.getValue = function() {
+    return this.atom.getText();
+  };
+
+  AtomAdapter.prototype.getCursor = function() {
+    var cursor, end, index, range, selection, start;
+    selection = this.atom.getLastSelection();
+    if (selection) {
+      range = selection.getBufferRange();
+      start = this.buffer.characterIndexForPosition(range.start);
+      end = this.buffer.characterIndexForPosition(range.end);
+      return new firepad.Cursor(start, end);
+    }
+    cursor = this.atom.getCursor();
+    index = this.buffer.characterIndexForPosition(cursor.getBufferPosition());
+    return new firepad.Cursor(index, index);
+  };
+
+  AtomAdapter.prototype.setCursor = function(cursor) {
+    var end, start, _ref;
+    start = this.posFromIndex(cursor.position);
+    end = this.posFromIndex(cursor.selectionEnd);
+    if (cursor.position > cursor.selectionEnd) {
+      _ref = [end, start], start = _ref[0], end = _ref[1];
+    }
+    return this.aceSession.selection.setSelectionRange(new this.aceRange(start.row, start.column, end.row, end.column));
+  };
+
+  AtomAdapter.prototype.setOtherCursor = function(cursor, color, clientId) {};
+
+  AtomAdapter.prototype.registerCallbacks = function(firepadTriggers) {
+    this.firepadTriggers = firepadTriggers;
+  };
+
+  AtomAdapter.prototype.applyOperation = function(operation) {
+    if (!operation.isNoop()) {
+      this.ignoreChanges = true;
+    }
+    this.applyOperationToAtom(operation);
+    return this.ignoreChanges = false;
+  };
+
+  AtomAdapter.prototype.registerUndo = function(undoFn) {
+    return this.undo = undoFn;
+  };
+
+  AtomAdapter.prototype.registerRedo = function(redoFn) {
+    return this.redo = redoFn;
+  };
+
+  AtomAdapter.prototype.invertOperation = function(operation) {
+    return operation.invert(this.getValue());
+  };
+
+  return AtomAdapter;
 
 })();
 
@@ -4739,8 +4866,8 @@ firepad.Firepad = (function(global) {
   function Firepad(ref, place, options) {
     if (!(this instanceof Firepad)) { return new Firepad(ref, place, options); }
 
-    if (!CodeMirror && !ace) {
-      throw new Error('Couldn\'t find CodeMirror or ACE.  Did you forget to include codemirror.js or ace.js?');
+    if (!CodeMirror && !ace && !atom) {
+      throw new Error('Couldn\'t find CodeMirror, ACE or Atom.  Did you forget to include codemirror.js or ace.js?');
     }
 
     if (CodeMirror && place instanceof CodeMirror) {
@@ -4755,17 +4882,25 @@ firepad.Firepad = (function(global) {
       if (curValue !== '') {
         throw new Error("Can't initialize Firepad with an ACE instance that already contains text.");
       }
+    } else if (atom) {
+      this.atom_ = this.editor_ = place;
+      curValue = this.atom_.getText();
+      if (options.overwrite) {
+        this.setText('');
+      }
     } else {
       this.codeMirror_ = this.editor_ = new CodeMirror(place);
     }
 
-    var editorWrapper = this.codeMirror_ ? this.codeMirror_.getWrapperElement() : this.ace_.container;
-    this.firepadWrapper_ = utils.elt("div", null, { 'class': 'firepad' });
-    editorWrapper.parentNode.replaceChild(this.firepadWrapper_, editorWrapper);
-    this.firepadWrapper_.appendChild(editorWrapper);
+    if (!this.atom_) {
+      var editorWrapper = this.codeMirror_ ? this.codeMirror_.getWrapperElement() : this.ace_.container;
+      this.firepadWrapper_ = utils.elt("div", null, { 'class': 'firepad' });
+      editorWrapper.parentNode.replaceChild(this.firepadWrapper_, editorWrapper);
+      this.firepadWrapper_.appendChild(editorWrapper);
 
-    // Don't allow drag/drop because it causes issues.  See https://github.com/firebase/firepad/issues/36
-    utils.on(editorWrapper, 'dragstart', utils.stopEvent);
+      // Don't allow drag/drop because it causes issues.  See https://github.com/firebase/firepad/issues/36
+      utils.on(editorWrapper, 'dragstart', utils.stopEvent);
+    }
 
     // Provide an easy way to get the firepad instance associated with this CodeMirror instance.
     this.editor_.firepad = this;
@@ -4787,7 +4922,9 @@ firepad.Firepad = (function(global) {
       this.firepadWrapper_.className += ' firepad-richtext firepad-with-toolbar';
     }
 
-    this.addPoweredByLogo_();
+    if (!this.atom_) {
+      this.addPoweredByLogo_();
+    }
 
     // Now that we've mucked with CodeMirror, refresh it.
     if (this.codeMirror_)
@@ -4799,12 +4936,14 @@ firepad.Firepad = (function(global) {
     this.entityManager_ = new EntityManager();
     this.registerBuiltinEntities_();
 
-    this.firebaseAdapter_ = new FirebaseAdapter(ref, userId, userColor);
+    this.firebaseAdapter_ = new FirebaseAdapter(ref, userId, userColor, this.options_.sv_);
     if (this.codeMirror_) {
       this.richTextCodeMirror_ = new RichTextCodeMirror(this.codeMirror_, this.entityManager_, { cssPrefix: 'firepad-' });
       this.editorAdapter_ = new RichTextCodeMirrorAdapter(this.richTextCodeMirror_);
-    } else {
+    } else if (this.ace_) {
       this.editorAdapter_ = new ACEAdapter(this.ace_);
+    } else {
+      this.editorAdapter_ = new AtomAdapter(this.atom_);
     }
     this.client_ = new EditorClient(this.firebaseAdapter_, this.editorAdapter_);
 
@@ -4821,10 +4960,14 @@ firepad.Firepad = (function(global) {
 
     this.firebaseAdapter_.on('ready', function() {
       self.ready_ = true;
-      if (this.ace_)
+      if (this.ace_ || this.atom_)
         this.editorAdapter_.grabDocumentState();
       self.trigger('ready');
     });
+
+    if (this.atom_ && options.overwrite) {
+      this.setText(curValue);
+    }
 
     // Hack for IE8 to make font icons work more reliably.
     // http://stackoverflow.com/questions/9809351/ie8-css-font-face-fonts-only-working-for-before-content-on-over-and-sometimes
@@ -4846,14 +4989,17 @@ firepad.Firepad = (function(global) {
   // For readability, these are the primary "constructors", even though right now they're just aliases for Firepad.
   Firepad.fromCodeMirror = Firepad;
   Firepad.fromACE = Firepad;
+  Firepad.fromAtom = Firepad;
 
   Firepad.prototype.dispose = function() {
     this.zombie_ = true; // We've been disposed.  No longer valid to do anything.
 
     // Unwrap the editor.
-    var editorWrapper = this.codeMirror_ ? this.codeMirror_.getWrapperElement() : this.ace_.container;
-    this.firepadWrapper_.removeChild(editorWrapper);
-    this.firepadWrapper_.parentNode.replaceChild(editorWrapper, this.firepadWrapper_);
+    if (!this.atom_) {
+      var editorWrapper = this.codeMirror_ ? this.codeMirror_.getWrapperElement() : this.ace_.container;
+      this.firepadWrapper_.removeChild(editorWrapper);
+      this.firepadWrapper_.parentNode.replaceChild(editorWrapper, this.firepadWrapper_);
+    }
 
     this.editor_.firepad = null;
 
@@ -4886,13 +5032,15 @@ firepad.Firepad = (function(global) {
   Firepad.prototype.setText = function(textPieces) {
     if (this.ace_) {
       return this.ace_.getSession().getDocument().setValue(textPieces);
-    } else {
+    } else if (this.codemirror_) {
       // HACK: Hide CodeMirror during setText to prevent lots of extra renders.
       this.codeMirror_.getWrapperElement().setAttribute('style', 'display: none');
       this.codeMirror_.setValue("");
       this.insertText(0, textPieces);
       this.codeMirror_.getWrapperElement().setAttribute('style', '');
       this.codeMirror_.refresh();
+    } else if (this.atom_) {
+      this.atom_.setText(textPieces);
     }
   };
 
@@ -5486,3 +5634,4 @@ firepad.Firepad.RichTextCodeMirrorAdapter = firepad.RichTextCodeMirrorAdapter;
 firepad.Firepad.ACEAdapter = firepad.ACEAdapter;
 
 return firepad.Firepad; })();
+if (module && module.exports) { module.exports = Firepad; }
