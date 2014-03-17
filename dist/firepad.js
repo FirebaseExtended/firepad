@@ -5,8 +5,12 @@
  * with code from ot.js (Copyright 2012-2013 Tim Baumann)
  */
 
-var Firepad = (function() {
-var firepad = firepad || { };
+(function (name, definition, context) {
+  //try CommonJS, then AMD (require.js), then use global.
+  if (typeof module != 'undefined' && module.exports) module.exports = definition();
+  else if (typeof context['define'] == 'function' && context['define']['amd']) define(definition);
+  else context[name] = definition();
+})('Firepad', function () {var firepad = firepad || { };
 firepad.utils = { };
 
 firepad.utils.makeEventEmitter = function(clazz, opt_allowedEVents) {
@@ -5485,4 +5489,4 @@ firepad.Firepad.TextOperation = firepad.TextOperation;
 firepad.Firepad.RichTextCodeMirrorAdapter = firepad.RichTextCodeMirrorAdapter;
 firepad.Firepad.ACEAdapter = firepad.ACEAdapter;
 
-return firepad.Firepad; })();
+return firepad.Firepad; }, this);

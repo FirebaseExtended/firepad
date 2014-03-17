@@ -39,9 +39,14 @@ module.exports = function (grunt) {
             ' * Copyright 2013 Firebase',
             ' * with code from ot.js (Copyright 2012-2013 Tim Baumann)',
             ' */\n',
-            'var Firepad = (function() {\n'
+            '(function (name, definition, context) {',
+            '  //try CommonJS, then AMD (require.js), then use global.',
+            '  if (typeof module != \'undefined\' && module.exports) module.exports = definition();',
+            '  else if (typeof context[\'define\'] == \'function\' && context[\'define\'][\'amd\']) define(definition);',
+            '  else context[name] = definition();',
+            '})(\'Firepad\', function () {'
           ].join('\n'),
-          footer: "\nreturn firepad.Firepad; })();"
+          footer: "\nreturn firepad.Firepad; }, this);"
         },
         "src": [
           "lib/utils.js",
