@@ -4697,7 +4697,7 @@ firepad.ParseHtml = (function () {
           break;
         case 'font-size':
           var size = null;
-          var allowedValues = ['px','%','em','xx-small','x-small','small','medium','large','x-large','xx-large','smaller','larger'];
+          var allowedValues = ['px','pt','%','em','xx-small','x-small','small','medium','large','x-large','xx-large','smaller','larger'];
           if (firepad.utils.stringEndsWith(val, allowedValues)) {
             size = val;
           }
@@ -4721,6 +4721,7 @@ firepad.ParseHtml = (function () {
 
   return parseHtml;
 })();
+
 var firepad = firepad || { };
 
 firepad.Firepad = (function(global) {
