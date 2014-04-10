@@ -131,7 +131,7 @@ firepad.utils.stringEndsWith = function(str, suffix) {
   var list = (typeof suffix == 'string') ? [suffix] : suffix;
   for (var i = 0; i < list.length; i++) {
     var suffix = list[i];
-    if (str.indexOf(suffix, str.length - suffix.length) !== -1) 
+    if (str.indexOf(suffix, str.length - suffix.length) !== -1)
       return true;
   }
   return false;
@@ -1391,7 +1391,7 @@ firepad.FirebaseAdapter = (function (global) {
     return this.revision_ === 0;
   };
 
-  FirebaseAdapter.prototype.sendOperation = function (operation, cursor) {
+  FirebaseAdapter.prototype.sendOperation = function (operation) {
     var self = this;
 
     // If we're not ready yet, do nothing right now, and trigger a retry when we're ready.
@@ -1408,7 +1408,8 @@ firepad.FirebaseAdapter = (function (global) {
     // Convert revision into an id that will sort properly lexicographically.
     var revisionId = revisionToId(this.revision_);
 
-    function doTransaction(revisionId, revisionData, cursor) {
+    function doTransaction(revisionId, revisionData) {
+
       self.ref_.child('history').child(revisionId).transaction(function(current) {
         if (current === null) {
           return revisionData;
@@ -1419,21 +1420,19 @@ firepad.FirebaseAdapter = (function (global) {
             if (self.sent_ && self.sent_.id === revisionId) {
               // We haven't seen our transaction succeed or fail.  Send it again.
               setTimeout(function() {
-                doTransaction(revisionId, revisionData, cursor);
+                doTransaction(revisionId, revisionData);
               }, 0);
             }
           } else {
             utils.log('Transaction failure!', error);
             throw error;
           }
-        } else if (committed) {
-          self.sendCursor(cursor);
         }
       }, /*applyLocally=*/false);
     }
 
     this.sent_ = { id: revisionId, op: operation };
-    doTransaction(revisionId, { a: self.userId_, o: operation.toJSON(), t: Firebase.ServerValue.TIMESTAMP }, cursor);
+    doTransaction(revisionId, { a: self.userId_, o: operation.toJSON(), t: Firebase.ServerValue.TIMESTAMP });
   };
 
   FirebaseAdapter.prototype.sendCursor = function (obj) {
@@ -1466,7 +1465,6 @@ firepad.FirebaseAdapter = (function (global) {
 
   FirebaseAdapter.prototype.monitorCursors_ = function() {
     var usersRef = this.ref_.child('users'), self = this;
-    var user2Callback = { };
 
     function childChanged(childSnap) {
       var userId = childSnap.name();
@@ -1479,7 +1477,6 @@ firepad.FirebaseAdapter = (function (global) {
 
     this.firebaseOn_(usersRef, 'child_removed', function(childSnap) {
       var userId = childSnap.name();
-      self.firebaseOff_(childSnap.ref(), 'value', user2Callback[userId]);
       self.trigger('cursor', userId, null);
     });
   };
@@ -2273,7 +2270,13 @@ firepad.EditorClient = (function () {
     this.editorAdapter.registerRedo(function () { self.redo(); });
 
     this.serverAdapter.registerCallbacks({
-      ack: function () { self.serverAck(); },
+      ack: function () {
+        self.serverAck();
+        if (self.state instanceof Client.Synchronized) {
+          self.updateCursor();
+          self.sendCursor(self.cursor);
+        }
+      },
       retry: function() { self.serverRetry(); },
       operation: function (operation) {
         self.applyServer(operation);
@@ -2282,7 +2285,7 @@ firepad.EditorClient = (function () {
         if (self.serverAdapter.userId_ === clientId) return;
         var client = self.getClientObject(clientId);
         if (cursor) {
-          client.setColor(color);
+          if (color) client.setColor(color);
           client.updateCursor(
             self.transformCursor(Cursor.fromJSON(cursor))
           );
@@ -2358,7 +2361,7 @@ firepad.EditorClient = (function () {
   };
 
   EditorClient.prototype.sendOperation = function (operation) {
-    this.serverAdapter.sendOperation(operation, this.cursor);
+    this.serverAdapter.sendOperation(operation);
   };
 
   EditorClient.prototype.applyOperation = function (operation) {
@@ -4097,23 +4100,17 @@ firepad.RichTextCodeMirrorAdapter = (function () {
     if (cursor.position === cursor.selectionEnd) {
       // show cursor
       var cursorCoords = this.cm.cursorCoords(cursorPos);
-      var cursorEl = document.createElement('pre');
+      var cursorEl = document.createElement('span');
       cursorEl.className = 'other-client';
       cursorEl.style.borderLeftWidth = '2px';
       cursorEl.style.borderLeftStyle = 'solid';
-      cursorEl.innerHTML = '&nbsp;';
       cursorEl.style.borderLeftColor = color;
+      cursorEl.style.marginLeft = cursorEl.style.marginRight = '-1px';
       cursorEl.style.height = (cursorCoords.bottom - cursorCoords.top) * 0.9 + 'px';
-      cursorEl.style.marginTop = (cursorCoords.top - cursorCoords.bottom) + 'px';
       cursorEl.setAttribute('data-clientid', clientId);
       cursorEl.style.zIndex = 0;
-      this.cm.addWidget(cursorPos, cursorEl, false);
-      return {
-        clear: function () {
-          var parent = cursorEl.parentNode;
-          if (parent) { parent.removeChild(cursorEl); }
-        }
-      };
+
+      return this.cm.setBookmark(cursorPos, { widget: cursorEl, insertLeft: true });
     } else {
       // show selection
       var selectionClassName = 'selection-' + color.replace('#', '');
