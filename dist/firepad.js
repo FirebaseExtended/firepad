@@ -2782,7 +2782,7 @@ firepad.RichTextCodeMirror = (function () {
 
   // These attributes will have styles generated dynamically in the page.
   var DynamicStyleAttributes = {
-    'c' : 'color', 
+    'c' : 'color',
     'bc': 'background-color',
     'fs' : 'font-size',
     'li' : function(indent) { return 'margin-left: ' + (indent * 40) + 'px'; }
@@ -2992,7 +2992,11 @@ firepad.RichTextCodeMirror = (function () {
   };
 
   RichTextCodeMirror.prototype.insertText = function(index, text, attributes, origin) {
+    var cm = this.codeMirror;
+    var cursor = cm.getCursor();
+    var resetCursor = (!cm.somethingSelected() && index == cm.indexFromPos(cursor));
     this.replaceText(index, null, text, attributes, origin);
+    if (resetCursor) cm.setCursor(cursor);
   };
 
   RichTextCodeMirror.prototype.removeText = function(start, end, origin) {
@@ -3112,14 +3116,14 @@ firepad.RichTextCodeMirror = (function () {
   RichTextCodeMirror.prototype.addStyleWithCSS_ = function(css) {
     var head = document.getElementsByTagName('head')[0],
         style = document.createElement('style');
-    
+
     style.type = 'text/css';
     if (style.styleSheet){
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
     }
-    
+
     head.appendChild(style);
   };
 
@@ -3306,7 +3310,7 @@ firepad.RichTextCodeMirror = (function () {
           newChange = newChange.next;
           removedPos += span.length;
         }
-        
+
         this.annotationList_.removeSpan(new Span(start, removed.length));
       }
 
@@ -3978,40 +3982,40 @@ firepad.RichTextCodeMirrorAdapter = (function () {
   // Apply an operation to a CodeMirror instance.
   RichTextCodeMirrorAdapter.applyOperationToCodeMirror = function (operation, rtcm) {
 
-  // HACK: If there are a lot of operations; hide CodeMirror so that it doesn't re-render constantly.
-  if (operation.ops.length > 10)
-    rtcm.codeMirror.getWrapperElement().setAttribute('style', 'display: none');
+    // HACK: If there are a lot of operations; hide CodeMirror so that it doesn't re-render constantly.
+    if (operation.ops.length > 10)
+      rtcm.codeMirror.getWrapperElement().setAttribute('style', 'display: none');
 
-  var ops = operation.ops;
-  var index = 0; // holds the current index into CodeMirror's content
-  for (var i = 0, l = ops.length; i < l; i++) {
-    var op = ops[i];
-    if (op.isRetain()) {
-      if (!emptyAttributes(op.attributes)) {
-        rtcm.updateTextAttributes(index, index + op.chars, function(attributes) {
-          for(var attr in op.attributes) {
-            if (op.attributes[attr] === false) {
-              delete attributes[attr];
-            } else {
-              attributes[attr] = op.attributes[attr];
+    var ops = operation.ops;
+    var index = 0; // holds the current index into CodeMirror's content
+    for (var i = 0, l = ops.length; i < l; i++) {
+      var op = ops[i];
+      if (op.isRetain()) {
+        if (!emptyAttributes(op.attributes)) {
+          rtcm.updateTextAttributes(index, index + op.chars, function(attributes) {
+            for(var attr in op.attributes) {
+              if (op.attributes[attr] === false) {
+                delete attributes[attr];
+              } else {
+                attributes[attr] = op.attributes[attr];
+              }
             }
-          }
-        }, 'RTCMADAPTER', /*doLineAttributes=*/true);
+          }, 'RTCMADAPTER', /*doLineAttributes=*/true);
+        }
+        index += op.chars;
+      } else if (op.isInsert()) {
+        rtcm.insertText(index, op.text, op.attributes, 'RTCMADAPTER');
+        index += op.text.length;
+      } else if (op.isDelete()) {
+        rtcm.removeText(index, index + op.chars, 'RTCMADAPTER');
       }
-      index += op.chars;
-    } else if (op.isInsert()) {
-      rtcm.insertText(index, op.text, op.attributes, 'RTCMADAPTER');
-      index += op.text.length;
-    } else if (op.isDelete()) {
-      rtcm.removeText(index, index + op.chars, 'RTCMADAPTER');
     }
-  }
 
-  if (operation.ops.length > 10) {
-    rtcm.codeMirror.getWrapperElement().setAttribute('style', '');
-    rtcm.codeMirror.refresh();
-  }
-};
+    if (operation.ops.length > 10) {
+      rtcm.codeMirror.getWrapperElement().setAttribute('style', '');
+      rtcm.codeMirror.refresh();
+    }
+  };
 
   RichTextCodeMirrorAdapter.prototype.registerCallbacks = function (cb) {
     this.callbacks = cb;
