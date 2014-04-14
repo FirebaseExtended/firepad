@@ -2264,7 +2264,8 @@ firepad.EditorClient = (function () {
     this.editorAdapter.registerCallbacks({
       change: function (operation, inverse) { self.onChange(operation, inverse); },
       cursorActivity: function () { self.onCursorActivity(); },
-      blur: function () { self.onBlur(); }
+      blur: function () { self.onBlur(); },
+      focus: function () { self.onFocus(); }
     });
     this.editorAdapter.registerUndo(function () { self.undo(); });
     this.editorAdapter.registerRedo(function () { self.redo(); });
@@ -2272,7 +2273,7 @@ firepad.EditorClient = (function () {
     this.serverAdapter.registerCallbacks({
       ack: function () {
         self.serverAck();
-        if (self.state instanceof Client.Synchronized) {
+        if (self.focused && self.state instanceof Client.Synchronized) {
           self.updateCursor();
           self.sendCursor(self.cursor);
         }
@@ -2346,13 +2347,19 @@ firepad.EditorClient = (function () {
   EditorClient.prototype.onCursorActivity = function () {
     var oldCursor = this.cursor;
     this.updateCursor();
-    if (oldCursor && this.cursor.equals(oldCursor)) { return; }
+    if (!this.focused || oldCursor && this.cursor.equals(oldCursor)) { return; }
     this.sendCursor(this.cursor);
   };
 
   EditorClient.prototype.onBlur = function () {
     this.cursor = null;
     this.sendCursor(null);
+    this.focused = false;
+  };
+
+  EditorClient.prototype.onFocus = function () {
+    this.focused = true;
+    this.onCursorActivity();
   };
 
   EditorClient.prototype.sendCursor = function (cursor) {
@@ -4035,10 +4042,13 @@ firepad.RichTextCodeMirrorAdapter = (function () {
     }
   };
 
-  RichTextCodeMirrorAdapter.prototype.onCursorActivity =
-      RichTextCodeMirrorAdapter.prototype.onFocus = function () {
-        this.trigger('cursorActivity');
-      };
+  RichTextCodeMirrorAdapter.prototype.onCursorActivity = function () {
+    this.trigger('cursorActivity');
+  }
+
+  RichTextCodeMirrorAdapter.prototype.onFocus = function () {
+    this.trigger('focus');
+  };
 
   RichTextCodeMirrorAdapter.prototype.onBlur = function () {
     if (!this.cm.somethingSelected()) { this.trigger('blur'); }
