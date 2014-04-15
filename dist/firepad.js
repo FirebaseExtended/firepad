@@ -2029,17 +2029,7 @@ firepad.Client = (function () {
   Client.prototype.serverAck = function () {
     this.setState(this.state.serverAck(this));
   };
-  
-  // Transforms a cursor position from the latest known server state to the
-  // current client state. For example, if we get from the server the
-  // information that another user's cursor is at position 3, but the server
-  // hasn't yet received our newest operation, an insertion of 5 characters at
-  // the beginning of the document, the correct position of the other user's
-  // cursor in our current document is 8.
-  Client.prototype.transformCursor = function (cursor) {
-    return this.state.transformCursor(cursor);
-  };
-  
+
   Client.prototype.serverRetry = function() {
     this.setState(this.state.serverRetry(this));
   };
@@ -2081,9 +2071,6 @@ firepad.Client = (function () {
   Synchronized.prototype.serverRetry = function(client) {
     throw new Error("There is no pending operation.");
   };
-
-  // Nothing to do because the latest server state and client state are the same.
-  Synchronized.prototype.transformCursor = function (cursor) { return cursor; };
 
   // Singleton
   var synchronized_ = new Synchronized();
@@ -2128,10 +2115,6 @@ firepad.Client = (function () {
   AwaitingConfirm.prototype.serverRetry = function (client) {
     client.sendOperation(this.outstanding);
     return this;
-  };
-
-  AwaitingConfirm.prototype.transformCursor = function (cursor) {
-    return cursor.transform(this.outstanding);
   };
 
   // In the 'AwaitingWithBuffer' state, the client is waiting for an operation
@@ -2186,10 +2169,6 @@ firepad.Client = (function () {
     // => send buffer
     client.sendOperation(this.buffer);
     return new AwaitingConfirm(this.buffer);
-  };
-
-  AwaitingWithBuffer.prototype.transformCursor = function (cursor) {
-    return cursor.transform(this.outstanding).transform(this.buffer);
   };
 
   return Client;
@@ -2283,13 +2262,14 @@ firepad.EditorClient = (function () {
         self.applyServer(operation);
       },
       cursor: function (clientId, cursor, color) {
-        if (self.serverAdapter.userId_ === clientId) return;
+        if (self.serverAdapter.userId_ === clientId ||
+            !(self.state instanceof Client.Synchronized)) {
+          return;
+        }
         var client = self.getClientObject(clientId);
         if (cursor) {
           if (color) client.setColor(color);
-          client.updateCursor(
-            self.transformCursor(Cursor.fromJSON(cursor))
-          );
+          client.updateCursor(Cursor.fromJSON(cursor));
         } else {
           client.removeCursor();
         }
