@@ -33,7 +33,7 @@ If you don't specifically need Ace support though, we recommend sticking with Co
 Include Firebase, CodeMirror and Firepad in the &lt;head&gt; section of your page.
 
 {% highlight html %}
-    <script src="https://cdn.firebase.com/v0/firebase.js"></script>
+    <script src="https://cdn.firebase.com/js/client/1.0.11/firebase.js"></script>
 
     <!-- CODEMIRROR: Download from http://codemirror.net/codemirror.zip -->
     <link rel="stylesheet" href="codemirror.css" />
@@ -114,7 +114,7 @@ Before getting started, you'll need to:
 Include Firebase, Ace and Firepad in the &lt;head&gt; section of your page.
 
 {% highlight html %}
-    <script src="https://cdn.firebase.com/v0/firebase.js"></script>
+    <script src="https://cdn.firebase.com/js/client/1.0.11/firebase.js"></script>
 
     <!-- ACE: Download from https://github.com/ajaxorg/ace-builds/ -->
     <script src="ace.js" type="text/javascript" charset="utf-8"></script>
@@ -203,10 +203,10 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 
 `firepad.on(eventType, callback);`
 
->Attaches a callback for the given event type. 
+>Attaches a callback for the given event type.
 >
 >There is presently only one event, 'ready' which fires once Firepad has retrieved the initial editor contents.  You
->must wait for this event to fire before calling any other methods. 
+>must wait for this event to fire before calling any other methods.
 
 {% highlight javascript %}
     firepad.on('ready', function() {
@@ -245,7 +245,7 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 
 `firepad.insertEntity(type, attributes, origin)`
 > Inserts an entity of the specified type and with the specified attributes dictionary.
-  To insert images, type = 'img' and attributes must contain 'src'; other attributes 
+  To insert images, type = 'img' and attributes must contain 'src'; other attributes
   that can be provided are 'alt', 'width', 'height', 'style' and 'class'.
 
 <a name="firebase"> </a>
@@ -275,8 +275,8 @@ Firepad stores your data at the Firebase location you specify using the followin
 
 You may find it useful to interact directly with the Firebase data when building related features on your site. For
 example, the user list shown in the Firepad examples monitors the user data stored by Firepad and even adds its own
-`name` data when you pick a username. 
-See the code or view the data in Forge (just enter your Firebase URL in a browser) for more details. 
+`name` data when you pick a username.
+See the code or view the data in Forge (just enter your Firebase URL in a browser) for more details.
 
 ## Security
 To lock down your Firepad data, you can use Firebase's builtin
@@ -295,4 +295,3 @@ all of the instructions to check out the code and start modifying it are in the 
 This website is also open source and is checked into the [gh-pages](https://github.com/firebase/firepad/tree/gh-pages)
 branch of the Firepad repository.  Most of it is static HTML, but the docs page is generated from
 Markdown using jekyll.
-
