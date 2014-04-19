@@ -5,7 +5,7 @@ describe('Integration tests', function() {
   var _cmDiv;
   function cmDiv() {
     if (!_cmDiv) {
-      _cmDiv = document.createElement();
+      _cmDiv = document.createElement("div");
       _cmDiv.style.display = 'none';
       document.body.appendChild(_cmDiv);
     }

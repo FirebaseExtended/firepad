@@ -18,7 +18,6 @@ load('../lib/editor-client.js');
 load('../lib/attribute-constants.js');
 load('../lib/entity-manager.js');
 load('../lib/rich-text-codemirror.js');
-load('../lib/codemirror-adapter.js');
 load('../lib/rich-text-codemirror-adapter.js');
 load('../lib/formatting.js');
 load('../lib/text.js');
@@ -26,4 +25,3 @@ load('../lib/line-formatting.js');
 load('../lib/line.js');
 load('../lib/parse-html.js');
 load('../lib/firepad.js');
-
