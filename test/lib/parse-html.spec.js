@@ -45,14 +45,14 @@ describe('Parse HTML Tests', function() {
     styleTest('background-color: green', tf.backgroundColor('green'));
     styleTest('font-family: Times New Roman', tf.font('Times New Roman'));
 
-    styleTest('font-size: xx-small', tf.fontSize(9));
-    styleTest('font-size: x-small', tf.fontSize(10));
-    styleTest('font-size: small', tf.fontSize(12));
-    styleTest('font-size: medium', tf.fontSize(14));
-    styleTest('font-size: large', tf.fontSize(18));
-    styleTest('font-size: x-large', tf.fontSize(24));
-    styleTest('font-size: xx-large', tf.fontSize(32));
-    styleTest('font-size: 18px', tf.fontSize(18));
+    styleTest('font-size: xx-small', tf.fontSize('xx-small'));
+    styleTest('font-size: x-small', tf.fontSize('x-small'));
+    styleTest('font-size: small', tf.fontSize('small'));
+    styleTest('font-size: medium', tf.fontSize('medium'));
+    styleTest('font-size: large', tf.fontSize('large'));
+    styleTest('font-size: x-large', tf.fontSize('x-large'));
+    styleTest('font-size: xx-large', tf.fontSize('xx-large'));
+    styleTest('font-size: 18px', tf.fontSize('18px'));
 
     // Multiple styles with weird spacing.
     styleTest('font-weight:bold   ;  text-decoration : underline ', tf.bold(true).underline(true));
