@@ -12,8 +12,8 @@
   <script src="ace/theme-textmate.js"></script>
 
   <!-- Include Firepad -->
-  <script src="firepad.js"></script>
-  <link rel="stylesheet" href="firepad.css" />
+  <script src="../dist/firepad.js"></script>
+  <link rel="stylesheet" href="../dist/firepad.css" />
 
   <!-- Helper for generating URLs / Firebase references for example purposes.
        Not necessary in production apps. -->
@@ -39,7 +39,7 @@
       var firepadRef = getExampleRef();
       // TODO: Replace above line with:
       // var ref = new Firebase('<YOUR FIREBASE URL>');
-  
+
       //// Create ACE
       var editor = ace.edit("firepad-container");
       editor.setTheme("ace/theme/textmate");
@@ -47,10 +47,10 @@
       session.setUseWrapMode(true);
       session.setUseWorker(false);
       session.setMode("ace/mode/javascript");
-  
+
       //// Create Firepad.
       var firepad = Firepad.fromACE(firepadRef, editor);
-      
+
       //// Initialize contents.
       firepad.on('ready', function() {
         if (firepad.isHistoryEmpty()) {
