@@ -10,7 +10,11 @@
     } else {
       dialog.className = "CodeMirror-dialog CodeMirror-dialog-top";
     }
-    dialog.innerHTML = template;
+    if (typeof template == "string") {
+      dialog.innerHTML = template;
+    } else { // Assuming it's a detached DOM element.
+      dialog.appendChild(template);
+    }
     return dialog;
   }
 
@@ -31,9 +35,11 @@
     }
     var inp = dialog.getElementsByTagName("input")[0], button;
     if (inp) {
+      if (options && options.value) inp.value = options.value;
       CodeMirror.on(inp, "keydown", function(e) {
         if (options && options.onKeyDown && options.onKeyDown(e, inp.value, close)) { return; }
         if (e.keyCode == 13 || e.keyCode == 27) {
+          inp.blur();
           CodeMirror.e_stop(e);
           close();
           me.focus();

@@ -22,11 +22,10 @@
 
 <div id=nav>
   <a href="http://codemirror.net"><img id=logo src="logo.png"></a>
-
   <ul>
-    <li><a href="../index.html">Home</a>
-    <li><a href="#overview" class=active data-default="true">Manual</a>
-    <li><a href="https://github.com/marijnh/codemirror">Code</a>
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="#overview" class=active data-default="true">Manual</a></li>
+    <li><a href="https://github.com/marijnh/codemirror">Code</a></li>
   </ul>
   <ul>
     <li><a href="#usage">Basic Usage</a></li>
@@ -58,7 +57,10 @@
 <article>
 
 <section class=first id=overview>
-    <h2>User manual and reference guide</h2>
+    <h2 style="position: relative">
+      User manual and reference guide
+      <span style="color: #888; font-size: 1rem; position: absolute; right: 0; bottom: 0">version 3.24.0</span>
+    </h2>
 
     <p>CodeMirror is a code-editor component that can be embedded in
     Web pages. The core library provides <em>only</em> the editor
@@ -207,6 +209,19 @@
       line when a character is typed that might change its proper
       indentation (only works if the mode supports indentation).
       Default is true.</dd>
+
+      <dt id="option_specialChars"><code><strong>specialChars</strong>: RegExp</code></dt>
+      <dd>A regular expression used to determine which characters
+      should be replaced by a
+      special <a href="#option_specialCharPlaceholder">placeholder</a>.
+      Mostly useful for non-printing special characters. The default
+      is <code>/[\u0000-\u0019\u00ad\u200b\u2028\u2029\ufeff]/</code>.</dd>
+      <dt id="option_specialCharPlaceholder"><code><strong>specialCharPlaceholder</strong>: function(char) → Element</code></dt>
+      <dd>A function that, given a special character identified by
+      the <a href="#option_specialChars"><code>specialChars</code></a>
+      option, produces a DOM node that is used to represent the
+      character. By default, a red dot (<span style="color: red">•</span>)
+      is shown, with a title tooltip to indicate the character code.</dd>
 
       <dt id="option_rtlMoveVisually"><code><strong>rtlMoveVisually</strong>: boolean</code></dt>
       <dd>Determines whether horizontal cursor movement through
@@ -389,6 +404,13 @@
       document looks. You can set this option to false to disable this
       behavior.</dd>
 
+      <dt id="option_addModeClass"><code><strong>addModeClass</strong>: boolean</code></dt>
+      <dd>When enabled (off by default), an extra CSS class will be
+      added to each token, indicating the
+      (<a href="#innerMode">inner</a>) mode that produced it, prefixed
+      with <code>"cm-m-"</code>. For example, tokens from the XML mode
+      will get the <code>cm-m-xml</code> class.</dd>
+
       <dt id="option_maxHighlightLength"><code><strong>maxHighlightLength</strong>: number</code></dt>
       <dd>When highlighting long lines, in order to stay responsive,
       the editor will give up and simply style the rest of the line as
@@ -426,7 +448,7 @@
 
     <p>Various CodeMirror-related objects emit events, which allow
     client code to react to various situations. Handlers for such
-    events can be registed with the <a href="#on"><code>on</code></a>
+    events can be registered with the <a href="#on"><code>on</code></a>
     and <a href="#off"><code>off</code></a> methods on the objects
     that the event fires on. To fire your own events,
     use <code>CodeMirror.signal(target, name, args...)</code>,
@@ -729,6 +751,194 @@
     map.</p>
 </section>
 
+<<<<<<< HEAD
+=======
+<section id=commands>
+    <h2>Commands</h2>
+
+    <p>Commands are parameter-less actions that can be performed on an
+    editor. Their main use is for key bindings. Commands are defined by
+    adding properties to the <code>CodeMirror.commands</code> object.
+    A number of common commands are defined by the library itself,
+    most of them used by the default key bindings. The value of a
+    command property must be a function of one argument (an editor
+    instance).</p>
+
+    <p>Some of the commands below are referenced in the default
+    key map, but not defined by the core library. These are intended to
+    be defined by user code or addons.</p>
+
+    <p>Commands can also be run with
+    the <a href="#execCommand"><code>execCommand</code></a>
+    method.</p>
+
+    <dl>
+      <dt class=command id=command_selectAll><code><strong>selectAll</strong></code><span class=keybinding>Ctrl-A (PC), Cmd-A (Mac)</span></dt>
+      <dd>Select the whole content of the editor.</dd>
+
+      <dt class=command id=command_singleSelection><code><strong>singleSelection</strong></code><span class=keybinding>Esc</span></dt>
+      <dd>When multiple selections are present, this deselects all but
+      the primary selection.</dd>
+
+      <dt class=command id=command_killLine><code><strong>killLine</strong></code><span class=keybinding>Ctrl-K (Mac)</span></dt>
+      <dd>Emacs-style line killing. Deletes the part of the line after
+      the cursor. If that consists only of whitespace, the newline at
+      the end of the line is also deleted.</dd>
+
+      <dt class=command id=command_deleteLine><code><strong>deleteLine</strong></code><span class=keybinding>Ctrl-D (PC), Cmd-D (Mac)</span></dt>
+      <dd>Deletes the whole line under the cursor, including newline at the end.</dd>
+
+      <dt class=command id=command_delLineLeft><code><strong>delLineLeft</strong></code><span class=keybinding>Cmd-Backspace (Mac)</span></dt>
+      <dd>Delete the part of the line before the cursor.</dd>
+
+      <dt class=command id=command_undo><code><strong>undo</strong></code><span class=keybinding>Ctrl-Z (PC), Cmd-Z (Mac)</span></dt>
+      <dd>Undo the last change.</dd>
+
+      <dt class=command id=command_redo><code><strong>redo</strong></code><span class=keybinding>Ctrl-Y (PC), Shift-Cmd-Z (Mac), Cmd-Y (Mac)</span></dt>
+      <dd>Redo the last undone change.</dd>
+
+      <dt class=command id=command_undoSelection><code><strong>undoSelection</strong></code><span class=keybinding>Ctrl-U (PC), Cmd-U (Mac)</span></dt>
+      <dd>Undo the last change to the selection, or if there are no
+      selection-only changes at the top of the history, undo the last
+      change.</dd>
+
+      <dt class=command id=command_redoSelection><code><strong>redoSelection</strong></code><span class=keybinding>Alt-U (PC), Shift-Cmd-U (Mac)</span></dt>
+      <dd>Redo the last change to the selection, or the last text change if
+      no selection changes remain.</dd>
+
+      <dt class=command id=command_goDocStart><code><strong>goDocStart</strong></code><span class=keybinding>Ctrl-Up (PC), Cmd-Up (Mac)</span></dt>
+      <dd>Move the cursor to the start of the document.</dd>
+
+      <dt class=command id=command_goDocEnd><code><strong>goDocEnd</strong></code><span class=keybinding>Ctrl-Down (PC), Cmd-End (Mac), Cmd-Down (Mac)</span></dt>
+      <dd>Move the cursor to the end of the document.</dd>
+
+      <dt class=command id=command_goLineStart><code><strong>goLineStart</strong></code><span class=keybinding>Alt-Left (PC), Cmd-Left (Mac), Ctrl-A (Mac)</span></dt>
+      <dd>Move the cursor to the start of the line.</dd>
+
+      <dt class=command id=command_goLineStartSmart><code><strong>goLineStartSmart</strong></code><span class=keybinding>Home</span></dt>
+      <dd>Move to the start of the text on the line, or if we are
+      already there, to the actual start of the line (including
+      whitespace).</dd>
+
+      <dt class=command id=command_goLineEnd><code><strong>goLineEnd</strong></code><span class=keybinding>Alt-Right (PC), Cmd-Right (Mac), Ctrl-E (Mac)</span></dt>
+      <dd>Move the cursor to the end of the line.</dd>
+
+      <dt class=command id=command_goLineLeft><code><strong>goLineLeft</strong></code></dt>
+      <dd>Move the cursor to the left side of the visual line it is on. If
+      this line is wrapped, that may not be the start of the line.</dd>
+
+      <dt class=command id=command_goLineRight><code><strong>goLineRight</strong></code></dt>
+      <dd>Move the cursor to the right side of the visual line it is on.</dd>
+
+      <dt class=command id=command_goLineUp><code><strong>goLineUp</strong></code><span class=keybinding>Up, Ctrl-P (Mac)</span></dt>
+      <dd>Move the cursor up one line.</dd>
+
+      <dt class=command id=command_goLineDown><code><strong>goLineDown</strong></code><span class=keybinding>Down, Ctrl-N (Mac)</span></dt>
+      <dd>Move down one line.</dd>
+
+      <dt class=command id=command_goPageUp><code><strong>goPageUp</strong></code><span class=keybinding>PageUp, Shift-Ctrl-V (Mac)</span></dt>
+      <dd>Move the cursor up one screen, and scroll up by the same distance.</dd>
+
+      <dt class=command id=command_goPageDown><code><strong>goPageDown</strong></code><span class=keybinding>PageDown, Ctrl-V (Mac)</span></dt>
+      <dd>Move the cursor down one screen, and scroll down by the same distance.</dd>
+
+      <dt class=command id=command_goCharLeft><code><strong>goCharLeft</strong></code><span class=keybinding>Left, Ctrl-B (Mac)</span></dt>
+      <dd>Move the cursor one character left, going to the previous line
+      when hitting the start of line.</dd>
+
+      <dt class=command id=command_goCharRight><code><strong>goCharRight</strong></code><span class=keybinding>Right, Ctrl-F (Mac)</span></dt>
+      <dd>Move the cursor one character right, going to the next line
+      when hitting the end of line.</dd>
+
+      <dt class=command id=command_goColumnLeft><code><strong>goColumnLeft</strong></code></dt>
+      <dd>Move the cursor one character left, but don't cross line boundaries.</dd>
+
+      <dt class=command id=command_goColumnRight><code><strong>goColumnRight</strong></code></dt>
+      <dd>Move the cursor one character right, don't cross line boundaries.</dd>
+
+      <dt class=command id=command_goWordLeft><code><strong>goWordLeft</strong></code><span class=keybinding>Alt-B (Mac)</span></dt>
+      <dd>Move the cursor to the start of the previous word.</dd>
+
+      <dt class=command id=command_goWordRight><code><strong>goWordRight</strong></code><span class=keybinding>Alt-F (Mac)</span></dt>
+      <dd>Move the cursor to the end of the next word.</dd>
+
+      <dt class=command id=command_goGroupLeft><code><strong>goGroupLeft</strong></code><span class=keybinding>Ctrl-Left (PC), Alt-Left (Mac)</span></dt>
+      <dd>Move to the left of the group before the cursor. A group is
+      a stretch of word characters, a stretch of punctuation
+      characters, a newline, or a stretch of <em>more than one</em>
+      whitespace character.</dd>
+
+      <dt class=command id=command_goGroupRight><code><strong>goGroupRight</strong></code><span class=keybinding>Ctrl-Right (PC), Alt-Right (Mac)</span></dt>
+      <dd>Move to the right of the group after the cursor
+      (see <a href="#command_goGroupLeft">above</a>).</dd>
+
+      <dt class=command id=command_delCharBefore><code><strong>delCharBefore</strong></code><span class=keybinding>Shift-Backspace, Ctrl-H (Mac)</span></dt>
+      <dd>Delete the character before the cursor.</dd>
+
+      <dt class=command id=command_delCharAfter><code><strong>delCharAfter</strong></code><span class=keybinding>Delete, Ctrl-D (Mac)</span></dt>
+      <dd>Delete the character after the cursor.</dd>
+
+      <dt class=command id=command_delWordBefore><code><strong>delWordBefore</strong></code><span class=keybinding>Alt-Backspace (Mac)</span></dt>
+      <dd>Delete up to the start of the word before the cursor.</dd>
+
+      <dt class=command id=command_delWordAfter><code><strong>delWordAfter</strong></code><span class=keybinding>Alt-D (Mac)</span></dt>
+      <dd>Delete up to the end of the word after the cursor.</dd>
+
+      <dt class=command id=command_delGroupBefore><code><strong>delGroupBefore</strong></code><span class=keybinding>Ctrl-Backspace (PC), Alt-Backspace (Mac)</span></dt>
+      <dd>Delete to the left of the <a href="#command_goGroupLeft">group</a> before the cursor.</dd>
+
+      <dt class=command id=command_delGroupAfter><code><strong>delGroupAfter</strong></code><span class=keybinding>Ctrl-Delete (PC), Ctrl-Alt-Backspace (Mac), Alt-Delete (Mac)</span></dt>
+      <dd>Delete to the start of the <a href="#command_goGroupLeft">group</a> after the cursor.</dd>
+
+      <dt class=command id=command_indentAuto><code><strong>indentAuto</strong></code><span class=keybinding>Shift-Tab</span></dt>
+      <dd>Auto-indent the current line or selection.</dd>
+
+      <dt class=command id=command_indentMore><code><strong>indentMore</strong></code><span class=keybinding>Ctrl-] (PC), Cmd-] (Mac)</span></dt>
+      <dd>Indent the current line or selection by one <a href="#option_indentUnit">indent unit</a>.</dd>
+
+      <dt class=command id=command_indentLess><code><strong>indentLess</strong></code><span class=keybinding>Ctrl-[ (PC), Cmd-[ (Mac)</span></dt>
+      <dd>Dedent the current line or selection by one <a href="#option_indentUnit">indent unit</a>.</dd>
+
+      <dt class=command id=command_insertTab><code><strong>insertTab</strong></code></dt>
+      <dd>Insert a tab character at the cursor.</dd>
+
+      <dt class=command id=command_insertSoftTab><code><strong>insertSoftTab</strong></code></dt>
+      <dd>Insert the amount of spaces that match the width a tab at
+      the cursor position would have.</dd>
+
+      <dt class=command id=command_defaultTab><code><strong>defaultTab</strong></code><span class=keybinding>Tab</span></dt>
+      <dd>If something is selected, indent it by
+      one <a href="#option_indentUnit">indent unit</a>. If nothing is
+      selected, insert a tab character.</dd>
+
+      <dt class=command id=command_transposeChars><code><strong>transposeChars</strong></code><span class=keybinding>Ctrl-T (Mac)</span></dt>
+      <dd>Swap the characters before and after the cursor.</dd>
+
+      <dt class=command id=command_newlineAndIndent><code><strong>newlineAndIndent</strong></code><span class=keybinding>Enter</span></dt>
+      <dd>Insert a newline and auto-indent the new line.</dd>
+
+      <dt class=command id=command_toggleOverwrite><code><strong>toggleOverwrite</strong></code><span class=keybinding>Insert</span></dt>
+      <dd>Flip the <a href="#toggleOverwrite">overwrite</a> flag.</dd>
+
+      <dt class=command id=command_save><code><strong>save</strong></code><span class=keybinding>Ctrl-S (PC), Cmd-S (Mac)</span></dt>
+      <dd>Not defined by the core library, only referred to in
+      key maps. Intended to provide an easy way for user code to define
+      a save command.</dd>
+
+      <dt class=command id=command_find><code><strong>find</strong></code><span class=keybinding>Ctrl-F (PC), Cmd-F (Mac)</span></dt>
+      <dt class=command id=command_findNext><code><strong>findNext</strong></code><span class=keybinding>Ctrl-G (PC), Cmd-G (Mac)</span></dt>
+      <dt class=command id=command_findPrev><code><strong>findPrev</strong></code><span class=keybinding>Shift-Ctrl-G (PC), Shift-Cmd-G (Mac)</span></dt>
+      <dt class=command id=command_replace><code><strong>replace</strong></code><span class=keybinding>Shift-Ctrl-F (PC), Cmd-Alt-F (Mac)</span></dt>
+      <dt class=command id=command_replaceAll><code><strong>replaceAll</strong></code><span class=keybinding>Shift-Ctrl-R (PC), Shift-Cmd-Alt-F (Mac)</span></dt>
+      <dd>Not defined by the core library, but defined in
+      the <a href="#addon_search">search addon</a> (or custom client
+      addons).</dd>
+
+    </dl>
+
+</section>
+
+>>>>>>> 97b1153... Add insertSoftTab command
 <section id=styling>
     <h2>Customized Styling</h2>
 
@@ -922,10 +1132,14 @@
       of <a href="#changeGeneration"><code>changeGeneration</code></a>,
       which allows multiple subsystems to track different notions of
       cleanness without interfering.</dd>
-      <dt id="changeGeneration"><code><strong>doc.changeGeneration</strong>() → integer</code></dt>
+      <dt id="changeGeneration"><code><strong>doc.changeGeneration</strong>(?closeEvent: boolean) → integer</code></dt>
       <dd>Returns a number that can later be passed
       to <a href="#isClean"><code>isClean</code></a> to test whether
-      any edits were made (and not undone) in the meantime.</dd>
+      any edits were made (and not undone) in the meantime.
+      If <code>closeEvent</code> is true, the current history event
+      will be ‘closed’, meaning it can't be combined with further
+      changes (rapid typing or deleting events are typically
+      combined).</dd>
       <dt id="isClean"><code><strong>doc.isClean</strong>(?generation: integer) → boolean</code></dt>
       <dd>Returns whether the document is currently clean — not
       modified since initialization or the last call
@@ -983,6 +1197,8 @@
       the shift key, in that it will cause cursor movement and calls
       to <a href="#extendSelection"><code>extendSelection</code></a>
       to leave the selection anchor in place.</dd>
+      <dt id="getExtending"><code><strong>doc.getExtending</strong>() → boolean</code></dt>
+      <dd>Get the value of the 'extending' flag.</dd>
 
       <dt id="hasFocus"><code><strong>cm.hasFocus</strong>() → boolean</code></dt>
       <dd>Tells you whether the editor currently has focus.</dd>
@@ -1196,6 +1412,9 @@
         <a href="#event_clear"><code>"clear"</code></a> event
         fired on the range handle can be used to be notified when this
         happens.</dd>
+        <dt id="mark_clearWhenEmpty"><code><strong>clearWhenEmpty</strong>: boolean</code></dt>
+        <dd>Determines whether the mark is automatically cleared when
+        it becomes empty. Default is true.</dd>
         <dt id="mark_replacedWith"><code><strong>replacedWith</strong>: Element</code></dt>
         <dd>Use a given node to display this range. Implies both
         collapsed and atomic. The given DOM node <em>must</em> be an
@@ -1235,7 +1454,7 @@
         only in its target document.</dd>
       </dl>
       The method will return an object that represents the marker
-      (with constuctor <code>CodeMirror.TextMarker</code>), which
+      (with constructor <code>CodeMirror.TextMarker</code>), which
       exposes three methods:
       <code><strong>clear</strong>()</code>, to remove the mark,
       <code><strong>find</strong>()</code>, which returns
@@ -1260,13 +1479,16 @@
         <dt><code><strong>widget</strong>: Element</code></dt><dd>Can be used to display a DOM
         node at the current location of the bookmark (analogous to
         the <a href="#mark_replacedWith"><code>replacedWith</code></a>
-        option to <code>markText</code>).</dd>
+        option to <a href="#markText"><code>markText</code></a>).</dd>
         <dt><code><strong>insertLeft</strong>: boolean</code></dt><dd>By default, text typed
         when the cursor is on top of the bookmark will end up to the
         right of the bookmark. Set this option to true to make it go
         to the left instead.</dd>
       </dl></dd>
 
+      <dt id="findMarks"><code><strong>doc.findMarks</strong>(from: {line, ch}, to: {line, ch}) → array&lt;TextMarker&gt;</code></dt>
+      <dd>Returns an array of all the bookmarks and marked ranges
+      found between the given positions.</dd>
       <dt id="findMarksAt"><code><strong>doc.findMarksAt</strong>(pos: {line, ch}) → array&lt;TextMarker&gt;</code></dt>
       <dd>Returns an array of all the bookmarks and marked ranges
       present at the given position.</dd>
@@ -1517,18 +1739,35 @@
       unstyled tokens, and a string, potentially containing multiple
       space-separated style names, otherwise.</dd>
 
+      <dt id="getHelpers"><code><strong>cm.getHelpers</strong>(pos: {line, ch}, type: string) → array&lt;helper&gt;</code></dt>
+      <dd>Fetch the set of applicable helper values for the given
+      position. Helpers provide a way to look up functionality
+      appropriate for a mode. The <code>type</code> argument provides
+      the helper namespace (see
+      <a href="#registerHelper"><code>registerHelper</code></a>), in
+      which the values will be looked up. When the mode itself has a
+      property that corresponds to the <code>type</code>, that
+      directly determines the keys that are used to look up the helper
+      values (it may be either a single string, or an array of
+      strings). Failing that, the mode's <code>helperType</code>
+      property and finally the mode's name are used.</dd>
+      <dd>For example, the JavaScript mode has a
+      property <code>fold</code> containing <code>"brace"</code>. When
+      the <code>brace-fold</code> addon is loaded, that defines a
+      helper named <code>brace</code> in the <code>fold</code>
+      namespace. This is then used by
+      the <a href="#addon_foldcode"><code>foldcode</code></a> addon to
+      figure out that it can use that folding function to fold
+      JavaScript code.</dd>
+      <dd>When any <a href="#registerGlobalHelper">'global'</a>
+      helpers are defined for the given namespace, their predicates
+      are called on the current mode and editor, and all those that
+      declare they are applicable will also be added to the array that
+      is returned.</dd>
+
       <dt id="getHelper"><code><strong>cm.getHelper</strong>(pos: {line, ch}, type: string) → helper</code></dt>
-      <dd>Fetch appropriate helper for the given position. Helpers
-      provide a way to look up functionality appropriate for a mode.
-      The <code>type</code> argument provides the helper namespace
-      (see
-      also <a href="#registerHelper"><code>registerHelper</code></a>),
-      in which the value will be looked up. The key that is used
-      depends on the <a href="#getMode">mode</a> active at the given
-      position. If the mode object contains a property with the same
-      name as the <code>type</code> argument, that is tried first.
-      Next, the mode's <code>helperType</code>, if any, is tried. And
-      finally, the mode's name.</dd>
+      <dd>Returns the first applicable helper value.
+      See <a href="#getHelpers"><code>getHelpers</code></a>.</dd>
 
       <dt id="getStateAfter"><code><strong>cm.getStateAfter</strong>(?line: integer, ?precise: boolean) → object</code></dt>
       <dd>Returns the mode's parser state, if any, at the end of the
@@ -1673,7 +1912,7 @@
       (with the instance as argument) whenever a new CodeMirror instance
       is initialized.</dd>
 
-      <dt id="registerHelper"><code><strong>CodeMirror.registerHelper</strong>(type: string, name: string, value: helper)</code></dt>
+      <dt id="registerHelper"><code><strong>CodeMirror.registerHelper</strong>(type: string, name: string, value: helper)</code></dt>
       <dd>Registers a helper value with the given <code>name</code> in
       the given namespace (<code>type</code>). This is used to define
       functionality that may be looked up by mode. Will create (if it
@@ -1683,6 +1922,14 @@
       doing <code>CodeMirror.registerHelper("hint", "foo",
       myFoo)</code>, the value <code>CodeMirror.hint.foo</code> will
       point to <code>myFoo</code>.</dd>
+
+      <dt id="registerGlobalHelper"><code><strong>CodeMirror.registerGlobalHelper</strong>(type: string, name: string, predicate: fn(mode, CodeMirror), value: helper)</code></dt>
+      <dd>Acts
+      like <a href="#registerHelper"><code>registerHelper</code></a>,
+      but also registers this helper as 'global', meaning that it will
+      be included by <a href="#getHelpers"><code>getHelpers</code></a>
+      whenever the given <code>predicate</code> returns true when
+      called with the local mode and editor.</dd>
 
       <dt id="Pos"><code><strong>CodeMirror.Pos</strong>(line: integer, ?ch: integer)</code></dt>
       <dd>A constructor for the <code>{line, ch}</code> objects that
@@ -1703,16 +1950,19 @@
 
     <p>The <code>addon</code> directory in the distribution contains a
     number of reusable components that implement extra editor
-    functionality. In brief, they are:</p>
+    functionality (on top of extension functions
+    like <a href="#defineOption"><code>defineOption</code></a>, <a href="#defineExtension"><code>defineExtension</code></a>,
+    and <a href="#registerHelper"><code>registerHelper</code></a>). In
+    brief, they are:</p>
 
     <dl>
       <dt id="addon_dialog"><a href="../addon/dialog/dialog.js"><code>dialog/dialog.js</code></a></dt>
       <dd>Provides a very simple way to query users for text input.
       Adds an <strong><code>openDialog</code></strong> method to
       CodeMirror instances, which can be called with an HTML fragment
-      that provides the prompt (should include an <code>input</code>
-      tag), and a callback function that is called when text has been
-      entered. Also adds
+      or a detached DOM node that provides the prompt (should include
+      an <code>input</code> tag), and a callback function that is called
+      when text has been entered. Also adds
       an <strong><code>openNotification</code></strong> function that
       simply shows an HTML fragment as a notification. Depends
       on <code>addon/dialog/dialog.css</code>.</dd>
@@ -1862,11 +2112,12 @@
       supporting the following properties:
       <dl>
         <dt><code><strong>rangeFinder</strong>: fn(CodeMirror, Pos)</code></dt>
-        <dd>The function that is used to find foldable ranges. If this
-        is not directly passed, it will
-        call <a href="#getHelper"><code>getHelper</code></a> with
-        a <code>"fold"</code> type to find one that's appropriate for
-        the mode. There are files in
+        <dd id="helper_fold_auto">The function that is used to find
+        foldable ranges. If this is not directly passed, it will
+        default to <code>CodeMirror.fold.auto</code>, which
+        uses <a href="#getHelpers"><code>getHelpers</code></a> with
+        a <code>"fold"</code> type to find folding functions
+        appropriate for the local mode. There are files in
         the <a href="../addon/fold/"><code>addon/fold/</code></a>
         directory providing <code>CodeMirror.fold.brace</code>, which
         finds blocks in brace languages (JavaScript, C, Java,
@@ -1925,8 +2176,8 @@
         <dt><code><strong>rangeFinder</strong>: fn(CodeMirror, Pos)</code></dt>
         <dd>The range-finder function to use when determining whether
         something can be folded. When not
-        given, <a href="#getHelper"><code>getHelper</code></a> will be
-        used to determine a default.</dd>
+        given, <a href="#helper_fold_auto"><code>CodeMirror.fold.auto</code></a>
+        will be used as default.</dd>
       </dl>
       Demo <a href="../demo/folding.html">here</a>.</dd>
 
@@ -1998,10 +2249,18 @@
       is an array of strings or objects (the completions),
       and <code>from</code> and <code>to</code> give the start and end
       of the token that is being completed as <code>{line, ch}</code>
-      objects. If no hinting function is given, the addon will try to
-      use <a href="#getHelper"><code>getHelper</code></a> with
-      the <code>"hint"</code> type to find one. When completions
-      aren't simple strings, they should be objects with the folowing
+      objects.</dd>
+      <dd>If no hinting function is given, the addon will
+      use <code>CodeMirror.hint.auto</code>, with
+      calls <a href="#getHelpers"><code>getHelpers</code></a> with
+      the <code>"hint"</code> type to find applicable hinting
+      functions, and tries them one by one. If that fails, it looks
+      for a <code>"hintWords"</code> helper to fetch a list of
+      completable words for the mode, and
+      uses <code>CodeMirror.hint.fromList</code> to complete from
+      those.</dd>
+      <dd>When completions
+      aren't simple strings, they should be objects with the following
       properties:
       <dl>
         <dt><code><strong>text</strong>: string</code></dt>
@@ -2018,6 +2277,12 @@
         <dt><code><strong>hint</strong>: fn(CodeMirror, self, data)</code></dt>
         <dd>A method used to actually apply the completion, instead of
         the default behavior.</dd>
+        <dt><code><strong>from</strong>: {line, ch}</code></dt>
+        <dd>Optional <code>from</code> position that will be used by <code>pick()</code> instead
+        of the global one passed with the full list of completions.</dd>
+        <dt><code><strong>to</strong>: {line, ch}</code></dt>
+        <dd>Optional <code>to</code> position that will be used by <code>pick()</code> instead
+        of the global one passed with the full list of completions.</dd>
       </dl>
       The plugin understands the following options (the options object
       will also be passed along to the hinting function, which may
@@ -2046,7 +2311,11 @@
         has <code>moveFocus(n)</code>, <code>setFocus(n)</code>, <code>pick()</code>,
         and <code>close()</code> methods (see the source for details),
         that can be used to change the focused element, pick the
-        current element or close the menu.</dd>
+        current element or close the menu. Additionnaly <code>menuSize()</code>
+        can give you access to the size of the current dropdown menu,
+        <code>length</code> give you the number of availlable completions, and
+        <code>data</code> give you full access to the completion returned by the
+        hinting function.</dd>
         <dt><code><strong>extraKeys</strong>: keymap</code></dt>
         <dd>Like <code>customKeys</code> above, but the bindings will
         be added to the set of default bindings, instead of replacing
@@ -2061,6 +2330,9 @@
         <dd>Fired when a completion is selected. Passed the completion
         value (string or object) and the DOM node that represents it
         in the menu.</dd>
+        <dt><code><strong>"pick"</strong> (completion)</code></dt>
+        <dd>Fired when a completion is picked. Passed the completion value
+        (string or object).</dd>
         <dt><code><strong>"close"</strong> ()</code></dt>
         <dd>Fired when the completion is finished.</dd>
       </dl>
@@ -2106,7 +2378,7 @@
       the <a href="../demo/html5complete.html">demo</a>.</dd>
 
       <dt id="addon_css-hint"><a href="../addon/hint/css-hint.js"><code>hint/css-hint.js</code></a></dt>
-      <dd>A minimal hinting function for CSS code.
+      <dd>A hinting function for CSS, SCSS, or LESS code.
       Defines <code>CodeMirror.hint.css</code>.</dd>
 
       <dt id="addon_python-hint"><a href="../addon/hint/python-hint.js"><code>hint/python-hint.js</code></a></dt>
@@ -2124,9 +2396,6 @@
 
       <dt id="addon_sql-hint"><a href="../addon/hint/sql-hint.js"><code>hint/sql-hint.js</code></a></dt>
       <dd>A simple SQL hinter. Defines <code>CodeMirror.hint.sql</code>.</dd>
-
-      <dt id="addon_pig-hint"><a href="../addon/hint/pig-hint.js"><code>hint/pig-hint.js</code></a></dt>
-      <dd>A simple hinter for <a href="../mode/pig/index.html">Pig Latin</a>. Defines <code>CodeMirror.hint.pig</code>.</dd>
 
       <dt id="addon_match-highlighter"><a href="../addon/search/match-highlighter.js"><code>search/match-highlighter.js</code></a></dt>
       <dd>Adds a <code>highlightSelectionMatches</code> option that
@@ -2185,11 +2454,14 @@
       succeeded. See the <a href="../demo/loadmode.html">demo</a>.</dd>
 
       <dt id="addon_continuecomment"><a href="../addon/comment/continuecomment.js"><code>comment/continuecomment.js</code></a></dt>
-      <dd>Adds an <code>continueComments</code> option, which can be
-      set to true to have the editor prefix new lines inside C-like
-      block comments with an asterisk when Enter is pressed. It can
-      also be set to a string in order to bind this functionality to a
-      specific key..</dd>
+      <dd>Adds a <code>continueComments</code> option, which sets whether the
+      editor will make the next line continue a comment when you press Enter
+      inside a comment block. Can be set to a boolean to enable/disable this
+      functionality. Set to a string, it will continue comments using a custom
+      shortcut. Set to an object, it will use the <code>key</code> property for
+      a custom shortcut and the boolean <code>continueLineComment</code>
+      property to determine whether single-line comments should be continued
+      (defaulting to <code>true</code>).</dd>
 
       <dt id="addon_placeholder"><a href="../addon/display/placeholder.js"><code>display/placeholder.js</code></a></dt>
       <dd>Adds a <code>placeholder</code> option that can be used to
@@ -2204,6 +2476,16 @@
       taking up the whole browser window). Depends
       on <a href="../addon/display/fullscreen.css"><code>fullscreen.css</code></a>. <a href="../demo/fullscreen.html">Demo
       here</a>.</dd>
+
+      <dt id="addon_rulers"><a href="../addon/display/rulers.js"><code>display/rulers.js</code></a></dt>
+      <dd>Adds a <code>rulers</code> option, which can be used to show
+      one or more vertical rulers in the editor. The option, if
+      defined, should be given an array of <code>{column,
+      className}</code> objects or numbers. The ruler will be
+      displayed at the column indicated by the number or
+      the <code>column</code> property. The <code>className</code>
+      property can be used to assign a custom style to a
+      ruler. <a href="../demo/rulers.html">Demo here</a>.</dd>
 
       <dt id="addon_hardwrap"><a href="../addon/wrap/hardwrap.js"><code>wrap/hardwrap.js</code></a></dt>
       <dd>Addon to perform hard line wrapping/breaking for paragraphs
@@ -2503,6 +2785,13 @@
     modeSpec)</code>, where <code>modeSpec</code> can be a string or
     object specifying a mode, as in
     the <a href="#option_mode"><code>mode</code></a> option.</p>
+
+    <p>If a mode specification wants to add some properties to the
+    resulting mode object, typically for use
+    with <a href="#getHelpers"><code>getHelpers</code></a>, it may
+    contain a <code>modeProps</code> property, which holds an object.
+    This object's properties will be copied to the actual mode
+    object.</p>
 
     <p id="extendMode">Sometimes, it is useful to add or override mode
     object properties from external code.

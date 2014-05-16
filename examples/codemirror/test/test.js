@@ -172,7 +172,7 @@ test("core_defaults", function() {
   for (var opt in defs) defsCopy[opt] = defs[opt];
   defs.indentUnit = 5;
   defs.value = "uu";
-  defs.enterMode = "keep";
+  defs.indentWithTabs = true;
   defs.tabindex = 55;
   var place = document.getElementById("testground"), cm = CodeMirror(place);
   try {
@@ -180,7 +180,7 @@ test("core_defaults", function() {
     cm.setOption("indentUnit", 10);
     eq(defs.indentUnit, 5);
     eq(cm.getValue(), "uu");
-    eq(cm.getOption("enterMode"), "keep");
+    eq(cm.getOption("indentWithTabs"), true);
     eq(cm.getInputField().tabIndex, 55);
   }
   finally {
@@ -435,6 +435,36 @@ testCM("markTextStayGone", function(cm) {
   cm.undo();
   eq(m1.find(), null);
 }, {value: "hello"});
+
+testCM("markTextAllowEmpty", function(cm) {
+  var m1 = cm.markText(Pos(0, 1), Pos(0, 2), {clearWhenEmpty: false});
+  is(m1.find());
+  cm.replaceRange("x", Pos(0, 0));
+  is(m1.find());
+  cm.replaceRange("y", Pos(0, 2));
+  is(m1.find());
+  cm.replaceRange("z", Pos(0, 3), Pos(0, 4));
+  is(!m1.find());
+  var m2 = cm.markText(Pos(0, 1), Pos(0, 2), {clearWhenEmpty: false,
+                                              inclusiveLeft: true,
+                                              inclusiveRight: true});
+  cm.replaceRange("q", Pos(0, 1), Pos(0, 2));
+  is(m2.find());
+  cm.replaceRange("", Pos(0, 0), Pos(0, 3));
+  is(!m2.find());
+  var m3 = cm.markText(Pos(0, 1), Pos(0, 1), {clearWhenEmpty: false});
+  cm.replaceRange("a", Pos(0, 3));
+  is(m3.find());
+  cm.replaceRange("b", Pos(0, 1));
+  is(!m3.find());
+}, {value: "abcde"});
+
+testCM("markTextStacked", function(cm) {
+  var m1 = cm.markText(Pos(0, 0), Pos(0, 0), {clearWhenEmpty: false});
+  var m2 = cm.markText(Pos(0, 0), Pos(0, 0), {clearWhenEmpty: false});
+  cm.replaceRange("B", Pos(0, 1));
+  is(m1.find() && m2.find());
+}, {value: "A"});
 
 testCM("undoPreservesNewMarks", function(cm) {
   cm.markText(Pos(0, 3), Pos(0, 4));
@@ -712,8 +742,8 @@ testCM("collapsedRangeCoordsChar", function(cm) {
   var m1 = cm.markText(Pos(0, 0), Pos(2, 0), opts);
   eqPos(cm.coordsChar(pos_1_3), Pos(3, 3));
   m1.clear();
-  var m1 = cm.markText(Pos(0, 0), Pos(1, 1), opts);
-  var m2 = cm.markText(Pos(1, 1), Pos(2, 0), opts);
+  var m1 = cm.markText(Pos(0, 0), Pos(1, 1), {collapsed: true, inclusiveLeft: true});
+  var m2 = cm.markText(Pos(1, 1), Pos(2, 0), {collapsed: true, inclusiveRight: true});
   eqPos(cm.coordsChar(pos_1_3), Pos(3, 3));
   m1.clear(); m2.clear();
   var m1 = cm.markText(Pos(0, 0), Pos(1, 6), opts);
@@ -840,6 +870,23 @@ testCM("badNestedFold", function(cm) {
   is(caught instanceof Error, "no error");
   is(/overlap/i.test(caught.message), "wrong error");
 });
+
+testCM("nestedFoldOnSide", function(cm) {
+  var m1 = cm.markText(Pos(0, 1), Pos(2, 1), {collapsed: true, inclusiveRight: true});
+  var m2 = cm.markText(Pos(0, 1), Pos(0, 2), {collapsed: true});
+  cm.markText(Pos(0, 1), Pos(0, 2), {collapsed: true}).clear();
+  try { cm.markText(Pos(0, 1), Pos(0, 2), {collapsed: true, inclusiveLeft: true}); }
+  catch(e) { var caught = e; }
+  is(caught && /overlap/i.test(caught.message));
+  var m3 = cm.markText(Pos(2, 0), Pos(2, 1), {collapsed: true});
+  var m4 = cm.markText(Pos(2, 0), Pos(2, 1), {collapse: true, inclusiveRight: true});
+  m1.clear(); m4.clear();
+  m1 = cm.markText(Pos(0, 1), Pos(2, 1), {collapsed: true});
+  cm.markText(Pos(2, 0), Pos(2, 1), {collapsed: true}).clear();
+  try { cm.markText(Pos(2, 0), Pos(2, 1), {collapsed: true, inclusiveRight: true}); }
+  catch(e) { var caught = e; }
+  is(caught && /overlap/i.test(caught.message));
+}, {value: "ab\ncd\ef"});
 
 testCM("wrappingInlineWidget", function(cm) {
   cm.setSize("11em");
@@ -973,6 +1020,24 @@ testCM("moveVstuck", function(cm) {
   eqPos(cm.getCursor(), Pos(0, 26));
 }, {lineWrapping: true}, ie_lt8 || opera_lt10);
 
+testCM("collapseOnMove", function(cm) {
+  cm.setSelection(Pos(0, 1), Pos(2, 4));
+  cm.execCommand("goLineUp");
+  is(!cm.somethingSelected());
+  eqPos(cm.getCursor(), Pos(0, 1));
+  cm.setSelection(Pos(0, 1), Pos(2, 4));
+  cm.execCommand("goPageDown");
+  is(!cm.somethingSelected());
+  eqPos(cm.getCursor(), Pos(2, 4));
+  cm.execCommand("goLineUp");
+  cm.execCommand("goLineUp");
+  eqPos(cm.getCursor(), Pos(0, 4));
+  cm.setSelection(Pos(0, 1), Pos(2, 4));
+  cm.execCommand("goCharLeft");
+  is(!cm.somethingSelected());
+  eqPos(cm.getCursor(), Pos(0, 1));
+}, {value: "aaaaa\nb\nccccc"});
+
 testCM("clickTab", function(cm) {
   var p0 = cm.charCoords(Pos(0, 0));
   eqPos(cm.coordsChar({left: p0.left + 5, top: p0.top + 5}), Pos(0, 0));
@@ -1068,12 +1133,31 @@ testCM("groupMovementCommands", function(cm) {
   cm.execCommand("goGroupRight"); cm.execCommand("goGroupRight");
   eqPos(cm.getCursor(), Pos(0, 20));
   cm.execCommand("goGroupRight");
+  eqPos(cm.getCursor(), Pos(1, 0));
+  cm.execCommand("goGroupRight");
+  eqPos(cm.getCursor(), Pos(1, 2));
+  cm.execCommand("goGroupRight");
   eqPos(cm.getCursor(), Pos(1, 5));
   cm.execCommand("goGroupLeft"); cm.execCommand("goGroupLeft");
   eqPos(cm.getCursor(), Pos(1, 0));
   cm.execCommand("goGroupLeft");
+  eqPos(cm.getCursor(), Pos(0, 20));
+  cm.execCommand("goGroupLeft");
   eqPos(cm.getCursor(), Pos(0, 16));
 }, {value: "booo ba---quux. ffff\n  abc d"});
+
+testCM("groupsAndWhitespace", function(cm) {
+  var positions = [Pos(0, 0), Pos(0, 2), Pos(0, 5), Pos(0, 9), Pos(0, 11),
+                   Pos(1, 0), Pos(1, 2), Pos(1, 5)];
+  for (var i = 1; i < positions.length; i++) {
+    cm.execCommand("goGroupRight");
+    eqPos(cm.getCursor(), positions[i]);
+  }
+  for (var i = positions.length - 2; i >= 0; i--) {
+    cm.execCommand("goGroupLeft");
+    eqPos(cm.getCursor(), i == 2 ? Pos(0, 6) : positions[i]);
+  }
+}, {value: "  foo +++  \n  bar"});
 
 testCM("charMovementCommands", function(cm) {
   cm.execCommand("goCharLeft"); cm.execCommand("goColumnLeft");
@@ -1141,7 +1225,7 @@ testCM("verticalMovementCommandsWrapping", function(cm) {
 
 testCM("rtlMovement", function(cm) {
   forEach(["خحج", "خحabcخحج", "abخحخحجcd", "abخde", "abخح2342خ1حج", "خ1ح2خح3حxج",
-           "خحcd", "1خحcd", "abcdeح1ج", "خمرحبها مها!", "foobarر",
+           "خحcd", "1خحcd", "abcdeح1ج", "خمرحبها مها!", "foobarر", "خ ة ق",
            "<img src=\"/בדיקה3.jpg\">"], function(line) {
     var inv = line.charAt(0) == "خ";
     cm.setValue(line + "\n"); cm.execCommand(inv ? "goLineEnd" : "goLineStart");
@@ -1414,6 +1498,21 @@ testCM("dirtyBit", function(cm) {
   eq(cm.isClean(), true);
 });
 
+testCM("changeGeneration", function(cm) {
+  cm.replaceSelection("x", null, "+insert");
+  var softGen = cm.changeGeneration();
+  cm.replaceSelection("x", null, "+insert");
+  cm.undo();
+  eq(cm.getValue(), "");
+  is(!cm.isClean(softGen));
+  cm.replaceSelection("x", null, "+insert");
+  var hardGen = cm.changeGeneration(true);
+  cm.replaceSelection("x", null, "+insert");
+  cm.undo();
+  eq(cm.getValue(), "x");
+  is(cm.isClean(hardGen));
+});
+
 testCM("addKeyMap", function(cm) {
   function sendKey(code) {
     cm.triggerOnKeyDown({type: "keydown", keyCode: code,
@@ -1545,8 +1644,9 @@ testCM("change_removedText", function(cm) {
 testCM("lineStyleFromMode", function(cm) {
   CodeMirror.defineMode("test_mode", function() {
     return {token: function(stream) {
-      if (stream.match(/^\[[^\]]*\]/)) return "line-brackets";
-      if (stream.match(/^\([^\]]*\)/)) return "line-background-parens";
+      if (stream.match(/^\[[^\]]*\]/)) return "  line-brackets  ";
+      if (stream.match(/^\([^\)]*\)/)) return "  line-background-parens  ";
+      if (stream.match(/^<[^>]*>/)) return "  span  line-line  line-background-bg  ";
       stream.match(/^\s+|^\S+/);
     }};
   });
@@ -1559,4 +1659,30 @@ testCM("lineStyleFromMode", function(cm) {
   eq(parenElts.length, 1);
   eq(parenElts[0].nodeName, "DIV");
   is(!/parens.*parens/.test(parenElts[0].className));
-}, {value: "line1: [br] [br]\nline2: (par) (par)\nline3: nothing"});
+  eq(parenElts[0].parentElement.nodeName, "DIV");
+
+  eq(byClassName(cm.getWrapperElement(), "bg").length, 1);
+  eq(byClassName(cm.getWrapperElement(), "line").length, 1);
+  var spanElts = byClassName(cm.getWrapperElement(), "cm-span");
+  eq(spanElts.length, 2);
+  is(/^\s*cm-span\s*$/.test(spanElts[0].className));
+}, {value: "line1: [br] [br]\nline2: (par) (par)\nline3: <tag> <tag>"});
+
+CodeMirror.registerHelper("xxx", "a", "A");
+CodeMirror.registerHelper("xxx", "b", "B");
+CodeMirror.defineMode("yyy", function() {
+  return {
+    token: function(stream) { stream.skipToEnd(); },
+    xxx: ["a", "b", "q"]
+  };
+});
+CodeMirror.registerGlobalHelper("xxx", "c", function(m) { return m.enableC; }, "C");
+
+testCM("helpers", function(cm) {
+  cm.setOption("mode", "yyy");
+  eq(cm.getHelpers(Pos(0, 0), "xxx").join("/"), "A/B");
+  cm.setOption("mode", {name: "yyy", modeProps: {xxx: "b", enableC: true}});
+  eq(cm.getHelpers(Pos(0, 0), "xxx").join("/"), "B/C");
+  cm.setOption("mode", "javascript");
+  eq(cm.getHelpers(Pos(0, 0), "xxx").join("/"), "");
+});
