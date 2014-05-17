@@ -968,7 +968,12 @@ testVim('<<', function(cm, vim, helpers) {
 // Edit tests
 function testEdit(name, before, pos, edit, after) {
   return testVim(name, function(cm, vim, helpers) {
-             cm.setCursor(0, before.search(pos));
+             var ch = before.search(pos)
+             var line = before.substring(0, ch).split('\n').length - 1;
+             if (line) {
+               ch = before.substring(0, ch).split('\n').pop().length;
+             }
+             cm.setCursor(line, ch);
              helpers.doKeys.apply(this, edit.split(''));
              eq(after, cm.getValue());
            }, {value: before});
@@ -1010,6 +1015,7 @@ testEdit('daW_end_punct', 'foo \tbAr.', /A/, 'daW', 'foo');
 //    Open and close on same line
 testEdit('di(_open_spc', 'foo (bAr) baz', /\(/, 'di(', 'foo () baz');
 testEdit('di)_open_spc', 'foo (bAr) baz', /\(/, 'di)', 'foo () baz');
+testEdit('dib_open_spc', 'foo (bAr) baz', /\(/, 'dib', 'foo () baz');
 testEdit('da(_open_spc', 'foo (bAr) baz', /\(/, 'da(', 'foo  baz');
 testEdit('da)_open_spc', 'foo (bAr) baz', /\(/, 'da)', 'foo  baz');
 
@@ -1023,11 +1029,26 @@ testEdit('di)_close_spc', 'foo (bAr) baz', /\)/, 'di)', 'foo () baz');
 testEdit('da(_close_spc', 'foo (bAr) baz', /\)/, 'da(', 'foo  baz');
 testEdit('da)_close_spc', 'foo (bAr) baz', /\)/, 'da)', 'foo  baz');
 
+//  delete around and inner b.
+testEdit('dab_on_(_should_delete_around_()block', 'o( in(abc) )', /\(a/, 'dab', 'o( in )');
+
+//  delete around and inner B.
+testEdit('daB_on_{_should_delete_around_{}block', 'o{ in{abc} }', /{a/, 'daB', 'o{ in }');
+testEdit('diB_on_{_should_delete_inner_{}block', 'o{ in{abc} }', /{a/, 'diB', 'o{ in{} }');
+
+testEdit('da{_on_{_should_delete_inner_block', 'o{ in{abc} }', /{a/, 'da{', 'o{ in }');
+testEdit('di[_on_(_should_not_delete', 'foo (bAr) baz', /\(/, 'di[', 'foo (bAr) baz');
+testEdit('di[_on_)_should_not_delete', 'foo (bAr) baz', /\)/, 'di[', 'foo (bAr) baz');
+testEdit('da[_on_(_should_not_delete', 'foo (bAr) baz', /\(/, 'da[', 'foo (bAr) baz');
+testEdit('da[_on_)_should_not_delete', 'foo (bAr) baz', /\)/, 'da[', 'foo (bAr) baz');
+testMotion('di(_outside_should_stay', ['d', 'i', '('], { line: 0, ch: 0}, { line: 0, ch: 0});
+
 //  Open and close on different lines, equally indented
 testEdit('di{_middle_spc', 'a{\n\tbar\n}b', /r/, 'di{', 'a{}b');
 testEdit('di}_middle_spc', 'a{\n\tbar\n}b', /r/, 'di}', 'a{}b');
 testEdit('da{_middle_spc', 'a{\n\tbar\n}b', /r/, 'da{', 'ab');
 testEdit('da}_middle_spc', 'a{\n\tbar\n}b', /r/, 'da}', 'ab');
+testEdit('daB_middle_spc', 'a{\n\tbar\n}b', /r/, 'daB', 'ab');
 
 // open and close on diff lines, open indented less than close
 testEdit('di{_middle_spc', 'a{\n\tbar\n\t}b', /r/, 'di{', 'a{}b');
@@ -1231,6 +1252,31 @@ testVim('p_lastline', function(cm, vim, helpers) {
   eq('___\n  a\nd\n  a\nd', cm.getValue());
   helpers.assertCursorAt(1, 2);
 }, { value: '___' });
+testVim(']p_first_indent_is_smaller', function(cm, vim, helpers) {
+  helpers.getRegisterController().pushText('"', 'yank', '  abc\n    def\n', true);
+  helpers.doKeys(']', 'p');
+  eq('  ___\n  abc\n    def', cm.getValue());
+}, { value: '  ___' });
+testVim(']p_first_indent_is_larger', function(cm, vim, helpers) {
+  helpers.getRegisterController().pushText('"', 'yank', '    abc\n  def\n', true);
+  helpers.doKeys(']', 'p');
+  eq('  ___\n  abc\ndef', cm.getValue());
+}, { value: '  ___' });
+testVim(']p_with_tab_indents', function(cm, vim, helpers) {
+  helpers.getRegisterController().pushText('"', 'yank', '\t\tabc\n\t\t\tdef\n', true);
+  helpers.doKeys(']', 'p');
+  eq('\t___\n\tabc\n\t\tdef', cm.getValue());
+}, { value: '\t___', indentWithTabs: true});
+testVim(']p_with_spaces_translated_to_tabs', function(cm, vim, helpers) {
+  helpers.getRegisterController().pushText('"', 'yank', '  abc\n    def\n', true);
+  helpers.doKeys(']', 'p');
+  eq('\t___\n\tabc\n\t\tdef', cm.getValue());
+}, { value: '\t___', indentWithTabs: true, tabSize: 2 });
+testVim('[p', function(cm, vim, helpers) {
+  helpers.getRegisterController().pushText('"', 'yank', '  abc\n    def\n', true);
+  helpers.doKeys('[', 'p');
+  eq('  abc\n    def\n  ___', cm.getValue());
+}, { value: '  ___' });
 testVim('P', function(cm, vim, helpers) {
   cm.setCursor(0, 1);
   helpers.getRegisterController().pushText('"', 'yank', 'abc\ndef', false);
@@ -1880,6 +1926,50 @@ testVim('yank_register', function(cm, vim, helpers) {
   });
   helpers.doKeys(':');
 }, { value: 'foo\nbar'});
+testVim('yank_append_line_to_line_register', function(cm, vim, helpers) {
+  cm.setCursor(0, 0);
+  helpers.doKeys('"', 'a', 'y', 'y');
+  helpers.doKeys('j', '"', 'A', 'y', 'y');
+  cm.openDialog = helpers.fakeOpenDialog('registers');
+  cm.openNotification = helpers.fakeOpenNotification(function(text) {
+    is(/a\s+foo\nbar/.test(text));
+    is(/"\s+foo\nbar/.test(text));
+  });
+  helpers.doKeys(':');
+}, { value: 'foo\nbar'});
+testVim('yank_append_word_to_word_register', function(cm, vim, helpers) {
+  cm.setCursor(0, 0);
+  helpers.doKeys('"', 'a', 'y', 'w');
+  helpers.doKeys('j', '"', 'A', 'y', 'w');
+  cm.openDialog = helpers.fakeOpenDialog('registers');
+  cm.openNotification = helpers.fakeOpenNotification(function(text) {
+    is(/a\s+foobar/.test(text));
+    is(/"\s+foobar/.test(text));
+  });
+  helpers.doKeys(':');
+}, { value: 'foo\nbar'});
+testVim('yank_append_line_to_word_register', function(cm, vim, helpers) {
+  cm.setCursor(0, 0);
+  helpers.doKeys('"', 'a', 'y', 'w');
+  helpers.doKeys('j', '"', 'A', 'y', 'y');
+  cm.openDialog = helpers.fakeOpenDialog('registers');
+  cm.openNotification = helpers.fakeOpenNotification(function(text) {
+    is(/a\s+foo\nbar/.test(text));
+    is(/"\s+foo\nbar/.test(text));
+  });
+  helpers.doKeys(':');
+}, { value: 'foo\nbar'});
+testVim('yank_append_word_to_line_register', function(cm, vim, helpers) {
+  cm.setCursor(0, 0);
+  helpers.doKeys('"', 'a', 'y', 'y');
+  helpers.doKeys('j', '"', 'A', 'y', 'w');
+  cm.openDialog = helpers.fakeOpenDialog('registers');
+  cm.openNotification = helpers.fakeOpenNotification(function(text) {
+    is(/a\s+foo\nbar/.test(text));
+    is(/"\s+foo\nbar/.test(text));
+  });
+  helpers.doKeys(':');
+}, { value: 'foo\nbar'});
 testVim('macro_register', function(cm, vim, helpers) {
   cm.setCursor(0, 0);
   helpers.doKeys('q', 'a', 'i');
@@ -2019,6 +2109,14 @@ testVim('._delete_repeat', function(cm, vim, helpers) {
   eq('zzce', cm.getValue());
   helpers.assertCursorAt(0, 1);
 }, { value: 'zzabcde'});
+testVim('._visual_>', function(cm, vim, helpers) {
+  cm.setCursor(0, 0);
+  helpers.doKeys('V', 'j', '>');
+  cm.setCursor(2, 0)
+  helpers.doKeys('.');
+  eq('  1\n  2\n  3\n  4', cm.getValue());
+  helpers.assertCursorAt(2, 2);
+}, { value: '1\n2\n3\n4'});
 testVim('f;', function(cm, vim, helpers) {
   cm.setCursor(0, 0);
   helpers.doKeys('f', 'x');
@@ -2320,7 +2418,7 @@ testVim('scrollMotion', function(cm, vim, helpers){
   prevScrollInfo = cm.getScrollInfo();
   helpers.doKeys('<C-e>');
   eq(1, cm.getCursor().line);
-  eq(true, prevScrollInfo.top < cm.getScrollInfo().top);
+  is(prevScrollInfo.top < cm.getScrollInfo().top);
   // Jump to the end of the sandbox.
   cm.setCursor(1000, 0);
   prevCursor = cm.getCursor();
@@ -2330,7 +2428,7 @@ testVim('scrollMotion', function(cm, vim, helpers){
   prevScrollInfo = cm.getScrollInfo();
   helpers.doKeys('<C-y>');
   eq(prevCursor.line - 1, cm.getCursor().line);
-  eq(true, prevScrollInfo.top > cm.getScrollInfo().top);
+  is(prevScrollInfo.top > cm.getScrollInfo().top);
 }, { value: scrollMotionSandbox});
 
 var squareBracketMotionSandbox = ''+
@@ -2930,3 +3028,11 @@ testVim('ex_map_key2key_from_colon', function(cm, vim, helpers) {
   helpers.assertCursorAt(0, 0);
   eq('bc', cm.getValue());
 }, { value: 'abc' });
+
+// Test event handlers
+testVim('beforeSelectionChange', function(cm, vim, helpers) {
+  cm.setCursor(0, 100);
+  eqPos(cm.getCursor('head'), cm.getCursor('anchor'));
+}, { value: 'abc' });
+
+

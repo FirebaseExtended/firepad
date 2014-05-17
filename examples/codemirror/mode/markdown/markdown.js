@@ -1,3 +1,13 @@
+(function(mod) {
+  if (typeof exports == "object" && typeof module == "object") // CommonJS
+    mod(require("../../lib/codemirror", require("../xml/xml")));
+  else if (typeof define == "function" && define.amd) // AMD
+    define(["../../lib/codemirror", "../xml/xml"], mod);
+  else // Plain browser env
+    mod(CodeMirror);
+})(function(CodeMirror) {
+"use strict";
+
 CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
 
   var htmlFound = CodeMirror.modes.hasOwnProperty("xml");
@@ -699,7 +709,8 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
 
         if (forceBlankLine) {
           state.prevLineHasContent = false;
-          return blankLine(state);
+          blankLine(state);
+          return this.token(stream, state);
         } else {
           state.prevLineHasContent = state.thisLineHasContent;
           state.thisLineHasContent = true;
@@ -727,7 +738,9 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
         state.indentation = adjustedIndentation;
         if (indentation > 0) return null;
       }
-      return state.f(stream, state);
+      var result = state.f(stream, state);
+      if (stream.start == stream.pos) return this.token(stream, state);
+      else return result;
     },
 
     innerMode: function(state) {
@@ -746,3 +759,5 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
 }, "xml");
 
 CodeMirror.defineMIME("text/x-markdown", "markdown");
+
+});

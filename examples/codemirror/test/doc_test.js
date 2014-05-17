@@ -320,8 +320,6 @@
     eq(cleared, 1);
   });
 
-<<<<<<< HEAD
-=======
   testDoc("sharedMarkerCopy", "A='abcde'", function(a) {
     var shared = a.markText(Pos(0, 1), Pos(0, 3), {shared: true});
     var b = a.linkedDoc();
@@ -364,7 +362,6 @@
     eq(cleared, 1);
   });
 
->>>>>>> bc75b8f... Keep shared markers consistent when documents are linked/unlinked
   testDoc("undoInSubview", "A='line 0\nline 1\nline 2\nline 3\nline 4' B<A/1-4", function(a, b) {
     b.replaceRange("x", Pos(2, 0));
     a.undo();
