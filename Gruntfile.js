@@ -72,6 +72,9 @@ module.exports = function (grunt) {
           "lib/line-formatting.js",
           "lib/line.js",
           "lib/parse-html.js",
+          "lib/serialize-html.js",
+          "lib/text-pieces-to-inserts.js",
+          "lib/headless.js",
           "lib/firepad.js"
         ],
         "dest": "dist/firepad.js"

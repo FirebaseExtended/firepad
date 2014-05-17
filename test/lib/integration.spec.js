@@ -1,6 +1,7 @@
 describe('Integration tests', function() {
   var h = helpers;
   var Firepad = firepad.Firepad;
+  var Headless = Firepad.Headless;
 
   var _cmDiv;
   function cmDiv() {
@@ -99,5 +100,71 @@ describe('Integration tests', function() {
       firepad.setHtml(html);
       expect(firepad.getHtml()).toContain(html);
     });
+  });
+
+  it("Performs headless get/set plaintext", function(){
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var cm = CodeMirror(cmDiv());
+    var firepadCm = new Firepad(ref, cm);
+    var firepadHeadless = new Headless(ref);
+
+    var text = 'Hello from headless firepad!';
+
+    firepadHeadless.setText(text);
+
+    waitsFor(function() { return cm.getValue() == text; }, 'cm matches text');
+
+    runs(function() {
+      var headlessText = null;
+      firepadHeadless.getText(function(val) {
+        headlessText = val;
+      })
+
+      waitsFor(function() { return headlessText == text; }, 'firepad headless matches text');
+    });
+  });
+
+  it("Performs headless get/set html", function(){
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var cm = CodeMirror(cmDiv());
+    var firepadCm = new Firepad(ref, cm);
+    var firepadHeadless = new Headless(ref);
+
+    var html =
+      '<span style="font-size: 24px;">Rich-text editing with <span style="color: red">Firepad!</span></span><br/>\n' +
+      '<br/>' +
+      '<div style="font-size: 18px">' +
+      'Supports:<br/>' +
+      '<ul>' +
+        '<li>Different ' +
+          '<span style="font-family: impact">fonts,</span>' +
+          '<span style="font-size: 24px;"> sizes, </span>' +
+          '<span style="color: blue">and colors.</span>' +
+        '</li>' +
+        '<li>' +
+          '<b>Bold, </b>' +
+          '<i>italic, </i>' +
+          '<u>and underline.</u>' +
+        '</li>' +
+        '<li>Lists' +
+          '<ol>' +
+            '<li>One</li>' +
+            '<li>Two</li>' +
+          '</ol>' +
+        '</li>' +
+        '<li>Undo / redo</li>' +
+        '<li>Cursor / selection synchronization.</li>' +
+        '<li>And it\'s all fully collaborative!</li>' +
+      '</ul>' +
+      '</div>'
+
+    var headlessHtml = null;
+    firepadHeadless.setHtml(html, function() {
+      firepadHeadless.getHtml(function(val) {
+        headlessHtml = val;
+      })
+    });
+
+    waitsFor(function() { return headlessHtml == firepadCm.getHtml(); }, 'firepad headless html matches cm-firepad html');
   });
 });
