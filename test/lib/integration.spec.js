@@ -86,4 +86,18 @@ describe('Integration tests', function() {
 
     runs(step);
   });
+
+  it("Performs getHtml responsively", function() {
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var cm = CodeMirror(cmDiv());
+    var firepad = new Firepad(ref, cm);
+
+    waitsFor(function() { return firepad.ready_ }, 'firepad is ready');
+
+    var html = '<b>bold</b>';
+    runs(function() {
+      firepad.setHtml(html);
+      expect(firepad.getHtml()).toContain(html);
+    });
+  });
 });
