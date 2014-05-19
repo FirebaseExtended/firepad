@@ -131,7 +131,7 @@ firepad.utils.stringEndsWith = function(str, suffix) {
   var list = (typeof suffix == 'string') ? [suffix] : suffix;
   for (var i = 0; i < list.length; i++) {
     var suffix = list[i];
-    if (str.indexOf(suffix, str.length - suffix.length) !== -1) 
+    if (str.indexOf(suffix, str.length - suffix.length) !== -1)
       return true;
   }
   return false;
@@ -1391,7 +1391,7 @@ firepad.FirebaseAdapter = (function (global) {
     return this.revision_ === 0;
   };
 
-  FirebaseAdapter.prototype.sendOperation = function (operation, cursor) {
+  FirebaseAdapter.prototype.sendOperation = function (operation) {
     var self = this;
 
     // If we're not ready yet, do nothing right now, and trigger a retry when we're ready.
@@ -1408,7 +1408,8 @@ firepad.FirebaseAdapter = (function (global) {
     // Convert revision into an id that will sort properly lexicographically.
     var revisionId = revisionToId(this.revision_);
 
-    function doTransaction(revisionId, revisionData, cursor) {
+    function doTransaction(revisionId, revisionData) {
+
       self.ref_.child('history').child(revisionId).transaction(function(current) {
         if (current === null) {
           return revisionData;
@@ -1419,21 +1420,19 @@ firepad.FirebaseAdapter = (function (global) {
             if (self.sent_ && self.sent_.id === revisionId) {
               // We haven't seen our transaction succeed or fail.  Send it again.
               setTimeout(function() {
-                doTransaction(revisionId, revisionData, cursor);
+                doTransaction(revisionId, revisionData);
               }, 0);
             }
           } else {
             utils.log('Transaction failure!', error);
             throw error;
           }
-        } else if (committed) {
-          self.sendCursor(cursor);
         }
       }, /*applyLocally=*/false);
     }
 
     this.sent_ = { id: revisionId, op: operation };
-    doTransaction(revisionId, { a: self.userId_, o: operation.toJSON(), t: Firebase.ServerValue.TIMESTAMP }, cursor);
+    doTransaction(revisionId, { a: self.userId_, o: operation.toJSON(), t: Firebase.ServerValue.TIMESTAMP });
   };
 
   FirebaseAdapter.prototype.sendCursor = function (obj) {
@@ -1466,7 +1465,6 @@ firepad.FirebaseAdapter = (function (global) {
 
   FirebaseAdapter.prototype.monitorCursors_ = function() {
     var usersRef = this.ref_.child('users'), self = this;
-    var user2Callback = { };
 
     function childChanged(childSnap) {
       var userId = childSnap.name();
@@ -1479,7 +1477,6 @@ firepad.FirebaseAdapter = (function (global) {
 
     this.firebaseOn_(usersRef, 'child_removed', function(childSnap) {
       var userId = childSnap.name();
-      self.firebaseOff_(childSnap.ref(), 'value', user2Callback[userId]);
       self.trigger('cursor', userId, null);
     });
   };
@@ -2032,17 +2029,7 @@ firepad.Client = (function () {
   Client.prototype.serverAck = function () {
     this.setState(this.state.serverAck(this));
   };
-  
-  // Transforms a cursor position from the latest known server state to the
-  // current client state. For example, if we get from the server the
-  // information that another user's cursor is at position 3, but the server
-  // hasn't yet received our newest operation, an insertion of 5 characters at
-  // the beginning of the document, the correct position of the other user's
-  // cursor in our current document is 8.
-  Client.prototype.transformCursor = function (cursor) {
-    return this.state.transformCursor(cursor);
-  };
-  
+
   Client.prototype.serverRetry = function() {
     this.setState(this.state.serverRetry(this));
   };
@@ -2084,9 +2071,6 @@ firepad.Client = (function () {
   Synchronized.prototype.serverRetry = function(client) {
     throw new Error("There is no pending operation.");
   };
-
-  // Nothing to do because the latest server state and client state are the same.
-  Synchronized.prototype.transformCursor = function (cursor) { return cursor; };
 
   // Singleton
   var synchronized_ = new Synchronized();
@@ -2131,10 +2115,6 @@ firepad.Client = (function () {
   AwaitingConfirm.prototype.serverRetry = function (client) {
     client.sendOperation(this.outstanding);
     return this;
-  };
-
-  AwaitingConfirm.prototype.transformCursor = function (cursor) {
-    return cursor.transform(this.outstanding);
   };
 
   // In the 'AwaitingWithBuffer' state, the client is waiting for an operation
@@ -2189,10 +2169,6 @@ firepad.Client = (function () {
     // => send buffer
     client.sendOperation(this.buffer);
     return new AwaitingConfirm(this.buffer);
-  };
-
-  AwaitingWithBuffer.prototype.transformCursor = function (cursor) {
-    return cursor.transform(this.outstanding).transform(this.buffer);
   };
 
   return Client;
@@ -2267,25 +2243,33 @@ firepad.EditorClient = (function () {
     this.editorAdapter.registerCallbacks({
       change: function (operation, inverse) { self.onChange(operation, inverse); },
       cursorActivity: function () { self.onCursorActivity(); },
-      blur: function () { self.onBlur(); }
+      blur: function () { self.onBlur(); },
+      focus: function () { self.onFocus(); }
     });
     this.editorAdapter.registerUndo(function () { self.undo(); });
     this.editorAdapter.registerRedo(function () { self.redo(); });
 
     this.serverAdapter.registerCallbacks({
-      ack: function () { self.serverAck(); },
+      ack: function () {
+        self.serverAck();
+        if (self.focused && self.state instanceof Client.Synchronized) {
+          self.updateCursor();
+          self.sendCursor(self.cursor);
+        }
+      },
       retry: function() { self.serverRetry(); },
       operation: function (operation) {
         self.applyServer(operation);
       },
       cursor: function (clientId, cursor, color) {
-        if (self.serverAdapter.userId_ === clientId) return;
+        if (self.serverAdapter.userId_ === clientId ||
+            !(self.state instanceof Client.Synchronized)) {
+          return;
+        }
         var client = self.getClientObject(clientId);
         if (cursor) {
-          client.setColor(color);
-          client.updateCursor(
-            self.transformCursor(Cursor.fromJSON(cursor))
-          );
+          if (color) client.setColor(color);
+          client.updateCursor(Cursor.fromJSON(cursor));
         } else {
           client.removeCursor();
         }
@@ -2343,13 +2327,19 @@ firepad.EditorClient = (function () {
   EditorClient.prototype.onCursorActivity = function () {
     var oldCursor = this.cursor;
     this.updateCursor();
-    if (oldCursor && this.cursor.equals(oldCursor)) { return; }
+    if (!this.focused || oldCursor && this.cursor.equals(oldCursor)) { return; }
     this.sendCursor(this.cursor);
   };
 
   EditorClient.prototype.onBlur = function () {
     this.cursor = null;
     this.sendCursor(null);
+    this.focused = false;
+  };
+
+  EditorClient.prototype.onFocus = function () {
+    this.focused = true;
+    this.onCursorActivity();
   };
 
   EditorClient.prototype.sendCursor = function (cursor) {
@@ -2358,7 +2348,7 @@ firepad.EditorClient = (function () {
   };
 
   EditorClient.prototype.sendOperation = function (operation) {
-    this.serverAdapter.sendOperation(operation, this.cursor);
+    this.serverAdapter.sendOperation(operation);
   };
 
   EditorClient.prototype.applyOperation = function (operation) {
@@ -2779,10 +2769,10 @@ firepad.RichTextCodeMirror = (function () {
 
   // These attributes will have styles generated dynamically in the page.
   var DynamicStyleAttributes = {
-    'c' : 'color', 
+    'c' : 'color',
     'bc': 'background-color',
     'fs' : 'font-size',
-    'li' : function(indent) { return 'margin-left: ' + (indent * 40) + 'px'; }
+    'li' : function(indent) { return 'padding-left: ' + (indent * 40) + 'px'; }
   };
 
   // A cache of dynamically-created styles so we can re-use them.
@@ -2989,7 +2979,11 @@ firepad.RichTextCodeMirror = (function () {
   };
 
   RichTextCodeMirror.prototype.insertText = function(index, text, attributes, origin) {
+    var cm = this.codeMirror;
+    var cursor = cm.getCursor();
+    var resetCursor = origin == 'RTCMADAPTER' && !cm.somethingSelected() && index == cm.indexFromPos(cursor);
     this.replaceText(index, null, text, attributes, origin);
+    if (resetCursor) cm.setCursor(cursor);
   };
 
   RichTextCodeMirror.prototype.removeText = function(start, end, origin) {
@@ -3109,14 +3103,14 @@ firepad.RichTextCodeMirror = (function () {
   RichTextCodeMirror.prototype.addStyleWithCSS_ = function(css) {
     var head = document.getElementsByTagName('head')[0],
         style = document.createElement('style');
-    
+
     style.type = 'text/css';
     if (style.styleSheet){
       style.styleSheet.cssText = css;
     } else {
       style.appendChild(document.createTextNode(css));
     }
-    
+
     head.appendChild(style);
   };
 
@@ -3303,7 +3297,7 @@ firepad.RichTextCodeMirror = (function () {
           newChange = newChange.next;
           removedPos += span.length;
         }
-        
+
         this.annotationList_.removeSpan(new Span(start, removed.length));
       }
 
@@ -3975,40 +3969,40 @@ firepad.RichTextCodeMirrorAdapter = (function () {
   // Apply an operation to a CodeMirror instance.
   RichTextCodeMirrorAdapter.applyOperationToCodeMirror = function (operation, rtcm) {
 
-  // HACK: If there are a lot of operations; hide CodeMirror so that it doesn't re-render constantly.
-  if (operation.ops.length > 10)
-    rtcm.codeMirror.getWrapperElement().setAttribute('style', 'display: none');
+    // HACK: If there are a lot of operations; hide CodeMirror so that it doesn't re-render constantly.
+    if (operation.ops.length > 10)
+      rtcm.codeMirror.getWrapperElement().setAttribute('style', 'display: none');
 
-  var ops = operation.ops;
-  var index = 0; // holds the current index into CodeMirror's content
-  for (var i = 0, l = ops.length; i < l; i++) {
-    var op = ops[i];
-    if (op.isRetain()) {
-      if (!emptyAttributes(op.attributes)) {
-        rtcm.updateTextAttributes(index, index + op.chars, function(attributes) {
-          for(var attr in op.attributes) {
-            if (op.attributes[attr] === false) {
-              delete attributes[attr];
-            } else {
-              attributes[attr] = op.attributes[attr];
+    var ops = operation.ops;
+    var index = 0; // holds the current index into CodeMirror's content
+    for (var i = 0, l = ops.length; i < l; i++) {
+      var op = ops[i];
+      if (op.isRetain()) {
+        if (!emptyAttributes(op.attributes)) {
+          rtcm.updateTextAttributes(index, index + op.chars, function(attributes) {
+            for(var attr in op.attributes) {
+              if (op.attributes[attr] === false) {
+                delete attributes[attr];
+              } else {
+                attributes[attr] = op.attributes[attr];
+              }
             }
-          }
-        }, 'RTCMADAPTER', /*doLineAttributes=*/true);
+          }, 'RTCMADAPTER', /*doLineAttributes=*/true);
+        }
+        index += op.chars;
+      } else if (op.isInsert()) {
+        rtcm.insertText(index, op.text, op.attributes, 'RTCMADAPTER');
+        index += op.text.length;
+      } else if (op.isDelete()) {
+        rtcm.removeText(index, index + op.chars, 'RTCMADAPTER');
       }
-      index += op.chars;
-    } else if (op.isInsert()) {
-      rtcm.insertText(index, op.text, op.attributes, 'RTCMADAPTER');
-      index += op.text.length;
-    } else if (op.isDelete()) {
-      rtcm.removeText(index, index + op.chars, 'RTCMADAPTER');
     }
-  }
 
-  if (operation.ops.length > 10) {
-    rtcm.codeMirror.getWrapperElement().setAttribute('style', '');
-    rtcm.codeMirror.refresh();
-  }
-};
+    if (operation.ops.length > 10) {
+      rtcm.codeMirror.getWrapperElement().setAttribute('style', '');
+      rtcm.codeMirror.refresh();
+    }
+  };
 
   RichTextCodeMirrorAdapter.prototype.registerCallbacks = function (cb) {
     this.callbacks = cb;
@@ -4028,10 +4022,13 @@ firepad.RichTextCodeMirrorAdapter = (function () {
     }
   };
 
-  RichTextCodeMirrorAdapter.prototype.onCursorActivity =
-      RichTextCodeMirrorAdapter.prototype.onFocus = function () {
-        this.trigger('cursorActivity');
-      };
+  RichTextCodeMirrorAdapter.prototype.onCursorActivity = function () {
+    this.trigger('cursorActivity');
+  }
+
+  RichTextCodeMirrorAdapter.prototype.onFocus = function () {
+    this.trigger('focus');
+  };
 
   RichTextCodeMirrorAdapter.prototype.onBlur = function () {
     if (!this.cm.somethingSelected()) { this.trigger('blur'); }
@@ -4097,23 +4094,17 @@ firepad.RichTextCodeMirrorAdapter = (function () {
     if (cursor.position === cursor.selectionEnd) {
       // show cursor
       var cursorCoords = this.cm.cursorCoords(cursorPos);
-      var cursorEl = document.createElement('pre');
+      var cursorEl = document.createElement('span');
       cursorEl.className = 'other-client';
       cursorEl.style.borderLeftWidth = '2px';
       cursorEl.style.borderLeftStyle = 'solid';
-      cursorEl.innerHTML = '&nbsp;';
       cursorEl.style.borderLeftColor = color;
+      cursorEl.style.marginLeft = cursorEl.style.marginRight = '-1px';
       cursorEl.style.height = (cursorCoords.bottom - cursorCoords.top) * 0.9 + 'px';
-      cursorEl.style.marginTop = (cursorCoords.top - cursorCoords.bottom) + 'px';
       cursorEl.setAttribute('data-clientid', clientId);
       cursorEl.style.zIndex = 0;
-      this.cm.addWidget(cursorPos, cursorEl, false);
-      return {
-        clear: function () {
-          var parent = cursorEl.parentNode;
-          if (parent) { parent.removeChild(cursorEl); }
-        }
-      };
+
+      return this.cm.setBookmark(cursorPos, { widget: cursorEl, insertLeft: true });
     } else {
       // show selection
       var selectionClassName = 'selection-' + color.replace('#', '');
@@ -4985,7 +4976,9 @@ firepad.Firepad = (function(global) {
   };
 
   Firepad.prototype.getHtmlFromRange = function(start, end) {
-    var doc = (start != null && end != null) ? this.getOperationForSpan(start, end) : this.firebaseAdapter_.getDocument();
+    var doc = (start != null && end != null) ?
+      this.getOperationForSpan(start, end) :
+      this.getOperationForSpan(0, this.codeMirror_.getValue().length);
     var html = '', newLine = true;
     html += Firepad.EXPORT_HTML_STYLE;
 

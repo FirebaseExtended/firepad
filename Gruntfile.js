@@ -93,6 +93,12 @@ module.exports = function (grunt) {
           {
             src: 'lib/firepad.css',
             dest: 'dist/firepad.css'
+          },
+          {
+            expand: true,
+            cwd: 'dist/',
+            src: ['firepad.js', 'firepad.css'],
+            dest: 'examples/'
           }
         ]
       }
