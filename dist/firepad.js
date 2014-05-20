@@ -2795,8 +2795,12 @@ firepad.RichTextCodeMirror = (function () {
     bind(this, 'onCodeMirrorChange_');
     bind(this, 'onCursorActivity_');
 
+    if (/^4\./.test(CodeMirror.version)) {
+      this.codeMirror.on('changes', this.onCodeMirrorChange_);
+    } else {
+      this.codeMirror.on('change', this.onCodeMirrorChange_);
+    }
     this.codeMirror.on('beforeChange', this.onCodeMirrorBeforeChange_);
-    this.codeMirror.on('change', this.onCodeMirrorChange_);
     this.codeMirror.on('cursorActivity', this.onCursorActivity_);
 
     this.changeId_ = 0;
@@ -2817,6 +2821,7 @@ firepad.RichTextCodeMirror = (function () {
   RichTextCodeMirror.prototype.detach = function() {
     this.codeMirror.off('beforeChange', this.onCodeMirrorBeforeChange_);
     this.codeMirror.off('change', this.onCodeMirrorChange_);
+    this.codeMirror.off('changes', this.onCodeMirrorChange_);
     this.codeMirror.off('cursorActivity', this.onCursorActivity_);
     this.clearAnnotations_();
   };
@@ -2863,7 +2868,7 @@ firepad.RichTextCodeMirror = (function () {
   };
 
   RichTextCodeMirror.prototype.updateTextAttributes = function(start, end, updateFn, origin, doLineAttributes) {
-    var newChangeList = { }, newChange = newChangeList;
+    var newChanges = [];
     var pos = start, self = this;
     this.annotationList_.updateSpan(new Span(start, end - start), function(annotation, length) {
       var attributes = { };
@@ -2880,16 +2885,15 @@ firepad.RichTextCodeMirror = (function () {
       var changedAttributes = { }, changedAttributesInverse = { };
       self.computeChangedAttributes_(annotation.attributes, attributes, changedAttributes, changedAttributesInverse);
       if (!emptyAttributes(changedAttributes)) {
-        newChange.next = { start: pos, end: pos + length, attributes: changedAttributes, attributesInverse: changedAttributesInverse, origin: origin };
-        newChange = newChange.next;
+        newChanges.push({ start: pos, end: pos + length, attributes: changedAttributes, attributesInverse: changedAttributesInverse, origin: origin });
       }
 
       pos += length;
       return new RichTextAnnotation(attributes);
     });
 
-    if (newChangeList.next) {
-      this.trigger('attributesChange', this, newChangeList.next);
+    if (newChanges.length > 0) {
+      this.trigger('attributesChange', this, newChanges);
     }
   };
 
@@ -3279,22 +3283,31 @@ firepad.RichTextCodeMirror = (function () {
   }
 
   RichTextCodeMirror.prototype.onCodeMirrorChange_ = function(cm, cmChanges) {
-    var changes = this.convertCoordinateSystemForChanges_(cmChanges);
+    // Handle single change objects and linked lists of change objects.
+    if (typeof cmChanges.from === 'object') {
+      var changeArray = [];
+      while (cmChanges) {
+        changeArray.push(cmChanges);
+        cmChanges = cmChanges.next;
+      }
+      cmChanges = changeArray;
+    }
 
-    var newChangeList = { }, newChange = newChangeList;
-    var change = changes;
-    while (change) {
+    var changes = this.convertCoordinateSystemForChanges_(cmChanges);
+    var newChanges = [];
+
+    for (var i = 0; i < changes.length; i++) {
+      var change = changes[i];
       var start = change.start, end = change.end, text = change.text, removed = change.removed, origin = change.origin;
 
       // When text with multiple sets of attributes on it is removed, we need to split it into separate remove changes.
       if (removed.length > 0) {
         var oldAnnotationSpans = this.annotationList_.getAnnotatedSpansForSpan(new Span(start, removed.length));
         var removedPos = 0;
-        for(i = 0; i < oldAnnotationSpans.length; i++) {
-          var span = oldAnnotationSpans[i];
-          newChange.next = { start: start, end: start + span.length, removedAttributes: span.annotation.attributes,
-            removed: removed.substr(removedPos, span.length), attributes: { }, text: "", origin: change.origin };
-          newChange = newChange.next;
+        for(var j = 0; j < oldAnnotationSpans.length; j++) {
+          var span = oldAnnotationSpans[j];
+          newChanges.push({ start: start, end: start + span.length, removedAttributes: span.annotation.attributes,
+            removed: removed.substr(removedPos, span.length), attributes: { }, text: "", origin: change.origin });
           removedPos += span.length;
         }
 
@@ -3316,22 +3329,19 @@ firepad.RichTextCodeMirror = (function () {
 
         this.annotationList_.insertAnnotatedSpan(new Span(start, text.length), new RichTextAnnotation(attributes));
 
-        newChange.next = { start: start, end: start, removedAttributes: { }, removed: "", text: text,
-          attributes: attributes, origin: origin };
-        newChange = newChange.next;
+        newChanges.push({ start: start, end: start, removedAttributes: { }, removed: "", text: text,
+          attributes: attributes, origin: origin });
       }
-
-      change = change.next;
     }
 
     this.markLineSentinelCharactersForChanges_(cmChanges);
 
-    if (newChangeList.next) {
-      this.trigger('change', this, newChangeList.next);
+    if (newChanges.length > 0) {
+      this.trigger('change', this, newChanges);
     }
   };
 
-  RichTextCodeMirror.prototype.convertCoordinateSystemForChanges_ = function(cmChanges) {
+  RichTextCodeMirror.prototype.convertCoordinateSystemForChanges_ = function(changes) {
     // We have to convert the positions in the pre-change coordinate system to indexes.
     // CodeMirror's `indexFromPos` method does this for the current state of the editor.
     // We can use the information of a single change object to convert a post-change
@@ -3339,13 +3349,6 @@ firepad.RichTextCodeMirror = (function () {
     // to get a pre-change coordinate system for all changes in the linked list.  A
     // disadvantage of this approach is its complexity `O(n^2)` in the length of the
     // linked list of changes.
-
-    var changes = [], i = 0;
-    var cmChange = cmChanges;
-    while (cmChange) {
-      changes[i++] = cmChange;
-      cmChange = cmChange.next;
-    }
 
     var self = this;
     var indexFromPos = function (pos) {
@@ -3374,22 +3377,19 @@ firepad.RichTextCodeMirror = (function () {
       };
     }
 
-    var newChange = null;
-    for (var c = changes.length - 1; c >= 0; c--) {
-      change = changes[c];
+    var newChanges = [];
+    for (var i = changes.length - 1; i >= 0; i--) {
+      var change = changes[i];
       indexFromPos = updateIndexFromPos(indexFromPos, change);
 
       var start = indexFromPos(change.from);
 
       var removedText = change.removed.join('\n');
       var text = change.text.join('\n');
-      newChange = { start: start, end: start + removedText.length, removed: removedText, text: text,
-        origin: change.origin, next: newChange };
-
-      change = change.next;
+      newChanges.unshift({ start: start, end: start + removedText.length, removed: removedText, text: text,
+        origin: change.origin});
     }
-
-    return newChange;
+    return newChanges;
   };
 
   /**
@@ -3404,8 +3404,8 @@ firepad.RichTextCodeMirror = (function () {
     // together, so this isn't quite as bad as it seems.
     var startLine = Number.MAX_VALUE, endLine = -1;
 
-    var change = changes;
-    while (change) {
+    for (var i = 0; i < changes.length; i++) {
+      var change = changes[i];
       var line = change.from.line, ch = change.from.ch;
 
       if (change.removed.length > 1 || change.removed[0].indexOf(LineSentinelCharacter) >= 0) {
@@ -3421,8 +3421,6 @@ firepad.RichTextCodeMirror = (function () {
         startLine = Math.min(startLine, line);
         endLine = Math.max(endLine, line);
       }
-
-      change = change.next;
     }
 
     // HACK: Because the above code doesn't handle multiple changes correctly, endLine might be invalid.  To
@@ -3892,7 +3890,7 @@ firepad.RichTextCodeMirrorAdapter = (function () {
 
   // Converts a CodeMirror change object into a TextOperation and its inverse
   // and returns them as a two-element array.
-  RichTextCodeMirrorAdapter.operationFromCodeMirrorChange = function (change, cm) {
+  RichTextCodeMirrorAdapter.operationFromCodeMirrorChanges = function (changes, cm) {
     // Approach: Replay the changes, beginning with the most recent one, and
     // construct the operation and its inverse. We have to convert the position
     // in the pre-change coordinate system to an index. We have a method to
@@ -3904,19 +3902,12 @@ firepad.RichTextCodeMirrorAdapter = (function () {
     // A disadvantage of this approach is its complexity `O(n^2)` in the length
     // of the linked list of changes.
 
-    var changes = [], i = 0;
-    while (change) {
-      changes[i++] = change;
-      change = change.next;
-    }
-
     var docEndLength = codemirrorLength(cm);
     var operation    = new TextOperation().retain(docEndLength);
     var inverse      = new TextOperation().retain(docEndLength);
 
-    for (i = changes.length - 1; i >= 0; i--) {
-      change = changes[i];
-
+    for (var i = changes.length - 1; i >= 0; i--) {
+      var change = changes[i];
       var fromIndex = change.start;
       var restLength = docEndLength - fromIndex - change.text.length;
 
@@ -3941,12 +3932,14 @@ firepad.RichTextCodeMirrorAdapter = (function () {
   };
 
   // Converts an attributes changed object to an operation and its inverse.
-  RichTextCodeMirrorAdapter.operationFromAttributesChange = function (change, cm) {
+  RichTextCodeMirrorAdapter.operationFromAttributesChanges = function (changes, cm) {
     var docEndLength = codemirrorLength(cm);
 
     var operation = new TextOperation(), inverse = new TextOperation();
     var pos = 0;
-    while (change) {
+
+    for (var i = changes.length - 1; i >= 0; i--) {
+      var change = changes[i];
       var toRetain = change.start - pos;
       assert(toRetain >= 0); // changes should be in order and non-overlapping.
       operation.retain(toRetain);
@@ -3956,8 +3949,6 @@ firepad.RichTextCodeMirrorAdapter = (function () {
       operation.retain(length, change.attributes);
       inverse.retain(length, change.attributesInverse);
       pos = change.start + length;
-
-      change = change.next;
     }
 
     operation.retain(docEndLength - pos);
@@ -4008,16 +3999,16 @@ firepad.RichTextCodeMirrorAdapter = (function () {
     this.callbacks = cb;
   };
 
-  RichTextCodeMirrorAdapter.prototype.onChange = function (_, change) {
-    if (change.origin !== 'RTCMADAPTER') {
-      var pair = RichTextCodeMirrorAdapter.operationFromCodeMirrorChange(change, this.cm);
+  RichTextCodeMirrorAdapter.prototype.onChange = function (_, changes) {
+    if (changes[0].origin !== 'RTCMADAPTER') {
+      var pair = RichTextCodeMirrorAdapter.operationFromCodeMirrorChanges(changes, this.cm);
       this.trigger('change', pair[0], pair[1]);
     }
   };
 
-  RichTextCodeMirrorAdapter.prototype.onAttributesChange = function (_, change) {
-    if (change.origin !== 'RTCMADAPTER') {
-      var pair = RichTextCodeMirrorAdapter.operationFromAttributesChange(change, this.cm);
+  RichTextCodeMirrorAdapter.prototype.onAttributesChange = function (_, changes) {
+    if (changes[0].origin !== 'RTCMADAPTER') {
+      var pair = RichTextCodeMirrorAdapter.operationFromAttributesChanges(changes, this.cm);
       this.trigger('change', pair[0], pair[1]);
     }
   };
