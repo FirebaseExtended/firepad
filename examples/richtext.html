@@ -73,9 +73,45 @@
               '</li>' +
               '<li>Undo / redo</li>' +
               '<li>Cursor / selection synchronization.</li>' +
+              '<li><checkbox></checkbox> It supports customized entities.</li>' +
               '<li>And it\'s all fully collaborative!</li>' +
             '</ul>' +
             '</div>');
+      }
+    });
+
+    firepad.registerEntity('checkbox', {
+      render: function (info, entityHandler) {
+        var inputElement = document.createElement('input');
+        inputElement.setAttribute('type', 'checkbox');
+        if(info.checked) {
+          inputElement.checked = 'checked';
+        }
+        inputElement.addEventListener('click', function () {
+          entityHandler.update({checked:this.checked});
+        })
+        return inputElement;
+      }.bind(this),
+      fromElement: function (element) {
+        var info = {};
+        if(element.hasAttribute('checked')) {
+          info.checked = true;
+        }
+        return info;
+      },
+      update: function (info, element) {
+        if (info.checked) {
+          element.checked = 'checked';
+        } else {
+          element.checked = null;
+        }
+      },
+      export: function (info) {
+        var inputElement = document.createElement('checkbox');
+        if(info.checked) {
+          inputElement.setAttribute('checked', true);
+        }
+        return inputElement;
       }
     });
   </script>
