@@ -80,6 +80,7 @@
       }
     });
 
+    // An example of a complex custom entity.
     firepad.registerEntity('checkbox', {
       render: function (info, entityHandler) {
         var inputElement = document.createElement('input');
@@ -88,8 +89,8 @@
           inputElement.checked = 'checked';
         }
         inputElement.addEventListener('click', function () {
-          entityHandler.update({checked:this.checked});
-        })
+          entityHandler.replace({checked:this.checked});
+        });
         return inputElement;
       }.bind(this),
       fromElement: function (element) {
