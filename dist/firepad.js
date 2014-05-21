@@ -2680,6 +2680,18 @@ firepad.EntityManager = (function () {
     return elt;
   };
 
+  /* Updates a DOM element to reflect the given entity.
+     If the entity doesn't support the update method, it is fully
+     re-rendered.
+  */
+  EntityManager.prototype.updateElement = function(entity, element) {
+    var type = entity.type;
+    var info = entity.info;
+    if (this.entities_[type] && typeof(this.entities_[type].update) != 'undefined') {
+      this.entities_[type].update(info, element);
+    }
+  };
+
   EntityManager.prototype.fromElement = function(element) {
     var type = element.getAttribute('data-firepad-entity');
 
@@ -2709,6 +2721,10 @@ firepad.EntityManager = (function () {
         }
       }
     }
+  };
+
+  EntityManager.prototype.entitySupportsUpdate = function(entityType) {
+    return this.entities_[entityType] && this.entities_[entityType]['update'];
   };
 
   return EntityManager;
@@ -3038,10 +3054,19 @@ firepad.RichTextCodeMirror = (function () {
     }
   };
 
+  /**
+   * Updates the nodes of an Annotation.
+   * @param {Array.<OldAnnotatedSpan>} oldNodes The list of nodes to replace.
+   * @param {Array.<NewAnnotatedSpan>} newNodes The new list of nodes.
+   */
   RichTextCodeMirror.prototype.onAnnotationsChanged_ = function(oldNodes, newNodes) {
     var marker;
 
     var linesToReMark = { };
+
+    // Update any entities in-place that we can.  This will remove them from the oldNodes/newNodes lists
+    // so we don't remove and recreate them below.
+    this.tryToUpdateEntitiesInPlace(oldNodes, newNodes);
 
     for(var i = 0; i < oldNodes.length; i++) {
       var attributes = oldNodes[i].annotation.attributes;
@@ -3077,6 +3102,31 @@ firepad.RichTextCodeMirror = (function () {
     for(var line in linesToReMark) {
       this.dirtyLines_.push(this.codeMirror.getLineHandle(Number(line)));
       this.queueLineMarking_();
+    }
+  };
+
+  RichTextCodeMirror.prototype.tryToUpdateEntitiesInPlace = function(oldNodes, newNodes) {
+    // Loop over nodes in reverse order so we can easily splice them out as necessary.
+    var oldNodesLen = oldNodes.length;
+    while (oldNodesLen--) {
+      var oldNode = oldNodes[oldNodesLen];
+      var newNodesLen = newNodes.length;
+      while (newNodesLen--) {
+        var newNode = newNodes[newNodesLen];
+        if (oldNode.pos == newNode.pos &&
+            oldNode.annotation.attributes['ent'] &&
+            oldNode.annotation.attributes['ent'] == newNode.annotation.attributes['ent']) {
+          var entityType = newNode.annotation.attributes['ent'];
+          if (this.entityManager_.entitySupportsUpdate(entityType)) {
+            // Update it in place and remove the change from oldNodes / newNodes so we don't process it below.
+            oldNodes.splice(oldNodesLen, 1);
+            newNodes.splice(newNodesLen, 1);
+            var marker = oldNode.getAttachedObject();
+            marker.update(newNode.annotation.attributes);
+            newNode.attachObject(marker);
+          }
+        }
+      }
     }
   };
 
@@ -3187,6 +3237,18 @@ firepad.RichTextCodeMirror = (function () {
         for(var i = 0; i < markers.length; i++) {
           markers[i].clear();
         }
+      },
+
+      /**
+       * Updates the attributes of all the AnnotationNode entities.
+       * @param {Object.<string, string>} info The full list of new
+       *     attributes to apply.
+       */
+      update: function(info) {
+        var entity = firepad.Entity.fromAttributes(info);
+        for(var i = 0; i < markers.length; i++) {
+          self.entityManager_.updateElement(entity, markers[i].replacedWith);
+        }
       }
     });
 
@@ -3225,17 +3287,37 @@ firepad.RichTextCodeMirror = (function () {
       }
     }
 
+    /**
+     * Updates the attributes of an Entity.  Will call .update() if the entity supports it,
+     * else it'll just remove / re-create the entity.
+     * @param {Object.<string, string>} info The full list of new
+     *     attributes to apply.
+     */
     function replace(info) {
+      var ATTR = firepad.AttributeConstants;
+      var SENTINEL = ATTR.ENTITY_SENTINEL;
+      var PREFIX = SENTINEL + '_';
+
       var at = find();
-      remove();
-      self.insertEntity_(at, new firepad.Entity(entity.type, info));
+
+      self.updateTextAttributes(at, at+1, function(attrs) {
+        for (var member in attrs) {
+          delete attrs[member];
+        }
+        attrs[SENTINEL] = entity.type;
+
+        for(var attr in info) {
+          attrs[PREFIX + attr] = info[attr];
+        }
+      });
     }
 
     function setMarker(m) {
       marker = m;
     }
 
-    return { find: find, remove: remove, replace: replace, setMarker: setMarker };
+    return { find: find, remove: remove, replace: replace,
+             setMarker: setMarker };
   };
 
   RichTextCodeMirror.prototype.lineClassRemover_ = function(lineNum) {
