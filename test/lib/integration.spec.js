@@ -124,7 +124,7 @@ describe('Integration tests', function() {
     });
   });
 
-  it("Performs headless get/set html", function(){
+  it("Performs headless get/set html", function() {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm = CodeMirror(cmDiv());
     var firepadCm = new Firepad(ref, cm);
