@@ -62,7 +62,7 @@ module.exports = function (grunt) {
           "lib/client.js",
           "lib/editor-client.js",
           "lib/ace-adapter.js",
-          "lib/attribute-constants.js",
+          "lib/constants.js",
           "lib/entity-manager.js",
           "lib/entity.js",
           "lib/rich-text-codemirror.js",

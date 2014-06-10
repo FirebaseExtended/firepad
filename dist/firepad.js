@@ -1401,6 +1401,11 @@ firepad.FirebaseAdapter = (function (global) {
     return this.revision_ === 0;
   };
 
+  /*
+   * Send operation, retrying on connection failure. Takes an optional callback with signature:
+   * function(error, snapshotValue).
+   * If no callback is provided, an exception will be thrown on transaction failure.
+   */
   FirebaseAdapter.prototype.sendOperation = function (operation, callback) {
     var self = this;
 
@@ -1424,7 +1429,7 @@ firepad.FirebaseAdapter = (function (global) {
         if (current === null) {
           return revisionData;
         }
-      }, function(error, committed) {
+      }, function(error, committed, snapshot) {
         if (error) {
           if (error.message === 'disconnect') {
             if (self.sent_ && self.sent_.id === revisionId) {
@@ -1432,13 +1437,20 @@ firepad.FirebaseAdapter = (function (global) {
               setTimeout(function() {
                 doTransaction(revisionId, revisionData);
               }, 0);
+            } else if (callback) {
+              callback(error, null);
             }
           } else {
-            utils.log('Transaction failure!', error);
-            throw error;
+            if (callback) {
+              callback(error, null);
+            } else {
+              utils.log('Transaction failure!', error);
+              throw error;
+            }
           }
+        } else {
+          if (callback) callback(null, snapshot.val());
         }
-        if (callback) callback();
       }, /*applyLocally=*/false);
     }
 
@@ -2687,6 +2699,15 @@ firepad.AttributeConstants = {
   LIST_TYPE: 'lt'
 };
 
+firepad.sentinelConstants = {
+  // A special character we insert at the beginning of lines so we can attach attributes to it to represent
+  // "line attributes."  E000 is from the unicode "private use" range.
+  LINE_SENTINEL_CHARACTER:   '\uE000',
+
+  // A special character used to represent any "entity" inserted into the document (e.g. an image).
+  ENTITY_SENTINEL_CHARACTER: '\uE001'
+};
+
 var firepad = firepad || { };
 
 firepad.EntityManager = (function () {
@@ -2887,14 +2908,9 @@ firepad.RichTextCodeMirror = (function () {
   }
   utils.makeEventEmitter(RichTextCodeMirror, ['change', 'attributesChange', 'newLine']);
 
-  // A special character we insert at the beginning of lines so we can attach attributes to it to represent
-  // "line attributes."  E000 is from the unicode "private use" range.
-  var LineSentinelCharacter = '\uE000';
-  RichTextCodeMirror.LineSentinelCharacter = LineSentinelCharacter;
 
-  // A special character used to represent any "entity" inserted into the document (e.g. an image).
-  var EntitySentinelCharacter = '\uE001';
-  RichTextCodeMirror.EntitySentinelCharacter = EntitySentinelCharacter;
+  var LineSentinelCharacter   = firepad.sentinelConstants.LINE_SENTINEL_CHARACTER;
+  var EntitySentinelCharacter = firepad.sentinelConstants.ENTITY_SENTINEL_CHARACTER;
 
   RichTextCodeMirror.prototype.detach = function() {
     this.codeMirror.off('beforeChange', this.onCodeMirrorBeforeChange_);
@@ -5051,7 +5067,6 @@ var firepad = firepad || { };
  * Helper to turn pieces of text into insertable operations
  */
 firepad.textPiecesToInserts = function(atNewLine, textPieces) {
-  var RichTextCodeMirror = firepad.RichTextCodeMirror;
   var inserts = [];
 
   function insert(string, attributes) {
@@ -5069,7 +5084,7 @@ firepad.textPiecesToInserts = function(atNewLine, textPieces) {
     // the way this is used for inserting HTML, we end up inserting a "line" in the middle
     // of text, in which case we don't want to actually insert a newline.
     if (atNewLine) {
-      insert(RichTextCodeMirror.LineSentinelCharacter, line.formatting.attributes);
+      insert(firepad.sentinelConstants.LINE_SENTINEL_CHARACTER, line.formatting.attributes);
     }
 
     for(var i = 0; i < line.textPieces.length; i++) {
@@ -5126,17 +5141,19 @@ firepad.Headless = (function() {
 
   Headless.prototype.getText = function(callback) {
     this.getDocument(function(doc) {
-      callback(doc.apply(''));
+      var text = doc.apply('');
+
+      // Strip out any special characters from Rich Text formatting
+      for (key in firepad.sentinelConstants) {
+        text = text.replace(new RegExp(firepad.sentinelConstants[key], 'g'), '');
+      }
+      callback(text);
     });
   }
 
   Headless.prototype.setText = function(text, callback) {
-    var self = this;
-
-    self.getDocument(function(doc) {
-      var op = TextOperation()['delete'](doc.targetLength).insert(text);
-      self.adapter.sendOperation(op, callback);
-    });
+    var op = TextOperation().insert(text);
+    this.sendOperationWithRetry(op, callback);
   }
 
   Headless.prototype.initializeFakeDom = function(callback) {
@@ -5171,19 +5188,31 @@ firepad.Headless = (function() {
     var self = this;
 
     self.initializeFakeDom(function() {
-      self.getDocument(function(doc) {
-        var textPieces = ParseHtml(html, self.entityManager);
-        var inserts    = firepad.textPiecesToInserts(true, textPieces);
-        var op         = TextOperation()['delete'](doc.targetLength);
+      var textPieces = ParseHtml(html, self.entityManager);
+      var inserts    = firepad.textPiecesToInserts(true, textPieces);
+      var op         = new TextOperation();
 
-        for (var i = 0; i < inserts.length; i++) {
-          op.insert(inserts[i].string, inserts[i].attributes);
+      for (var i = 0; i < inserts.length; i++) {
+        op.insert(inserts[i].string, inserts[i].attributes);
+      }
+
+      self.sendOperationWithRetry(op, callback);
+    });
+  }
+
+  Headless.prototype.sendOperationWithRetry = function(operation, callback) {
+    var self = this;
+
+    self.getDocument(function(doc) {
+      var op = operation.clone()['delete'](doc.targetLength);
+      self.adapter.sendOperation(op, function(err, status) {
+        if (err) {
+          self.sendOperationWithRetry(operation, callback);
+        } else {
+          callback(null, status);
         }
-
-        self.adapter.sendOperation(op, callback);
       });
     });
-
   }
 
   return Headless;
