@@ -2256,6 +2256,7 @@ firepad.EditorClient = (function () {
           self.updateCursor();
           self.sendCursor(self.cursor);
         }
+        self.emitStatus();
       },
       retry: function() { self.serverRetry(); },
       operation: function (operation) {
@@ -2349,12 +2350,20 @@ firepad.EditorClient = (function () {
 
   EditorClient.prototype.sendOperation = function (operation) {
     this.serverAdapter.sendOperation(operation);
+    this.emitStatus();
   };
 
   EditorClient.prototype.applyOperation = function (operation) {
     this.editorAdapter.applyOperation(operation);
     this.updateCursor();
     this.undoManager.transform(new WrappedOperation(operation, null));
+  };
+
+  EditorClient.prototype.emitStatus = function() {
+    var self = this;
+    setTimeout(function() {
+      self.trigger('synced', self.state instanceof Client.Synchronized);
+    }, 0);
   };
 
   // Set Const.prototype.__proto__ to Super.prototype
@@ -2369,6 +2378,8 @@ firepad.EditorClient = (function () {
 
   return EditorClient;
 }());
+
+firepad.utils.makeEventEmitter(firepad.EditorClient, ['synced']);
 
 var ACEAdapter, firepad,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -4890,6 +4901,8 @@ firepad.Firepad = (function(global) {
         this.editorAdapter_.grabDocumentState();
       self.trigger('ready');
     });
+
+    this.client_.on('synced', function(isSynced) { self.trigger('synced', isSynced)} );
 
     // Hack for IE8 to make font icons work more reliably.
     // http://stackoverflow.com/questions/9809351/ie8-css-font-face-fonts-only-working-for-before-content-on-over-and-sometimes
