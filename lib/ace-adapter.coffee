@@ -10,7 +10,7 @@ firepad.ACEAdapter = class ACEAdapter
     @grabDocumentState()
     @ace.on 'change', @onChange
     @ace.on 'blur', @onBlur
-    @ace.on 'focus', @onCursorActivity
+    @ace.on 'focus', @onFocus
     @aceSession.selection.on 'changeCursor', @onCursorActivity
 
   grabDocumentState: ->
@@ -32,6 +32,9 @@ firepad.ACEAdapter = class ACEAdapter
 
   onBlur: =>
     @trigger 'blur' if @ace.selection.isEmpty()
+
+  onFocus: =>
+    @trigger 'focus'
 
   onCursorActivity: =>
     setTimeout ( =>

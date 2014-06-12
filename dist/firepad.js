@@ -2395,6 +2395,7 @@ firepad.ACEAdapter = ACEAdapter = (function() {
   function ACEAdapter(ace) {
     this.ace = ace;
     this.onCursorActivity = __bind(this.onCursorActivity, this);
+    this.onFocus = __bind(this.onFocus, this);
     this.onBlur = __bind(this.onBlur, this);
     this.onChange = __bind(this.onChange, this);
     this.aceSession = this.ace.getSession();
@@ -2403,7 +2404,7 @@ firepad.ACEAdapter = ACEAdapter = (function() {
     this.grabDocumentState();
     this.ace.on('change', this.onChange);
     this.ace.on('blur', this.onBlur);
-    this.ace.on('focus', this.onCursorActivity);
+    this.ace.on('focus', this.onFocus);
     this.aceSession.selection.on('changeCursor', this.onCursorActivity);
   }
 
@@ -2432,6 +2433,10 @@ firepad.ACEAdapter = ACEAdapter = (function() {
     if (this.ace.selection.isEmpty()) {
       return this.trigger('blur');
     }
+  };
+
+  ACEAdapter.prototype.onFocus = function() {
+    return this.trigger('focus');
   };
 
   ACEAdapter.prototype.onCursorActivity = function() {
