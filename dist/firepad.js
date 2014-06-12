@@ -2392,12 +2392,13 @@ if (typeof firepad === "undefined" || firepad === null) {
 firepad.ACEAdapter = ACEAdapter = (function() {
   ACEAdapter.prototype.ignoreChanges = false;
 
-  function ACEAdapter(ace) {
-    this.ace = ace;
+  function ACEAdapter(aceInstance) {
     this.onCursorActivity = __bind(this.onCursorActivity, this);
     this.onFocus = __bind(this.onFocus, this);
     this.onBlur = __bind(this.onBlur, this);
     this.onChange = __bind(this.onChange, this);
+    var _ref;
+    this.ace = aceInstance;
     this.aceSession = this.ace.getSession();
     this.aceDoc = this.aceSession.getDocument();
     this.aceDoc.setNewLineMode('unix');
@@ -2406,6 +2407,9 @@ firepad.ACEAdapter = ACEAdapter = (function() {
     this.ace.on('blur', this.onBlur);
     this.ace.on('focus', this.onFocus);
     this.aceSession.selection.on('changeCursor', this.onCursorActivity);
+    if (this.aceRange == null) {
+      this.aceRange = ((_ref = ace.require) != null ? _ref : require)("ace/range").Range;
+    }
   }
 
   ACEAdapter.prototype.grabDocumentState = function() {
@@ -2470,14 +2474,11 @@ firepad.ACEAdapter = ACEAdapter = (function() {
   };
 
   ACEAdapter.prototype.applyOperationToACE = function(operation) {
-    var from, index, op, range, to, _i, _len, _ref, _ref1;
-    if (this.aceRange == null) {
-      this.aceRange = ((_ref = ace.require) != null ? _ref : require)("ace/range").Range;
-    }
+    var from, index, op, range, to, _i, _len, _ref;
     index = 0;
-    _ref1 = operation.ops;
-    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-      op = _ref1[_i];
+    _ref = operation.ops;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      op = _ref[_i];
       if (op.isRetain()) {
         index += op.chars;
       } else if (op.isInsert()) {
@@ -2548,20 +2549,17 @@ firepad.ACEAdapter = ACEAdapter = (function() {
   };
 
   ACEAdapter.prototype.setCursor = function(cursor) {
-    var end, start, _ref, _ref1;
-    if (this.aceRange == null) {
-      this.aceRange = ((_ref = ace.require) != null ? _ref : require)("ace/range").Range;
-    }
+    var end, start, _ref;
     start = this.posFromIndex(cursor.position);
     end = this.posFromIndex(cursor.selectionEnd);
     if (cursor.position > cursor.selectionEnd) {
-      _ref1 = [end, start], start = _ref1[0], end = _ref1[1];
+      _ref = [end, start], start = _ref[0], end = _ref[1];
     }
     return this.aceSession.selection.setSelectionRange(new this.aceRange(start.row, start.column, end.row, end.column));
   };
 
   ACEAdapter.prototype.setOtherCursor = function(cursor, color, clientId) {
-    var clazz, css, cursorRange, end, justCursor, start, _ref,
+    var clazz, css, cursorRange, end, justCursor, self, start, _ref,
       _this = this;
     if (this.otherCursors == null) {
       this.otherCursors = {};
@@ -2580,12 +2578,20 @@ firepad.ACEAdapter = ACEAdapter = (function() {
     clazz = "other-client-selection-" + (color.replace('#', ''));
     justCursor = cursor.position === cursor.selectionEnd;
     if (justCursor) {
-      end.column += 1;
       clazz = clazz.replace('selection', 'cursor');
     }
     css = "." + clazz + " {\n  position: absolute;\n  background-color: " + (justCursor ? 'transparent' : color) + ";\n  border-left: 2px solid " + color + ";\n}";
     this.addStyleRule(css);
     this.otherCursors[clientId] = cursorRange = new this.aceRange(start.row, start.column, end.row, end.column);
+    self = this;
+    cursorRange.clipRows = function() {
+      var range;
+      range = self.aceRange.prototype.clipRows.apply(this, arguments);
+      range.isEmpty = function() {
+        return false;
+      };
+      return range;
+    };
     cursorRange.start = this.aceDoc.createAnchor(cursorRange.start);
     cursorRange.end = this.aceDoc.createAnchor(cursorRange.end);
     cursorRange.id = this.aceSession.addMarker(cursorRange, clazz, "text");

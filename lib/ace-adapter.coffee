@@ -3,7 +3,8 @@ firepad = {} unless firepad?
 firepad.ACEAdapter = class ACEAdapter
   ignoreChanges: false
 
-  constructor: (@ace) ->
+  constructor: (aceInstance) ->
+    @ace = aceInstance
     @aceSession = @ace.getSession()
     @aceDoc = @aceSession.getDocument()
     @aceDoc.setNewLineMode 'unix'
@@ -12,6 +13,7 @@ firepad.ACEAdapter = class ACEAdapter
     @ace.on 'blur', @onBlur
     @ace.on 'focus', @onFocus
     @aceSession.selection.on 'changeCursor', @onCursorActivity
+    @aceRange ?= (ace.require ? require)("ace/range").Range
 
   grabDocumentState: ->
     @lastDocLines = @aceDoc.getAllLines()
@@ -61,7 +63,6 @@ firepad.ACEAdapter = class ACEAdapter
 
   # Apply an operation to an ACE instance.
   applyOperationToACE: (operation) ->
-    @aceRange ?= (ace.require ? require)("ace/range").Range
     index = 0
     for op in operation.ops
       if op.isRetain()
@@ -109,7 +110,6 @@ firepad.ACEAdapter = class ACEAdapter
     new firepad.Cursor start, end
 
   setCursor: (cursor) ->
-    @aceRange ?= (ace.require ? require)("ace/range").Range
     start = @posFromIndex cursor.position
     end = @posFromIndex cursor.selectionEnd
     if cursor.position > cursor.selectionEnd
@@ -129,9 +129,7 @@ firepad.ACEAdapter = class ACEAdapter
       [start, end] = [end, start]
     clazz = "other-client-selection-#{color.replace '#', ''}"
     justCursor = cursor.position is cursor.selectionEnd
-    if justCursor
-      end.column += 1  # hack to make it show up with empty range
-      clazz = clazz.replace 'selection', 'cursor'
+    clazz = clazz.replace 'selection', 'cursor' if justCursor
     css = """.#{clazz} {
       position: absolute;
       background-color: #{if justCursor then 'transparent' else color};
@@ -139,6 +137,16 @@ firepad.ACEAdapter = class ACEAdapter
     }"""
     @addStyleRule css
     @otherCursors[clientId] = cursorRange = new @aceRange start.row, start.column, end.row, end.column
+
+    # Hack this specific range to, when clipped, return an empty range that
+    # pretends to not be empty. This lets us draw markers at the ends of lines.
+    # This might be brittle in the future.
+    self = this
+    cursorRange.clipRows = ->
+      range = self.aceRange::clipRows.apply this, arguments
+      range.isEmpty = -> false
+      range
+
     cursorRange.start = @aceDoc.createAnchor cursorRange.start
     cursorRange.end = @aceDoc.createAnchor cursorRange.end
     cursorRange.id = @aceSession.addMarker cursorRange, clazz, "text"
