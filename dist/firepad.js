@@ -4908,8 +4908,16 @@ firepad.Firepad = (function(global) {
 
     this.firebaseAdapter_.on('ready', function() {
       self.ready_ = true;
-      if (this.ace_)
+
+      if (this.ace_) {
         this.editorAdapter_.grabDocumentState();
+      }
+
+      var defaultText = self.getOption('defaultText', null);
+      if (defaultText && self.isHistoryEmpty()) {
+        self.setText(defaultText);
+      }
+
       self.trigger('ready');
     });
 
