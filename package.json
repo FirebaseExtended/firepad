@@ -1,13 +1,17 @@
 {
   "name": "firepad",
   "version": "0.1.4",
+  "author": "Michael Lehenbauer <michael@firebase.com>",
   "description": "Collaborative Text Editing powered by Firebase",
   "main": "dist/firepad.js",
   "directories": {
     "test": "test",
     "lib": "lib"
   },
-  "dependencies": {},
+  "dependencies": {
+    "firebase": "1.0.x",
+    "jsdom":    "0.10.x"
+  },
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-concat": "~0.1.3",
