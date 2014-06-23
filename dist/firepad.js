@@ -1403,8 +1403,9 @@ firepad.FirebaseAdapter = (function (global) {
 
   /*
    * Send operation, retrying on connection failure. Takes an optional callback with signature:
-   * function(error, snapshotValue).
-   * If no callback is provided, an exception will be thrown on transaction failure.
+   * function(error, committed).
+   * An exception will be thrown on transaction failure, which should only happen on
+   * catastrophic failure like a security rule violation.
    */
   FirebaseAdapter.prototype.sendOperation = function (operation, callback) {
     var self = this;
@@ -1438,18 +1439,14 @@ firepad.FirebaseAdapter = (function (global) {
                 doTransaction(revisionId, revisionData);
               }, 0);
             } else if (callback) {
-              callback(error, null);
+              callback(error, false);
             }
           } else {
-            if (callback) {
-              callback(error, null);
-            } else {
-              utils.log('Transaction failure!', error);
-              throw error;
-            }
+            utils.log('Transaction failure!', error);
+            throw error;
           }
         } else {
-          if (callback) callback(null, snapshot.val());
+          if (callback) callback(null, committed);
         }
       }, /*applyLocally=*/false);
     }
@@ -5205,11 +5202,11 @@ firepad.Headless = (function() {
 
     self.getDocument(function(doc) {
       var op = operation.clone()['delete'](doc.targetLength);
-      self.adapter.sendOperation(op, function(err, status) {
-        if (err) {
-          self.sendOperationWithRetry(operation, callback);
+      self.adapter.sendOperation(op, function(err, committed) {
+        if (committed) {
+          callback(null, committed);
         } else {
-          callback(null, status);
+          self.sendOperationWithRetry(operation, callback);
         }
       });
     });
