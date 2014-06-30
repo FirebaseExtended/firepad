@@ -1,6 +1,5 @@
 ---
 layout: docs
-permalink: index.html
 ---
 
 <a name="getting_started"> </a>
