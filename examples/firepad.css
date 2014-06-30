@@ -1,22 +1,33 @@
 .firepad {
-  /* Default height for a firepad. */
-  height: 400px;
+  height: 100%;       /* Firepad should size to fit its container,  */
+  min-height: 200px;  /* but will try to be at least 400px by 200x. */
+  min-width: 400px;
   position: relative;
-}
-
-.firepad {
   text-align: left;
   line-height: normal;
+  overflow: hidden;
+  display: table;
+}
+
+.firepad-with-toolbar {
+  margin-left: 10px;
 }
 
 .firepad .CodeMirror {
-  /* Use width / height of the firepad wrapper element. */
-  position: absolute;
-  height: auto;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  display: table-row;
+  height: 100%;
+}
+
+.firepad-toolbar {
+  display: table-row;
+
+  /* Don't select text when double-clicking in toolbar */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .firepad-richtext .CodeMirror {
@@ -24,10 +35,8 @@
   font-size: 14px;
 }
 
-.firepad-with-toolbar .CodeMirror {
-  /* Leave room for toolbar and add some padding on the left. */
-  top: 70px;
-  left: 10px;
+.firepad-spacer {
+  height: 10px;
 }
 
 /** Styles for all of the rich-text formatting we support. */
@@ -83,24 +92,8 @@ pre.firepad-lt-o, pre.firepad-lt-u, pre.firepad-lt-t, pre.firepad-lt-tc {
   opacity: 1;
 }
 
-.firepad-toolbar {
-  position: absolute;
-  top: 20px;
-  left: 10px;
-  right: 0;
-  white-space: nowrap;
-
-  /* Don't select text when double-clicking in toolbar */
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
 .firepad-btn-group {
-  margin: 0 5px;
+  margin: 10px 7px 0 0;
   display: inline-block;
 }
 
@@ -212,26 +205,26 @@ a.firepad-btn:active {
 }
 
 .firepad-dialog {
-     position: absolute;
-     left: 0px;
-     top: 0px;
-     width: 100%;
-     height: 100%;
-     z-index: 1000;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
 }
 
 .firepad-dialog-div {
-     position: relative;
-     width: 520px;
-     height: 100px;
-     margin: 100px auto;
-     background-color: #fff;
-     border: 1px solid #000;
-     padding: 15px;
+  position: relative;
+  width: 400px;
+  height: 100px;
+  margin: 100px auto;
+  background-color: #fff;
+  border: 1px solid #000;
+  padding: 15px;
 }
 
 .firepad-dialog-input {
-  width: 500px;
+  width: 80%;
   display: block;
   padding: 5px 5px;
   margin: 10px 10px 10px 5px;

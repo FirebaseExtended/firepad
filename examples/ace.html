@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <!-- Include Firebase -->
-  <script src="https://cdn.firebase.com/js/client/1.0.11/firebase.js"></script>
+  <script src="https://cdn.firebase.com/js/client/1.0.17/firebase.js"></script>
 
   <!-- Include ACE and its JavaScript mode and theme files -->
   <script src="ace/ace.js"></script>
@@ -25,7 +25,8 @@
     /* Height / width / positioning can be customized for your use case.
        For demo purposes, we make firepad fill the entire browser. */
     #firepad-container {
-      position: absolute; left: 0; top: 0; bottom: 0; right: 0;
+      width: 100%;
+      height: 100%;
     }
   </style>
 </head>
@@ -39,7 +40,7 @@
       var firepadRef = getExampleRef();
       // TODO: Replace above line with:
       // var ref = new Firebase('<YOUR FIREBASE URL>');
-  
+
       //// Create ACE
       var editor = ace.edit("firepad-container");
       editor.setTheme("ace/theme/textmate");
@@ -47,10 +48,10 @@
       session.setUseWrapMode(true);
       session.setUseWorker(false);
       session.setMode("ace/mode/javascript");
-  
+
       //// Create Firepad.
       var firepad = Firepad.fromACE(firepadRef, editor);
-      
+
       //// Initialize contents.
       firepad.on('ready', function() {
         if (firepad.isHistoryEmpty()) {
