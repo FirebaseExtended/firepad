@@ -1,3 +1,16 @@
+// CodeMirror, copyright (c) by Marijn Haverbeke and others
+// Distributed under an MIT license: http://codemirror.net/LICENSE
+
+(function(mod) {
+  if (typeof exports == "object" && typeof module == "object") // CommonJS
+    mod(require("../lib/codemirror"));
+  else if (typeof define == "function" && define.amd) // AMD
+    define(["../lib/codemirror"], mod);
+  else // Plain browser env
+    mod(CodeMirror);
+})(function(CodeMirror) {
+  "use strict";
+
 CodeMirror.modeInfo = [
   {name: 'APL', mime: 'text/apl', mode: 'apl'},
   {name: 'Asterisk', mime: 'text/x-asterisk', mode: 'asterisk'},
@@ -10,14 +23,17 @@ CodeMirror.modeInfo = [
   {name: 'Clojure', mime: 'text/x-clojure', mode: 'clojure'},
   {name: 'CoffeeScript', mime: 'text/x-coffeescript', mode: 'coffeescript'},
   {name: 'Common Lisp', mime: 'text/x-common-lisp', mode: 'commonlisp'},
+  {name: 'Cypher', mime: 'application/x-cypher-query', mode: 'cypher'},
   {name: 'CSS', mime: 'text/css', mode: 'css'},
   {name: 'D', mime: 'text/x-d', mode: 'd'},
   {name: 'diff', mime: 'text/x-diff', mode: 'diff'},
   {name: 'DTD', mime: 'application/xml-dtd', mode: 'dtd'},
+  {name: 'Dylan', mime: 'text/x-dylan', mode: 'dylan'},
   {name: 'ECL', mime: 'text/x-ecl', mode: 'ecl'},
   {name: 'Eiffel', mime: 'text/x-eiffel', mode: 'eiffel'},
   {name: 'Erlang', mime: 'text/x-erlang', mode: 'erlang'},
   {name: 'Fortran', mime: 'text/x-fortran', mode: 'fortran'},
+  {name: 'F#', mime: 'text/x-fsharp', mode: 'mllike'},
   {name: 'Gas', mime: 'text/x-gas', mode: 'gas'},
   {name: 'Gherkin', mime: 'text/x-feature', mode: 'gherkin'},
   {name: 'GitHub Flavored Markdown', mime: 'text/x-gfm', mode: 'gfm'},
@@ -35,17 +51,18 @@ CodeMirror.modeInfo = [
   {name: 'JavaScript', mime: 'text/javascript', mode: 'javascript'},
   {name: 'JSON', mime: 'application/x-json', mode: 'javascript'},
   {name: 'JSON', mime: 'application/json', mode: 'javascript'},
+  {name: 'JSON-LD', mime: 'application/ld+json', mode: 'javascript'},
   {name: 'TypeScript', mime: 'application/typescript', mode: 'javascript'},
   {name: 'Jinja2', mime: null, mode: 'jinja2'},
   {name: 'Julia', mime: 'text/x-julia', mode: 'julia'},
-  {name: 'LESS', mime: 'text/x-less', mode: 'less'},
+  {name: 'LESS', mime: 'text/x-less', mode: 'css'},
   {name: 'LiveScript', mime: 'text/x-livescript', mode: 'livescript'},
   {name: 'Lua', mime: 'text/x-lua', mode: 'lua'},
   {name: 'Markdown (GitHub-flavour)', mime: 'text/x-markdown', mode: 'markdown'},
   {name: 'mIRC', mime: 'text/mirc', mode: 'mirc'},
   {name: 'Nginx', mime: 'text/x-nginx-conf', mode: 'nginx'},
   {name: 'NTriples', mime: 'text/n-triples', mode: 'ntriples'},
-  {name: 'OCaml', mime: 'text/x-ocaml', mode: 'ocaml'},
+  {name: 'OCaml', mime: 'text/x-ocaml', mode: 'mllike'},
   {name: 'Octave', mime: 'text/x-octave', mode: 'octave'},
   {name: 'Pascal', mime: 'text/x-pascal', mode: 'pascal'},
   {name: 'PEG.js', mime: null, mode: 'pegjs'},
@@ -56,6 +73,7 @@ CodeMirror.modeInfo = [
   {name: 'Plain Text', mime: 'text/plain', mode: 'null'},
   {name: 'Properties files', mime: 'text/x-properties', mode: 'properties'},
   {name: 'Python', mime: 'text/x-python', mode: 'python'},
+  {name: 'Puppet', mime: 'text/x-puppet', mode: 'puppet'},
   {name: 'Cython', mime: 'text/x-cython', mode: 'python'},
   {name: 'R', mime: 'text/x-rsrc', mode: 'r'},
   {name: 'reStructuredText', mime: 'text/x-rst', mode: 'rst'},
@@ -69,11 +87,13 @@ CodeMirror.modeInfo = [
   {name: 'Smalltalk', mime: 'text/x-stsrc', mode: 'smalltalk'},
   {name: 'Smarty', mime: 'text/x-smarty', mode: 'smarty'},
   {name: 'SmartyMixed', mime: 'text/x-smarty', mode: 'smartymixed'},
+  {name: 'Solr', mime: 'text/x-solr', mode: 'solr'},
   {name: 'SPARQL', mime: 'application/x-sparql-query', mode: 'sparql'},
   {name: 'SQL', mime: 'text/x-sql', mode: 'sql'},
   {name: 'MariaDB', mime: 'text/x-mariadb', mode: 'sql'},
   {name: 'sTeX', mime: 'text/x-stex', mode: 'stex'},
   {name: 'LaTeX', mime: 'text/x-latex', mode: 'stex'},
+  {name: 'SystemVerilog', mime: 'text/x-systemverilog', mode: 'verilog'},
   {name: 'Tcl', mime: 'text/x-tcl', mode: 'tcl'},
   {name: 'TiddlyWiki ', mime: 'text/x-tiddlywiki', mode: 'tiddlywiki'},
   {name: 'Tiki wiki', mime: 'text/tiki', mode: 'tiki'},
@@ -84,8 +104,9 @@ CodeMirror.modeInfo = [
   {name: 'Velocity', mime: 'text/velocity', mode: 'velocity'},
   {name: 'Verilog', mime: 'text/x-verilog', mode: 'verilog'},
   {name: 'XML', mime: 'application/xml', mode: 'xml'},
-  {name: 'HTML', mime: 'text/html', mode: 'xml'},
   {name: 'XQuery', mime: 'application/xquery', mode: 'xquery'},
   {name: 'YAML', mime: 'text/x-yaml', mode: 'yaml'},
   {name: 'Z80', mime: 'text/x-z80', mode: 'z80'}
 ];
+
+});

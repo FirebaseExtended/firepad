@@ -1,7 +1,20 @@
+// CodeMirror, copyright (c) by Marijn Haverbeke and others
+// Distributed under an MIT license: http://codemirror.net/LICENSE
+
 /**
  * Link to the project's GitHub page:
  * https://github.com/pickhardt/coffeescript-codemirror-mode
  */
+(function(mod) {
+  if (typeof exports == "object" && typeof module == "object") // CommonJS
+    mod(require("../../lib/codemirror"));
+  else if (typeof define == "function" && define.amd) // AMD
+    define(["../../lib/codemirror"], mod);
+  else // Plain browser env
+    mod(CodeMirror);
+})(function(CodeMirror) {
+"use strict";
+
 CodeMirror.defineMode("coffeescript", function(conf) {
   var ERRORCLASS = "error";
 
@@ -119,13 +132,13 @@ CodeMirror.defineMode("coffeescript", function(conf) {
 
     // Handle strings
     if (stream.match(stringPrefixes)) {
-      state.tokenize = tokenFactory(stream.current(), "string");
+      state.tokenize = tokenFactory(stream.current(), false, "string");
       return state.tokenize(stream, state);
     }
     // Handle regex literals
     if (stream.match(regexPrefixes)) {
       if (stream.current() != "/" || stream.match(/^.*\//, false)) { // prevent highlight of division
-        state.tokenize = tokenFactory(stream.current(), "string-2");
+        state.tokenize = tokenFactory(stream.current(), true, "string-2");
         return state.tokenize(stream, state);
       } else {
         stream.backUp(1);
@@ -161,8 +174,7 @@ CodeMirror.defineMode("coffeescript", function(conf) {
     return ERRORCLASS;
   }
 
-  function tokenFactory(delimiter, outclass) {
-    var singleline = delimiter.length == 1;
+  function tokenFactory(delimiter, singleline, outclass) {
     return function(stream, state) {
       while (!stream.eol()) {
         stream.eatWhile(/[^'"\/\\]/);
@@ -352,3 +364,5 @@ CodeMirror.defineMode("coffeescript", function(conf) {
 });
 
 CodeMirror.defineMIME("text/x-coffeescript", "coffeescript");
+
+});

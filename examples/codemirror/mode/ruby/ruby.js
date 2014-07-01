@@ -1,3 +1,16 @@
+// CodeMirror, copyright (c) by Marijn Haverbeke and others
+// Distributed under an MIT license: http://codemirror.net/LICENSE
+
+(function(mod) {
+  if (typeof exports == "object" && typeof module == "object") // CommonJS
+    mod(require("../../lib/codemirror"));
+  else if (typeof define == "function" && define.amd) // AMD
+    define(["../../lib/codemirror"], mod);
+  else // Plain browser env
+    mod(CodeMirror);
+})(function(CodeMirror) {
+"use strict";
+
 CodeMirror.defineMode("ruby", function(config) {
   function wordObj(words) {
     var o = {};
@@ -12,7 +25,7 @@ CodeMirror.defineMode("ruby", function(config) {
     "caller", "lambda", "proc", "public", "protected", "private", "require", "load",
     "require_relative", "extend", "autoload", "__END__", "__FILE__", "__LINE__", "__dir__"
   ]);
-  var indentWords = wordObj(["def", "class", "case", "for", "while", "do", "module", "then",
+  var indentWords = wordObj(["def", "class", "case", "for", "while", "module", "then",
                              "catch", "loop", "proc", "begin"]);
   var dedentWords = wordObj(["end", "until"]);
   var matching = {"[": "]", "{": "}", "(": ")"};
@@ -34,6 +47,7 @@ CodeMirror.defineMode("ruby", function(config) {
     if (ch == "`" || ch == "'" || ch == '"') {
       return chain(readQuoted(ch, "string", ch == '"' || ch == "`"), stream, state);
     } else if (ch == "/" && !stream.eol() && stream.peek() != " ") {
+      if (stream.eat("=")) return "operator";
       return chain(readQuoted(ch, "string-2", true), stream, state);
     } else if (ch == "%") {
       var style = "string", embed = true;
@@ -214,6 +228,8 @@ CodeMirror.defineMode("ruby", function(config) {
         else if (dedentWords.propertyIsEnumerable(word)) kwtype = "dedent";
         else if ((word == "if" || word == "unless") && stream.column() == stream.indentation())
           kwtype = "indent";
+        else if (word == "do" && state.context.indented < state.indented)
+          kwtype = "indent";
       }
       if (curPunc || (style && style != "comment")) state.lastTok = word || curPunc || style;
       if (curPunc == "|") state.varList = !state.varList;
@@ -245,3 +261,4 @@ CodeMirror.defineMode("ruby", function(config) {
 
 CodeMirror.defineMIME("text/x-ruby", "ruby");
 
+});
