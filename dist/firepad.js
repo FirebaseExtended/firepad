@@ -2790,7 +2790,8 @@ firepad.EntityManager = (function () {
   EntityManager.prototype.tryRenderToElement_ = function(entity, renderFn, entityHandle) {
     var type = entity.type, info = entity.info;
     if (this.entities_[type] && this.entities_[type][renderFn]) {
-      var res = this.entities_[type][renderFn](info, entityHandle);
+      var windowDocument = firepad.document || (window && window.document);
+      var res = this.entities_[type][renderFn](info, entityHandle, windowDocument);
       if (res) {
         if (typeof res === 'string') {
           var div = (firepad.document || document).createElement('div');
@@ -4093,7 +4094,7 @@ firepad.RichTextCodeMirrorAdapter = (function () {
     var operation = new TextOperation(), inverse = new TextOperation();
     var pos = 0;
 
-    for (var i = changes.length - 1; i >= 0; i--) {
+    for (var i = 0; i < changes.length; i++) {
       var change = changes[i];
       var toRetain = change.start - pos;
       assert(toRetain >= 0); // changes should be in order and non-overlapping.
