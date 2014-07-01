@@ -7,21 +7,27 @@
   position: relative;
   text-align: left;
   line-height: normal;
-  overflow: hidden;
-  display: table;
-}
-
-.firepad-with-toolbar {
-  padding-left: 10px;
 }
 
 .firepad .CodeMirror {
-  display: table-row;
-  height: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  height: auto;
+}
+
+.firepad-with-toolbar .CodeMirror {
+  top: 83px;
+  padding-left: 10px;
 }
 
 .firepad-toolbar {
-  display: table-row;
+  height: 82px;
+  line-height: 82px;
+  padding-left: 10px;
+  border-bottom: 1px solid #c9c9c9;
 
   /* Don't select text when double-clicking in toolbar */
   -webkit-touch-callout: none;
@@ -32,6 +38,11 @@
   user-select: none;
 }
 
+.firepad-toolbar-wrapper {
+  display: inline-block;
+  line-height: 14px;
+}
+
 .firepad-richtext .CodeMirror {
   font-family: Verdana, sans-serif;
   font-size: 14px;
@@ -39,6 +50,7 @@
 
 .firepad-spacer {
   height: 10px;
+  width: 1px;
 }
 
 /** Styles for all of the rich-text formatting we support. */
@@ -95,7 +107,7 @@ pre.firepad-lt-o, pre.firepad-lt-u, pre.firepad-lt-t, pre.firepad-lt-tc {
 }
 
 .firepad-btn-group {
-  margin: 10px 7px 0 0;
+  margin: 5px 7px 0 0;
   display: inline-block;
 }
 

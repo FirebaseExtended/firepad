@@ -1730,25 +1730,24 @@ firepad.RichTextToolbar = (function(global) {
     var fontSize = this.makeFontSizeDropdown_();
     var color = this.makeColorDropdown_();
 
-    var toolbarOptions = [utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
-                          utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
-                          utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
-                          utils.elt('div', [self.makeButton_('bold'), self.makeButton_('italic'), self.makeButton_('underline'), self.makeButton_('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
-                          utils.elt('div', [self.makeButton_('unordered-list', 'list-2'), self.makeButton_('ordered-list', 'numbered-list'), self.makeButton_('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
-                          utils.elt('div', [self.makeButton_('indent-decrease'), self.makeButton_('indent-increase')], { 'class': 'firepad-btn-group'}),
-                          utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group'}),
-                          // Hide undo/redo for now, since they make the toolbar wrap on the firepad.io demo.  Should look into making the
-                          // toolbar more compact.
-                          /*utils.elt('div', [self.makeButton_('undo'), self.makeButton_('redo')], { 'class': 'firepad-btn-group'}) */
-                          ];
+    var toolbarOptions = [
+      utils.elt('div', [font], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [fontSize], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [color], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [self.makeButton_('bold'), self.makeButton_('italic'), self.makeButton_('underline'), self.makeButton_('strike', 'strikethrough')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [self.makeButton_('unordered-list', 'list-2'), self.makeButton_('ordered-list', 'numbered-list'), self.makeButton_('todo-list', 'list')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [self.makeButton_('indent-decrease'), self.makeButton_('indent-increase')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [self.makeButton_('left', 'paragraph-left'), self.makeButton_('center', 'paragraph-center'), self.makeButton_('right', 'paragraph-right')], { 'class': 'firepad-btn-group'}),
+      utils.elt('div', [self.makeButton_('undo'), self.makeButton_('redo')], { 'class': 'firepad-btn-group'})
+    ];
 
     if (self.imageInsertionUI) {
       toolbarOptions.push(utils.elt('div', [self.makeButton_('insert-image')], { 'class': 'firepad-btn-group' }));
     }
 
-    toolbarOptions.push(utils.elt('div', '', { 'class': 'firepad-spacer' }));
-
-    var toolbar = utils.elt('div', toolbarOptions , { 'class': 'firepad-toolbar' });
+    var toolbarWrapper = utils.elt('div', toolbarOptions, { 'class': 'firepad-toolbar-wrapper' });
+    var toolbar = utils.elt('div', null, { 'class': 'firepad-toolbar' });
+    toolbar.appendChild(toolbarWrapper)
 
     return toolbar;
   };
