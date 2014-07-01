@@ -23,6 +23,10 @@
   padding-left: 10px;
 }
 
+.firepad-with-toolbar .CodeMirror-lines {
+  padding-top: 10px;
+}
+
 .firepad-toolbar {
   height: 82px;
   line-height: 82px;
