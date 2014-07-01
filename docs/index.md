@@ -32,7 +32,7 @@ If you don't specifically need Ace support though, we recommend sticking with Co
 Include Firebase, CodeMirror and Firepad in the &lt;head&gt; section of your page.
 
 {% highlight html %}
-    <script src="https://cdn.firebase.com/js/client/1.0.11/firebase.js"></script>
+    <script src="https://cdn.firebase.com/js/client/1.0.17/firebase.js"></script>
 
     <!-- CODEMIRROR: Download from http://codemirror.net/codemirror.zip -->
     <link rel="stylesheet" href="codemirror.css" />
@@ -113,7 +113,7 @@ Before getting started, you'll need to:
 Include Firebase, Ace and Firepad in the &lt;head&gt; section of your page.
 
 {% highlight html %}
-    <script src="https://cdn.firebase.com/js/client/1.0.11/firebase.js"></script>
+    <script src="https://cdn.firebase.com/js/client/1.0.17/firebase.js"></script>
 
     <!-- ACE: Download from https://github.com/ajaxorg/ace-builds/ -->
     <script src="ace.js" type="text/javascript" charset="utf-8"></script>
