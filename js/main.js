@@ -16,8 +16,6 @@
       room = OFFSET + Math.floor(Math.random() * ROOMS);
     }
 
-    var NAMESPACES = 15;
-    //var firebaseUrl = 'https://firebase-firepad' + (room % NAMESPACES) + '.firebaseio.com/' + room;
     var firebaseUrl = 'https://firepad.firebaseio.com/home/' + room;
     var firepadRef = new Firebase(firebaseUrl);
 
@@ -38,7 +36,7 @@
     div.className = 'firepad-btn-group';
     div.appendChild(a);
 
-    document.getElementsByClassName('firepad-toolbar')[0].appendChild(div);
+    document.getElementsByClassName('firepad-toolbar-wrapper')[0].appendChild(div);
 
     userList = FirepadUserList.fromDiv(firepadRef.child('users'),
         document.getElementById('firepad-userlist'), userId);

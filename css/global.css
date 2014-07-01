@@ -475,7 +475,7 @@ a img {
 #firepad-container {
   position: relative;
   margin: 20px auto;
-  width: 850px;
+  width: 880px;
   height: 400px;
   background: white;
   -moz-box-shadow: 0 5px 25px #333;
@@ -497,6 +497,7 @@ a img {
   left: 175px;
   right: 0;
   height: 100%;
+  width: auto;
 }
 
 #code-container {
@@ -629,7 +630,7 @@ a img {
 
 .example-container {
   position: relative;
-  width: 700px;
+  width: 705px;
   height: 290px;
   background: white;
   border: 1px solid #777;
