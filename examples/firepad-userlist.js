@@ -1,6 +1,8 @@
 var FirepadUserList = (function() {
-  function FirepadUserList(ref, place, userId) {
-    if (!(this instanceof FirepadUserList)) { return new FirepadUserList(ref, place, userId); }
+  function FirepadUserList(ref, place, userId, displayName) {
+    if (!(this instanceof FirepadUserList)) {
+      return new FirepadUserList(ref, place, userId, displayName);
+    }
 
     this.ref_ = ref;
     this.userId_ = userId;
@@ -8,7 +10,8 @@ var FirepadUserList = (function() {
     this.firebaseCallbacks_ = [];
 
     var self = this;
-    this.displayName_ = 'Guest ' + Math.floor(Math.random() * 1000);
+    this.hasName_ = !!displayName;
+    this.displayName_ = displayName || 'Guest ' + Math.floor(Math.random() * 1000);
     this.firebaseOn_(ref.root().child('.info/connected'), 'value', function(s) {
       if (s.val() === true && self.displayName_) {
         var nameRef = ref.child(self.userId_).child('name');
@@ -60,7 +63,7 @@ var FirepadUserList = (function() {
     var colorDiv = elt('div', null, { 'class': 'firepad-userlist-color-indicator' });
     this.firebaseOn_(myUserRef.child('color'), 'value', function(colorSnapshot) {
       var color = colorSnapshot.val();
-      if (typeof color === 'string' && color.match(/^#[a-fA-F0-9]{3,6}$/)) {
+      if (isValidColor(color)) {
         colorDiv.style.backgroundColor = color;
       }
     });
@@ -69,6 +72,7 @@ var FirepadUserList = (function() {
     nameInput.value = this.displayName_;
 
     var nameHint = elt('div', 'ENTER YOUR NAME', { 'class': 'firepad-userlist-name-hint'} );
+    if (this.hasName_) nameHint.style.display = 'none';
 
     // Update Firebase when name changes.
     on(nameInput, 'change', function(e) {
@@ -102,7 +106,7 @@ var FirepadUserList = (function() {
       name = name.substring(0, 20);
 
       var color = userSnapshot.child('color').val();
-      if (typeof color !== 'string' || !color.match(/^#[a-fA-F0-9]{3,6}$/)) {
+      if (!isValidColor(color)) {
         color = "#ffb"
       }
 
@@ -163,6 +167,13 @@ var FirepadUserList = (function() {
     }
     this.firebaseCallbacks_ = [];
   };
+
+  /** Assorted helpers */
+
+  function isValidColor(color) {
+    return typeof color === 'string' &&
+      (color.match(/^#[a-fA-F0-9]{3,6}$/) || color == 'transparent');
+  }
 
 
   /** DOM helpers */
