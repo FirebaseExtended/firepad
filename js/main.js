@@ -44,10 +44,6 @@
     window.location = window.location.toString().replace(/#.*/, '') + '#' + room;
 
     codeMirror.focus();
-    $(window).on('scroll', function() {
-      // unfocus codemirror on scroll, so it doesn't scroll into view on cursor movements.
-      codeMirror.getInputField().blur();
-    });
   }
 
   $(document).on('ready', function() {
