@@ -1,5 +1,8 @@
 # Firepad
 
+[![Build Status](https://travis-ci.org/firebase/firepad.svg)](https://travis-ci.org/firebase/firepad)
+[![Version](https://badge.fury.io/gh/firebase%2Ffirepad.svg)](http://badge.fury.io/gh/firebase%2Ffirepad)
+
 [Firepad](http://www.firepad.io/) is an open-source, collaborative code and text editor. It was designed to be embedded inside larger applications. Since it uses [Firebase](https://www.firebase.com/) as a backend, it requires no server-side code and can be added to any web app simply by including a couple JavaScript files.
 
 Visit [firepad.io](http://www.firepad.io/) for a demo as well as instructions on how to embed it into your application!
