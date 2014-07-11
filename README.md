@@ -17,6 +17,7 @@ If you'd like to contribute to Firepad, you'll need to run the following command
 $ git clone https://github.com/firebase/firepad.git
 $ cd firepad            # go to the geofire directory
 $ npm install -g grunt  # globally install grunt task runner
+$ npm install -g bower  # globally install Bower package manager
 $ npm install           # install local npm build / test dependencies
 $ bower install         # install local JavaScript dependencies
 $ grunt watch           # watch for source file changes
