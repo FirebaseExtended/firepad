@@ -137,7 +137,7 @@ module.exports = function (grunt) {
         autowatch: false,
         singleRun: true
       }
-    },
+    }
   });
 
   grunt.loadNpmTasks('grunt-coffeelint');
