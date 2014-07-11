@@ -38,9 +38,9 @@ Include Firebase, CodeMirror and Firepad in the &lt;head&gt; section of your pag
     <link rel="stylesheet" href="codemirror.css" />
     <script src="codemirror.js"></script>
 
-    <!-- Firepad -->
-    <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/0.1.4/firepad.css" />
-    <script src="https://cdn.firebase.com/libs/firepad/0.1.4/firepad-min.js"></script>
+    <!-- Download from http://www.firepad.io/firepad.zip -->
+    <link rel="stylesheet" href="firepad.css" />
+    <script src="firepad.js"></script>
 {% endhighlight %}
 
 
@@ -118,10 +118,11 @@ Include Firebase, Ace and Firepad in the &lt;head&gt; section of your page.
     <!-- ACE: Download from https://github.com/ajaxorg/ace-builds/ -->
     <script src="ace.js" type="text/javascript" charset="utf-8"></script>
 
-    <!-- Firepad -->
-    <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/0.1.4/firepad.css" />
-    <script src="https://cdn.firebase.com/libs/firepad/0.1.4/firepad-min.js"></script>
+    <!-- Download from http://www.firepad.io/firepad.zip -->
+    <link rel="stylesheet" href="firepad.css" />
+    <script src="firepad.js"></script>
 {% endhighlight %}
+
 
 ### Initializing Firepad
 
