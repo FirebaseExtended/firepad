@@ -5207,12 +5207,12 @@ firepad.Headless = (function() {
     self.getDocument(function(doc) {
       var op = operation.clone()['delete'](doc.targetLength);
       self.adapter.sendOperation(op, function(err, committed) {
-        if (typeof callback !== "undefined") {
-          if (committed) {
+        if (committed) {
+          if (typeof callback !== "undefined") {
             callback(null, committed);
-          } else {
-            self.sendOperationWithRetry(operation, callback);
           }
+        } else {
+          self.sendOperationWithRetry(operation, callback);
         }
       });
     });
