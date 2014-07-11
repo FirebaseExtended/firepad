@@ -78,7 +78,6 @@ describe('Integration tests', function() {
 
     var ready = false;
     firepad1.on('ready', function() {
-      console.log('ready!');
       firepad1.setText('lorem ipsum');
       ready = true;
     });

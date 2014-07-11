@@ -1,8 +1,10 @@
 /*
  * Firepad http://www.firepad.io/
  *
- * Copyright 2013 Firebase
+ * Copyright 2014 Firebase
  * with code from ot.js (Copyright 2012-2013 Tim Baumann)
+ *
+ * Version 0.1.4
  */
 
 (function (name, definition, context) {
@@ -5205,10 +5207,12 @@ firepad.Headless = (function() {
     self.getDocument(function(doc) {
       var op = operation.clone()['delete'](doc.targetLength);
       self.adapter.sendOperation(op, function(err, committed) {
-        if (committed) {
-          callback(null, committed);
-        } else {
-          self.sendOperationWithRetry(operation, callback);
+        if (typeof callback !== "undefined") {
+          if (committed) {
+            callback(null, committed);
+          } else {
+            self.sendOperationWithRetry(operation, callback);
+          }
         }
       });
     });
