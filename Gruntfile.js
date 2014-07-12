@@ -125,7 +125,7 @@ module.exports = function (grunt) {
     },
     watch: {
       files: ['lib/*.js', 'lib/*.coffee', 'lib/*.css'],
-      tasks: ['default']
+      tasks: ['build']
     },
 
     // Unit tests
@@ -149,8 +149,8 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-karma');
 
-  // Unit tests
+  // Tasks
   grunt.registerTask('test', ['karma:unit']);
-
-  grunt.registerTask('default', ['coffeelint', 'coffee', 'concat', 'uglify', 'copy', 'compress']);
+  grunt.registerTask('build', ['coffeelint', 'coffee', 'concat', 'uglify', 'copy', 'compress'])
+  grunt.registerTask('default', ['build', 'test']);
 };

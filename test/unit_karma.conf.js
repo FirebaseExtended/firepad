@@ -1,7 +1,7 @@
 module.exports = function(config) {
   config.set({
     frameworks: ["jasmine"],
-    reporters: ["dots"],
+    reporters: ["dots", "failed"],
     browsers: ["PhantomJS"],
     files: [
       "../bower_components/codemirror/lib/codemirror.js",
