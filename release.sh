@@ -212,7 +212,8 @@ echo "Manual steps remaining:"
 echo "  1) Deploy firebase-clients to CDN via Jenkins"
 echo "  2) Update the release notes for Firepad version ${VERSION} on GitHub"
 echo "  3) Update all Firepad client version numbers specified in firebase-website to ${VERSION}"
-echo "  4) Tweet @FirebaseRelease: 'v${VERSION} of @Firebase Firepad is available https://cdn.firebase.com/libs/firepad/$VERSION/firepad-min.js Changelog: https://cdn.firebase.com/libs/firepad/changelog.txt'"
+echo "  4) Update all Firepad client version numbers specified in the gh-pages branch to ${VERSION}"
+echo "  5) Tweet @FirebaseRelease: 'v${VERSION} of @Firebase Firepad is available https://cdn.firebase.com/libs/firepad/$VERSION/firepad-min.js Changelog: https://cdn.firebase.com/libs/firepad/changelog.txt'"
 echo
 echo "Done! Woot!"
 echo
