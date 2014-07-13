@@ -108,21 +108,6 @@ module.exports = function (grunt) {
         ]
       }
     },
-    compress: {
-      zip: {
-        options: {
-          archive: 'dist/firepad.zip',
-        },
-        files: [
-          {
-            cwd: 'dist/',
-            expand: true,
-            src: ['firepad.js', 'firepad.css', 'firepad-min.js', 'firepad.eot' ],
-            dest: './'
-          }
-        ]
-      }
-    },
     watch: {
       files: ['lib/*.js', 'lib/*.coffee', 'lib/*.css'],
       tasks: ['build']
@@ -145,12 +130,11 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-contrib-compress');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-karma');
 
   // Tasks
   grunt.registerTask('test', ['karma:unit']);
-  grunt.registerTask('build', ['coffeelint', 'coffee', 'concat', 'uglify', 'copy', 'compress'])
+  grunt.registerTask('build', ['coffeelint', 'coffee', 'concat', 'uglify', 'copy'])
   grunt.registerTask('default', ['build', 'test']);
 };
