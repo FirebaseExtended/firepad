@@ -33,7 +33,8 @@
     "dist/**",
     "LICENSE",
     "README.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "package.json"
   ],
   "dependencies": {
     "jsdom": "0.10.x",
