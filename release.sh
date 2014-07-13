@@ -148,6 +148,10 @@ echo
 #############################
 # Make the target directory
 mkdir $STANDALONE_TARGET_DIR
+if [[ $? -ne 0 ]]; then
+  echo "Error: Failed to create standalone target directory in firebase-clients repo."
+  exit 1
+fi
 
 # Copy the files to the target directory
 cp dist/$STANDALONE_STUB.js $STANDALONE_TARGET_DIR
@@ -155,7 +159,7 @@ cp dist/$STANDALONE_STUB-min.js $STANDALONE_TARGET_DIR
 cp dist/$STANDALONE_STUB.css $STANDALONE_TARGET_DIR
 cp dist/$STANDALONE_STUB.eot $STANDALONE_TARGET_DIR
 
-echo "*** Client (debug and non-debug) copied ***"
+echo "*** Client (debug and non-debug) files copied ***"
 echo
 
 # Overwrite the existing changelog
