@@ -15,7 +15,7 @@ if [[ $CHECKED_OUT_BRANCH != "master" ]]; then
 fi
 
 # Make sure the firepad branch does not have existing changes
-if [[git --git-dir=".git" diff --quiet]]; then
+if ! git --git-dir=".git" diff --quiet; then
   echo "Error: Your firepad repo has existing changes on the master branch. Make sure you commit and push the new version before running this release script."
   exit 1
 fi
@@ -30,7 +30,7 @@ if [[ ! -d $STANDALONE_DEST ]]; then
 fi
 
 # Go to the firebase-clients repo
-cd ${STANDALONE_DEST}/
+cd ../firebase-clients
 
 # Make sure the checked-out firebase-clients branch is master
 FIREBASE_CLIENTS_BRANCH="$(git branch | grep "*" | awk -F ' ' '{print $2}')"
@@ -40,14 +40,13 @@ if [[ $FIREBASE_CLIENTS_BRANCH != "master" ]]; then
 fi
 
 # Make sure the firebase-clients branch does not have existing changes
-if [[git --git-dir=".git" diff --quiet]]; then
+if ! git --git-dir=".git" diff --quiet; then
   echo "Error: Your firebase-clients repo has existing changes on the master branch."
   exit 1
 fi
 
 # Go back to starting directory
 cd -
-
 
 ##############################
 #  VALIDATE CLIENT VERSIONS  #
