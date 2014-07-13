@@ -36,8 +36,10 @@ module.exports = function (grunt) {
             '/*',
             ' * Firepad http://www.firepad.io/',
             ' *',
-            ' * Copyright 2013 Firebase',
+            ' * Copyright 2014 Firebase',
             ' * with code from ot.js (Copyright 2012-2013 Tim Baumann)',
+            ' *',
+            ' * Version 0.1.4',
             ' */\n',
             '(function (name, definition, context) {',
             '  //try CommonJS, then AMD (require.js), then use global.',
@@ -123,7 +125,18 @@ module.exports = function (grunt) {
     },
     watch: {
       files: ['lib/*.js', 'lib/*.coffee', 'lib/*.css'],
-      tasks: ['default']
+      tasks: ['build']
+    },
+
+    // Unit tests
+    karma: {
+      options: {
+        configFile: 'test/unit_karma.conf.js',
+      },
+      unit: {
+        autowatch: false,
+        singleRun: true
+      }
     }
   });
 
@@ -134,6 +147,10 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-compress');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-karma');
 
-  grunt.registerTask('default', ['coffeelint', 'coffee', 'concat', 'uglify', 'copy', 'compress']);
+  // Tasks
+  grunt.registerTask('test', ['karma:unit']);
+  grunt.registerTask('build', ['coffeelint', 'coffee', 'concat', 'uglify', 'copy', 'compress'])
+  grunt.registerTask('default', ['build', 'test']);
 };
