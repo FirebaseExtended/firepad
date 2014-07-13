@@ -186,7 +186,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 # Commit to the firebase-clients repo
-git commit -am "[firebase-release] Updated Firebase $DESCRIPTION to $VERSION"
+git commit -am "[firebase-release] Updated Firepad to $VERSION"
 if [[ $? -ne 0 ]]; then
   echo "Error: Failed to do 'git commit' from firebase-clients repo."
   exit 1
