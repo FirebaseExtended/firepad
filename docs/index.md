@@ -12,35 +12,29 @@ Here we'll explain how to do this.
 
 Firepad uses CodeMirror as the underlying text editor. If you'd like to use Ace as your code editor instead, skip to [Getting Started with Ace](#getting_started_with_ace).
 
-
 <a name="getting_started_with_codemirror"> </a>
 ## Getting Started with CodeMirror
-### Prerequisites
 
-Firepad uses <a href="http://codemirror.net/" target="_blank">CodeMirror</a> as the underlying text editor, it uses Firebase for data storage and synchronization.
-Before getting started, you'll need to:
+### Sign Up For Firebase
 
-- <a href="http://www.firepad.io/firepad.zip">Download Firepad</a>
-- Download <a href="http://codemirror.net/" target="_blank">CodeMirror</a>
-- <a href="https://www.firebase.com/signup/?utm_source=docs&utm_medium=email&utm_campaign=firepad" target="_blank">Create a Firebase account</a> (it's free)
+In order to embed Firepad into your own application, you must first <a href="https://www.firebase.com/signup/?utm_source=docs&utm_medium=email&utm_campaign=firepad" target="_blank">sign up for a free Firebase account</a>. This will automatically create a new Firebase for you whose URL you will use below.
 
-Note: To use the Ace editor for code editing instead of CodeMirror, see [Getting Started with Ace](#getting_started_with_ace)
-If you don't specifically need Ace support though, we recommend sticking with CodeMirror!
 
 ### Adding Dependencies
 
-Include Firebase, CodeMirror and Firepad in the &lt;head&gt; section of your page.
+Include Firebase, CodeMirror, and Firepad in the &lt;head&gt; section of your page.
 
 {% highlight html %}
+    <!-- Firebase -->
     <script src="https://cdn.firebase.com/js/client/1.0.17/firebase.js"></script>
 
-    <!-- CODEMIRROR: Download from http://codemirror.net/codemirror.zip -->
+    <!-- CodeMirror (download from http://codemirror.net/codemirror.zip) -->
     <link rel="stylesheet" href="codemirror.css" />
     <script src="codemirror.js"></script>
 
-    <!-- Download from http://www.firepad.io/firepad.zip -->
-    <link rel="stylesheet" href="firepad.css" />
-    <script src="firepad.js"></script>
+    <!-- Firepad -->
+    <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/0.1.4/firepad.css" />
+    <script src="https://cdn.firebase.com/libs/firepad/0.1.4/firepad-min.js"></script>
 {% endhighlight %}
 
 
@@ -59,7 +53,7 @@ Here is a typical setup for rich-text editing:
     </script>
 {% endhighlight %}
 
-Make sure to replace `<FIREBASE_URL>` with a Firebase location. Note that you can easily store multiple
+Make sure to replace `<FIREBASE_URL>` with your own Firebase URL. Note that you can easily store multiple
 Firepads in your Firebase by giving them each a unique URL
 (e.g. `https://<YOUR FIREBASE>/firepads/<unique id>`).
 
@@ -94,33 +88,32 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 
 
 <a name="getting_started_with_ace"> </a>
+
 ## Getting Started with Ace
+
 To use <a href="http://ace.c9.io/" target="_blank">Ace</a> as the underlying code editor, follow the steps below.
-Note that you cannot use Firepad with Ace for rich-text editing, go to [Getting Started with CodeMirror](#getting_started_with_codemirror) instead.
+Note that you cannot use Firepad with Ace for rich-text editing. If you want rich-text editing, go to [Getting Started with CodeMirror](#getting_started_with_codemirror) instead.
 
 
-### Prerequisites
+### Sign Up For Firebase
 
-Before getting started, you'll need to:
-
-- <a href="http://www.firepad.io/firepad.zip">Download Firepad</a>
-- Download <a href="http://ace.c9.io/" target="_blank">Ace</a>
-- <a href="https://www.firebase.com/signup/?utm_source=docs&utm_medium=email&utm_campaign=firepad" target="_blank">Create a Firebase account</a> (it's free)
+In order to embed Firepad into your own application, you must first <a href="https://www.firebase.com/signup/?utm_source=docs&utm_medium=email&utm_campaign=firepad" target="_blank">sign up for a free Firebase account</a>. This will automatically create a new Firebase for you whose URL you will use below.
 
 
 ### Adding Dependencies
 
-Include Firebase, Ace and Firepad in the &lt;head&gt; section of your page.
+Include Firebase, Ace, and Firepad in the &lt;head&gt; section of your page.
 
 {% highlight html %}
+    <!-- Firebase -->
     <script src="https://cdn.firebase.com/js/client/1.0.17/firebase.js"></script>
 
-    <!-- ACE: Download from https://github.com/ajaxorg/ace-builds/ -->
+    <!-- Ace (download from https://github.com/ajaxorg/ace-builds/) -->
     <script src="ace.js" type="text/javascript" charset="utf-8"></script>
 
-    <!-- Download from http://www.firepad.io/firepad.zip -->
-    <link rel="stylesheet" href="firepad.css" />
-    <script src="firepad.js"></script>
+    <!-- Firepad -->
+    <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/0.1.4/firepad.css" />
+    <script src="https://cdn.firebase.com/libs/firepad/0.1.4/firepad-min.js"></script>
 {% endhighlight %}
 
 
@@ -140,7 +133,7 @@ Here is a typical setup for code editing with Ace:
     </script>
 {% endhighlight %}
 
-Make sure to replace `<FIREBASE_URL>` with a Firebase location. Note that you can easily store multiple
+Make sure to replace `<FIREBASE_URL>` with your own Firebase URL. Note that you can easily store multiple
 Firepads in your Firebase by giving them each a unique URL
 (e.g. `https://<YOUR FIREBASE>/firepads/<unique id>`).
 
