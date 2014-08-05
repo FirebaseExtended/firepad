@@ -4,24 +4,21 @@
 
 <head>
   <meta charset="utf-8" />
-  <!-- Include Firebase -->
+  <!-- Firebase -->
   <script src="https://cdn.firebase.com/js/client/1.0.17/firebase.js"></script>
 
-  <!-- Include CodeMirror -->
+  <!-- CodeMirror -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/4.3.0/codemirror.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/4.3.0/codemirror.css" />
 
-  <!-- Include Firepad -->
-  <script src="firepad.js"></script>
-  <link rel="stylesheet" href="firepad.css" />
+  <!-- Firepad -->
+  <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/0.1.4/firepad.css" />
+  <script src="https://cdn.firebase.com/libs/firepad/0.1.4/firepad-min.js"></script>
 
-  <!-- Include example userlist. -->
+  <!-- Include example userlist script / CSS.  
+       Can be downloaded from: https://github.com/firebase/firepad/tree/master/examples/ -->
   <script src="firepad-userlist.js"></script>
   <link rel="stylesheet" href="firepad-userlist.css" />
-
-  <!-- Helper for generating URLs / Firebase references for example purposes.
-       Not necessary in production apps. -->
-  <script src="example-helper.js"></script>
 
   <style>
     html { height: 100%; }
@@ -43,31 +40,50 @@
   <div id="firepad"></div>
 
   <script>
-    //// Initialize Firebase.
-    var firepadRef = getExampleRef();
-    // TODO: Replace above line with:
-    // var firepadRef = new Firebase('<YOUR FIREBASE URL>');
+    function init() {
+      //// Initialize Firebase.
+      var firepadRef = getExampleRef();
+      // TODO: Replace above line with:
+      // var firepadRef = new Firebase('<YOUR FIREBASE URL>');
 
-    //// Create CodeMirror (with lineWrapping on).
-    var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
+      //// Create CodeMirror (with lineWrapping on).
+      var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
 
-    // Create a random ID to use as our user ID (we must give this to firepad and FirepadUserList).
-    var userId = Math.floor(Math.random() * 9999999999).toString();
+      // Create a random ID to use as our user ID (we must give this to firepad and FirepadUserList).
+      var userId = Math.floor(Math.random() * 9999999999).toString();
 
-    //// Create Firepad (with rich text features and our desired userId).
-    var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
-        { richTextToolbar: true, richTextShortcuts: true, userId: userId});
+      //// Create Firepad (with rich text features and our desired userId).
+      var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
+          { richTextToolbar: true, richTextShortcuts: true, userId: userId});
 
-    //// Create FirepadUserList (with our desired userId).
-    var firepadUserList = FirepadUserList.fromDiv(firepadRef.child('users'),
-        document.getElementById('userlist'), userId);
+      //// Create FirepadUserList (with our desired userId).
+      var firepadUserList = FirepadUserList.fromDiv(firepadRef.child('users'),
+          document.getElementById('userlist'), userId);
 
-    //// Initialize contents.
-    firepad.on('ready', function() {
-      if (firepad.isHistoryEmpty()) {
-        firepad.setText('Check out the user list to the left!');
+      //// Initialize contents.
+      firepad.on('ready', function() {
+        if (firepad.isHistoryEmpty()) {
+          firepad.setText('Check out the user list to the left!');
+        }
+      });
+    }
+
+    // Helper to get hash from end of URL or generate a random one.
+    function getExampleRef() {
+      var ref = new Firebase('https://firepad.firebaseio-demo.com');
+      var hash = window.location.hash.replace(/#/g, '');
+      if (hash) {
+        ref = ref.child(hash);
+      } else {
+        ref = ref.push(); // generate unique location.
+        window.location = window.location + '#' + ref.name(); // add it as a hash to the URL.
       }
-    });
+      if (typeof console !== 'undefined')
+        console.log('Firebase data: ', ref.toString());
+      return ref;
+    }
+
+    init();
   </script>
 </body>
 </html>
