@@ -28,9 +28,9 @@ Include Firebase, CodeMirror, and Firepad in the &lt;head&gt; section of your pa
     <!-- Firebase -->
     <script src="https://cdn.firebase.com/js/client/1.0.17/firebase.js"></script>
 
-    <!-- CodeMirror (download from http://codemirror.net/codemirror.zip) -->
-    <link rel="stylesheet" href="codemirror.css" />
-    <script src="codemirror.js"></script>
+    <!-- CodeMirror -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/4.3.0/codemirror.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/4.3.0/codemirror.css" />
 
     <!-- Firepad -->
     <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/0.1.4/firepad.css" />
@@ -108,8 +108,8 @@ Include Firebase, Ace, and Firepad in the &lt;head&gt; section of your page.
     <!-- Firebase -->
     <script src="https://cdn.firebase.com/js/client/1.0.17/firebase.js"></script>
 
-    <!-- Ace (download from https://github.com/ajaxorg/ace-builds/) -->
-    <script src="ace.js" type="text/javascript" charset="utf-8"></script>
+    <!-- ACE and its JavaScript mode and theme files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js"></script>
 
     <!-- Firepad -->
     <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/0.1.4/firepad.css" />
@@ -127,8 +127,6 @@ Here is a typical setup for code editing with Ace:
     <script>
       var firepadRef = new Firebase('<FIREBASE URL>');
       var editor = ace.edit('firepad');
-      editor.setTheme("ace/theme/monokai");
-      editor.getSession().setMode("ace/mode/javascript");
       var firepad = Firepad.fromACE(firepadRef, editor);
     </script>
 {% endhighlight %}
