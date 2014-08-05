@@ -5180,7 +5180,7 @@ firepad.Headless = (function() {
 
     self.initializeFakeDom(function() {
       self.getDocument(function(doc) {
-        callback(firepad.SerializeHtml(doc, this.entityManager));
+        callback(firepad.SerializeHtml(doc, self.entityManager));
       });
     });
   }
