@@ -1,4 +1,4 @@
-** Examples **
+## Examples
 
 * `code.html` - Basic code-editing using CodeMirror.
 * `ace.html` - Code-editing using ACE.
@@ -7,6 +7,6 @@
 
 Example security rules can be found in the `security` directory.
 
-** Integrations **
+## Integrations
 * `firepad.rb` - A ruby script for loading the contents of a firepad from your server-side ruby code.
 
