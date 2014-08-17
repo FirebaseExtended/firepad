@@ -46,13 +46,8 @@
       session.setMode("ace/mode/javascript");
 
       //// Create Firepad.
-      var firepad = Firepad.fromACE(firepadRef, editor);
-
-      //// Initialize contents.
-      firepad.on('ready', function() {
-        if (firepad.isHistoryEmpty()) {
-          firepad.setText('// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}');
-        }
+      var firepad = Firepad.fromACE(firepadRef, editor, {
+        defaultText: '// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}'
       });
     }
 
@@ -70,7 +65,7 @@
         console.log('Firebase data: ', ref.toString());
       return ref;
     }
-    
+
     window.onload = init;
   </script>
 </body>
