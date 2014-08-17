@@ -5407,6 +5407,7 @@ firepad.Firepad = (function(global) {
       this.codeMirror_.getWrapperElement().setAttribute('style', '');
       this.codeMirror_.refresh();
     }
+    this.editorAdapter_.setCursor({position: 0, selectionEnd: 0});
   };
 
   Firepad.prototype.insertTextAtCursor = function(textPieces) {
