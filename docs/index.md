@@ -49,7 +49,7 @@ Here is a typical setup for rich-text editing:
       var firepadRef = new Firebase('<FIREBASE URL>');
       var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
       var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
-          { richTextShortcuts: true, richTextToolbar: true });
+          { richTextShortcuts: true, richTextToolbar: true, defaultText: 'Hello, World!' });
     </script>
 {% endhighlight %}
 
@@ -175,6 +175,7 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 >* `richTextShortcuts` (default: false) - Maps Ctrl-B to bold, etc.
 >* `userId` (default: random) - The user ID for the person editing.
 >* `userColor` (default: generated from userId) - A css color (e.g. "#ccc") for this user's cursor.
+>* `defaultText` (default: null) - Text to initialize the Firepad with if history is empty.
 
 
 ###From Ace:
@@ -187,6 +188,7 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 >
 >* `userId` (default: random) - The user ID for the person editing.
 >* `userColor` (default: generated from userId) - A css color (e.g. "#ccc") for this user's cursor.
+>* `defaultText` (default: null) - Text to initialize the Firepad with if history is empty.
 
 
 ## Firepad Methods
@@ -221,7 +223,7 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 > Sets the contents of Firepad as html.
 
 `firepad.isHistoryEmpty()`
-> Returns true if the Firepad has never had any content.  Useful for doing first-time initialization.
+> Returns true if the Firepad has never had any content.  Useful for doing first-time initialization if defaultText is not specified.
 
 `firepad.setUserId(userId)`
 > Sets the user id to use for writing operations and storing cursor data.
