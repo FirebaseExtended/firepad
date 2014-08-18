@@ -110,7 +110,7 @@ describe('Integration tests', function() {
     var firepad = new Firepad(ref, cm, { defaultText: text});
     var firepad2 = null;
 
-    waits(500);
+    waitsFor(function() { return firepad.ready_ }, 'firepad is ready');
 
     runs(function() {
       expect(firepad.getText()).toEqual(text);
@@ -122,6 +122,28 @@ describe('Integration tests', function() {
 
     runs(function() {
       expect(firepad2.getText()).toEqual(text2);
+    });
+  });
+
+  it('Emits sync events as users edit the pad', function() {
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var cm = CodeMirror(cmDiv());
+    var firepad = new Firepad(ref, cm, { defaultText: 'XXXXXXXX' });
+    var syncHistory = [];
+
+    firepad.on('synced', function(synced) { syncHistory.push(synced); });
+
+    waitsFor(function() { return firepad.ready_ }, 'firepad is ready');
+
+    runs(function() {
+      randomOperation(cm);
+    });
+
+    waits(500);
+
+    runs(function() {
+      expect(syncHistory[0]).toBe(false);
+      expect(syncHistory[syncHistory.length - 1]).toBe(true);
     });
   });
 
