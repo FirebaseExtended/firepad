@@ -166,4 +166,22 @@ describe('Integration tests', function() {
 
     waitsFor(function() { return headlessHtml == firepadCm.getHtml(); }, 'firepad headless html matches cm-firepad html');
   });
+
+  it("Headless firepad takes a string path as well", function() {
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var path = 'https://firepad-test.firebaseio-demo.com/' + ref.name();
+    var text = 'Hello from headless firepad!';
+    var firepadHeadless = new Headless(path);
+    var headlessText = null;
+
+    firepadHeadless.setText(text, function() {
+      firepadHeadless.getText(function(val) {
+        headlessText = val;
+      });
+    });
+
+    runs(function() {
+      waitsFor(function() { return headlessText == text; }, 'firepad headless matches text');
+    });
+  });
 });
