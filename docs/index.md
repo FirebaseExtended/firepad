@@ -240,9 +240,56 @@ firepad.on('ready', function() {
   To insert images, type = 'img' and attributes must contain 'src'; other attributes
   that can be provided are 'alt', 'width', 'height', 'style' and 'class'.
 
+<a name="headless"> </a>
+
+# 3. Headless Mode
+
+Firepad also provides a headless mode for interacting with documents without a GUI. It runs in either NodeJS or the browser. In the former case, simply install the `firepad` npm module:
+
+`npm install firepad`
+
+and in your code:
+
+{% highlight javascript %}
+var Firepad = require('firepad')
+var headless = new Firepad.Headless('<FIREBASE_URL>')
+{% endhighlight %}
+
+Alternatively, you can load Headless Firepad with a Firebase ref you create on your own. This is useful if you need to use `.push()` to create a ref or if you need to do any custom authentication.
+
+In NodeJS, you'll also have to `npm install firebase`, and then:
+
+{% highlight javascript %}
+var Firepad  = require('firepad')
+var Firebase = require('firebase')
+
+var ref      = new Firebase('<FIREBASE_ROOT_URL>').push()
+var headless = new Firepad.Headless(ref)
+{% endhighlight %}
+
+## Headless Methods
+
+Headless supports a few methods with similar call signatures as regular Firepad, with the notable addition of a callback parameter.
+
+`firepad.getText(callback)` and `firepad.getHtml(callback)` both function as follows:
+{% highlight javascript %}
+headless.getText(function(text) {
+  console.log("Contents of firepad retrieved: " + text);
+});
+{% endhighlight %}
+
+`firepad.setText(text, callback)` and `firepad.setHtml(html, callback)` as well:
+{% highlight javascript %}
+headless.setHtml('<b>Welcome to Firepad!</b>', function(err, committed) {
+  // *err*       will be set if there was a catastrophic failure
+  // *committed* will be true on success, or false if there was a history
+  //               conflict writing to the pad's history.
+});
+{% endhighlight %}
+
 <a name="firebase"> </a>
 
-# 3. Firebase Data
+# 4. Firebase Data
 Firepad uses [Firebase](https://www.firebase.com/?utm_source=docs&utm_medium=email&utm_campaign=firepad) for its data storage and synchronization. This means
 you don't need to run any server code and you benefit from all the features of Firebase
 (first-class data security, data accessibility, automatic scaling, etc.). It also means you own all of
@@ -277,7 +324,7 @@ security rules, see these [example rules on Github](https://github.com/firebase/
 
 
 <a name="extending"> </a>
-# 4. Extending Firepad
+# 5. Extending Firepad
 Firepad is an open source project and is meant to be extended and customized. We'd love for the community
 to help add support for more editors, extend the rich text capabilities, etc. If you want to take the plunge,
 all of the instructions to check out the code and start modifying it are in the README on the
