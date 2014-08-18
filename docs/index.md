@@ -195,14 +195,24 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 
 `firepad.on(eventType, callback);`
 
->Attaches a callback for the given event type.
->
->There is presently only one event, 'ready' which fires once Firepad has retrieved the initial editor contents.  You
->must wait for this event to fire before calling any other methods.
+> Attaches a callback for the given event type. There are two events available for listening.
+
+> The first, 'ready' fires once Firepad has retrieved the initial editor contents.  You
+must wait for this event to fire before calling any other methods.
 
 {% highlight javascript %}
 firepad.on('ready', function() {
   // Firepad is ready.
+});
+{% endhighlight %}
+
+> The second, 'synced', is fired when your local client edits the document and when those
+> edits have been successfully written to Firebase.
+
+{% highlight javascript %}
+firepad.on('synced', function(isSynced) {
+  // isSynced will be false immediately after the user edits the pad,
+  // and true when their edit has been saved to Firebase.
 });
 {% endhighlight %}
 
