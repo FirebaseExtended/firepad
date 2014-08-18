@@ -25,16 +25,16 @@ In order to embed Firepad into your own application, you must first <a href="htt
 Include Firebase, CodeMirror, and Firepad in the &lt;head&gt; section of your page.
 
 {% highlight html %}
-    <!-- Firebase -->
-    <script src="https://cdn.firebase.com/js/client/1.0.17/firebase.js"></script>
+<!-- Firebase -->
+<script src="https://cdn.firebase.com/js/client/1.0.17/firebase.js"></script>
 
-    <!-- CodeMirror -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/4.3.0/codemirror.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/4.3.0/codemirror.css" />
+<!-- CodeMirror -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/4.3.0/codemirror.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/4.3.0/codemirror.css" />
 
-    <!-- Firepad -->
-    <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/0.1.4/firepad.css" />
-    <script src="https://cdn.firebase.com/libs/firepad/0.1.4/firepad-min.js"></script>
+<!-- Firepad -->
+<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/0.1.4/firepad.css" />
+<script src="https://cdn.firebase.com/libs/firepad/0.1.4/firepad-min.js"></script>
 {% endhighlight %}
 
 
@@ -44,13 +44,13 @@ To create a Firepad, you must initialize Firebase, CodeMirror and then Firepad.
 Here is a typical setup for rich-text editing:
 
 {% highlight html %}
-    <div id="firepad"></div>
-    <script>
-      var firepadRef = new Firebase('<FIREBASE URL>');
-      var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
-      var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
-          { richTextShortcuts: true, richTextToolbar: true, defaultText: 'Hello, World!' });
-    </script>
+<div id="firepad"></div>
+<script>
+  var firepadRef = new Firebase('<FIREBASE URL>');
+  var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
+  var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
+      { richTextShortcuts: true, richTextToolbar: true, defaultText: 'Hello, World!' });
+</script>
 {% endhighlight %}
 
 Make sure to replace `<FIREBASE_URL>` with your own Firebase URL. Note that you can easily store multiple
@@ -67,17 +67,17 @@ You can check out [codemirror.net](http://codemirror.net/) for details on CodeMi
 To customize the size / position of the Firepad or customize its look and feel, you can use CSS:
 
 {% highlight css %}
-    .firepad {
-      width: 700px;
-      height: 450px;
-      background-color: #f62; /* dark orange background */
-    }
+.firepad {
+  width: 700px;
+  height: 450px;
+  background-color: #f62; /* dark orange background */
+}
 
-    /* Note: CodeMirror applies its own styles which can be customized in the same way.
-       To apply a background to the entire editor, we need to also apply it to CodeMirror. */
-    .CodeMirror {
-      background-color: #f62;
-    }
+/* Note: CodeMirror applies its own styles which can be customized in the same way.
+   To apply a background to the entire editor, we need to also apply it to CodeMirror. */
+.CodeMirror {
+  background-color: #f62;
+}
 {% endhighlight %}
 
 The toolbar and other aspects can also be customized.  Take a look at firepad.css for a starting point.
@@ -105,15 +105,15 @@ In order to embed Firepad into your own application, you must first <a href="htt
 Include Firebase, Ace, and Firepad in the &lt;head&gt; section of your page.
 
 {% highlight html %}
-    <!-- Firebase -->
-    <script src="https://cdn.firebase.com/js/client/1.0.17/firebase.js"></script>
+<!-- Firebase -->
+<script src="https://cdn.firebase.com/js/client/1.0.17/firebase.js"></script>
 
-    <!-- ACE and its JavaScript mode and theme files -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js"></script>
+<!-- ACE and its JavaScript mode and theme files -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js"></script>
 
-    <!-- Firepad -->
-    <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/0.1.4/firepad.css" />
-    <script src="https://cdn.firebase.com/libs/firepad/0.1.4/firepad-min.js"></script>
+<!-- Firepad -->
+<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/0.1.4/firepad.css" />
+<script src="https://cdn.firebase.com/libs/firepad/0.1.4/firepad-min.js"></script>
 {% endhighlight %}
 
 
@@ -123,12 +123,12 @@ To create a Firepad, you must initialize Firebase, Ace and then Firepad.
 Here is a typical setup for code editing with Ace:
 
 {% highlight html %}
-    <div id="firepad"></div>
-    <script>
-      var firepadRef = new Firebase('<FIREBASE URL>');
-      var editor = ace.edit('firepad');
-      var firepad = Firepad.fromACE(firepadRef, editor);
-    </script>
+<div id="firepad"></div>
+<script>
+  var firepadRef = new Firebase('<FIREBASE URL>');
+  var editor = ace.edit('firepad');
+  var firepad = Firepad.fromACE(firepadRef, editor);
+</script>
 {% endhighlight %}
 
 Make sure to replace `<FIREBASE_URL>` with your own Firebase URL. Note that you can easily store multiple
@@ -145,11 +145,11 @@ line highlighting, etc.)
 To customize the size / position of the Firepad or customize its look and feel, you can use CSS:
 
 {% highlight css %}
-    .firepad {
-      width: 700px;
-      height: 450px;
-      background-color: #f62; /* dark orange background */
-    }
+.firepad {
+  width: 700px;
+  height: 450px;
+  background-color: #f62; /* dark orange background */
+}
 {% endhighlight %}
 
 <div class="emphasis-box">Firepad is also great for editing markdown, code, and just about anything else.
@@ -201,9 +201,9 @@ Check out the <a href="../examples/">examples page</a> for more embedding exampl
 >must wait for this event to fire before calling any other methods.
 
 {% highlight javascript %}
-    firepad.on('ready', function() {
-      // Firepad is ready.
-    });
+firepad.on('ready', function() {
+  // Firepad is ready.
+});
 {% endhighlight %}
 
 `firepad.off(eventType, callback)`
