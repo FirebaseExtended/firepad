@@ -1,7 +1,7 @@
 {
   "name": "firepad",
   "description": "Collaborative text editing powered by Firebase",
-  "version": "0.1.4",
+  "version": "0.0.0",
   "author": "Firebase <support@firebase.com> (https://www.firebase.com/)",
   "contributors": [
     "Michael Lehenbauer <michael@firebase.com>"
@@ -28,12 +28,11 @@
     "realtime",
     "collaborative"
   ],
-  "main": "dist/firepad-min.js",
+  "main": "dist/firepad.min.js",
   "files": [
     "dist/**",
     "LICENSE",
     "README.md",
-    "CHANGELOG.md",
     "package.json"
   ],
   "dependencies": {
@@ -56,6 +55,7 @@
     "karma-phantomjs-launcher": "~0.1.0"
   },
   "scripts": {
-    "test": "grunt"
+    "test": "grunt test",
+    "travis": "grunt"
   }
 }

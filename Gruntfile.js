@@ -39,7 +39,7 @@ module.exports = function (grunt) {
             ' * Copyright 2014 Firebase',
             ' * with code from ot.js (Copyright 2012-2013 Tim Baumann)',
             ' *',
-            ' * Version 0.1.4',
+            ' * Version 0.0.0',
             ' */\n',
             '(function (name, definition, context) {',
             '  //try CommonJS, then AMD (require.js), then use global.',
@@ -85,7 +85,7 @@ module.exports = function (grunt) {
     uglify: {
       "firepad-min-js": {
         src: "dist/firepad.js",
-        dest: "dist/firepad-min.js"
+        dest: "dist/firepad.min.js"
       }
     },
     copy: {

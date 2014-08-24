@@ -1,7 +1,7 @@
 {
   "name": "firepad",
   "description": "Collaborative text editing powered by Firebase",
-  "version": "0.1.4",
+  "version": "0.0.0",
   "authors": [
     "Firebase <support@firebase.com> (https://www.firebase.com/)",
     "Michael Lehenbauer <michael@firebase.com>"
@@ -21,7 +21,7 @@
     "collaborative"
   ],
   "main": [
-    "dist/firepad-min.js",
+    "dist/firepad.min.js",
     "dist/firepad.css",
     "dist/firepad.eot"
   ],
@@ -35,7 +35,7 @@
     "bower_components",
     "Gruntfile.js",
     "package.json",
-    "release.sh"
+    "changelog.txt"
   ],
   "dependencies": {
     "jsdom": "0.10.x",

@@ -4,7 +4,7 @@
  * Copyright 2014 Firebase
  * with code from ot.js (Copyright 2012-2013 Tim Baumann)
  *
- * Version 0.1.4
+ * Version 0.0.0
  */
 
 (function (name, definition, context) {
