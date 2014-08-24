@@ -33,13 +33,13 @@ module.exports = function (grunt) {
       "firepadjs": {
         options: {
           banner: [
-            '/*',
-            ' * Firepad http://www.firepad.io/',
+            '/*!',
+            ' *  Firepad http://www.firepad.io/',
             ' *',
-            ' * Copyright 2014 Firebase',
-            ' * with code from ot.js (Copyright 2012-2013 Tim Baumann)',
+            ' *  Copyright 2014 Firebase',
+            ' *  with code from ot.js (Copyright 2012-2013 Tim Baumann)',
             ' *',
-            ' * Version 0.0.0',
+            ' *  Version 0.0.0',
             ' */\n',
             '(function (name, definition, context) {',
             '  //try CommonJS, then AMD (require.js), then use global.',
@@ -83,6 +83,9 @@ module.exports = function (grunt) {
       }
     },
     uglify: {
+      options: {
+        preserveComments: "some"
+      },
       "firepad-min-js": {
         src: "dist/firepad.js",
         dest: "dist/firepad.min.js"
