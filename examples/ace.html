@@ -3,21 +3,17 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <!-- Include Firebase -->
+  <!-- Firebase -->
   <script src="https://cdn.firebase.com/js/client/1.0.17/firebase.js"></script>
 
-  <!-- Include ACE and its JavaScript mode and theme files -->
-  <script src="ace/ace.js"></script>
-  <script src="ace/mode-javascript.js"></script>
-  <script src="ace/theme-textmate.js"></script>
+  <!-- ACE and its JavaScript mode and theme files -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/mode-javascript.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/theme-textmate.js"></script>
 
-  <!-- Include Firepad -->
-  <script src="firepad.js"></script>
-  <link rel="stylesheet" href="firepad.css" />
-
-  <!-- Helper for generating URLs / Firebase references for example purposes.
-       Not necessary in production apps. -->
-  <script src="example-helper.js"></script>
+  <!-- Firepad -->
+  <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/0.1.4/firepad.css" />
+  <script src="https://cdn.firebase.com/libs/firepad/0.1.4/firepad-min.js"></script>
 
   <style>
     html { height: 100%; }
@@ -35,7 +31,7 @@
   <div id="firepad-container"></div>
 
   <script>
-    window.onload = function() {
+    function init() {
       //// Initialize Firebase.
       var firepadRef = getExampleRef();
       // TODO: Replace above line with:
@@ -50,15 +46,27 @@
       session.setMode("ace/mode/javascript");
 
       //// Create Firepad.
-      var firepad = Firepad.fromACE(firepadRef, editor);
-
-      //// Initialize contents.
-      firepad.on('ready', function() {
-        if (firepad.isHistoryEmpty()) {
-          firepad.setText('// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}');
-        }
+      var firepad = Firepad.fromACE(firepadRef, editor, {
+        defaultText: '// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}'
       });
-    };
+    }
+
+    // Helper to get hash from end of URL or generate a random one.
+    function getExampleRef() {
+      var ref = new Firebase('https://firepad.firebaseio-demo.com');
+      var hash = window.location.hash.replace(/#/g, '');
+      if (hash) {
+        ref = ref.child(hash);
+      } else {
+        ref = ref.push(); // generate unique location.
+        window.location = window.location + '#' + ref.name(); // add it as a hash to the URL.
+      }
+      if (typeof console !== 'undefined')
+        console.log('Firebase data: ', ref.toString());
+      return ref;
+    }
+
+    window.onload = init;
   </script>
 </body>
 </html>

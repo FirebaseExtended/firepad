@@ -6,7 +6,7 @@ describe('Integration tests', function() {
   var _cmDiv;
   function cmDiv() {
     if (!_cmDiv) {
-      _cmDiv = document.createElement("div");
+      _cmDiv = document.createElement('div');
       _cmDiv.style.display = 'none';
       document.body.appendChild(_cmDiv);
     }
@@ -36,7 +36,7 @@ describe('Integration tests', function() {
     });
   }
 
-  it("Out-of-order edit", function () {
+  it('Out-of-order edit', function () {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm1 = CodeMirror(cmDiv());
     var cm2 = CodeMirror(cmDiv());
@@ -53,7 +53,7 @@ describe('Integration tests', function() {
     waitsFor(function() { return cm2.getValue() === '3456789' }, 'Got correct end value.');
   });
 
-  it("Random text changes.", function () {
+  it('Random text changes', function () {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm1 = CodeMirror(cmDiv());
     var cm2 = CodeMirror(cmDiv());
@@ -82,12 +82,12 @@ describe('Integration tests', function() {
       ready = true;
     });
 
-    waitsFor(function() { return ready; }, "Firepad ready.");
+    waitsFor(function() { return ready; }, 'Firepad ready.');
 
     runs(step);
   });
 
-  it("Performs getHtml responsively", function() {
+  it('Performs getHtml responsively', function() {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm = CodeMirror(cmDiv());
     var firepad = new Firepad(ref, cm);
@@ -101,7 +101,53 @@ describe('Integration tests', function() {
     });
   });
 
-  it("Performs headless get/set plaintext", function(){
+  it('Uses defaultText to initialize the pad properly', function() {
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var cm = CodeMirror(cmDiv());
+    var cm2 = CodeMirror(cmDiv());
+    var text = 'This should be the starting text';
+    var text2 = 'this is a new, different text';
+    var firepad = new Firepad(ref, cm, { defaultText: text});
+    var firepad2 = null;
+
+    waitsFor(function() { return firepad.ready_ }, 'firepad is ready');
+
+    runs(function() {
+      expect(firepad.getText()).toEqual(text);
+      firepad.setText(text2);
+      firepad2 = new Firepad(ref, cm2, { defaultText: text});
+    });
+
+    waits(500);
+
+    runs(function() {
+      expect(firepad2.getText()).toEqual(text2);
+    });
+  });
+
+  it('Emits sync events as users edit the pad', function() {
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var cm = CodeMirror(cmDiv());
+    var firepad = new Firepad(ref, cm, { defaultText: 'XXXXXXXX' });
+    var syncHistory = [];
+
+    firepad.on('synced', function(synced) { syncHistory.push(synced); });
+
+    waitsFor(function() { return firepad.ready_ }, 'firepad is ready');
+
+    runs(function() {
+      randomOperation(cm);
+    });
+
+    waits(500);
+
+    runs(function() {
+      expect(syncHistory[0]).toBe(false);
+      expect(syncHistory[syncHistory.length - 1]).toBe(true);
+    });
+  });
+
+  it('Performs headless get/set plaintext', function(){
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm = CodeMirror(cmDiv());
     var firepadCm = new Firepad(ref, cm);
@@ -123,7 +169,7 @@ describe('Integration tests', function() {
     });
   });
 
-  it("Performs headless get/set html", function() {
+  it('Performs headless get/set html', function() {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm = CodeMirror(cmDiv());
     var firepadCm = new Firepad(ref, cm);
@@ -137,7 +183,7 @@ describe('Integration tests', function() {
       '<ul>' +
         '<li>Different ' +
           '<span style="font-family: impact">fonts,</span>' +
-          '<span style="font-size: 24px;"> sizes, </span>' +
+          '<span style="font-size: 24px;""> sizes, </span>' +
           '<span style="color: blue">and colors.</span>' +
         '</li>' +
         '<li>' +
@@ -165,5 +211,23 @@ describe('Integration tests', function() {
     });
 
     waitsFor(function() { return headlessHtml == firepadCm.getHtml(); }, 'firepad headless html matches cm-firepad html');
+  });
+
+  it('Headless firepad takes a string path as well', function() {
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var path = 'https://firepad-test.firebaseio-demo.com/' + ref.name();
+    var text = 'Hello from headless firepad!';
+    var firepadHeadless = new Headless(path);
+    var headlessText = null;
+
+    firepadHeadless.setText(text, function() {
+      firepadHeadless.getText(function(val) {
+        headlessText = val;
+      });
+    });
+
+    runs(function() {
+      waitsFor(function() { return headlessText == text; }, 'firepad headless matches text');
+    });
   });
 });
