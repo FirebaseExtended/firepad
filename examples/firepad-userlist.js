@@ -86,7 +86,9 @@ var FirepadUserList = (function() {
 
     var nameDiv = elt('div', [nameInput, nameHint]);
 
-    return elt('div', [ colorDiv, nameDiv ], { 'class': 'firepad-userlist-user' });
+    return elt('div', [ colorDiv, nameDiv ], {
+      'class': 'firepad-userlist-user ' + 'firepad-user-' + this.userId_
+    });
   };
 
   FirepadUserList.prototype.makeUserEntriesForOthers_ = function() {
@@ -115,7 +117,9 @@ var FirepadUserList = (function() {
 
       var nameDiv = elt('div', name || 'Guest', { 'class': 'firepad-userlist-name' });
 
-      var userDiv = elt('div', [ colorDiv, nameDiv ], { 'class': 'firepad-userlist-user' });
+      var userDiv = elt('div', [ colorDiv, nameDiv ], {
+        'class': 'firepad-userlist-user ' + 'firepad-user-' + userId
+      });
       userId2Element[userId] = userDiv;
 
       if (userId === self.userId_) {
