@@ -4,7 +4,7 @@ describe('WrappedOperation', function() {
   var Cursor = firepad.Cursor;
   var h = helpers;
   var n = 20;
-  
+
   it('Apply', helpers.randomTest(n, function() {
     var str = h.randomString(50);
     var operation = h.randomOperation(str);
@@ -12,7 +12,7 @@ describe('WrappedOperation', function() {
     expect(wrapped.meta.lorem).toBe(42);
     expect(wrapped.apply(str)).toBe(operation.apply(str));
   }));
-  
+
   it('Invert', helpers.randomTest(n, function() {
     var str = h.randomString(50);
     var operation = h.randomOperation(str);
@@ -22,7 +22,7 @@ describe('WrappedOperation', function() {
     expect(wrappedInverted.meta).toBe(payload);
     expect(str).toBe(wrappedInverted.apply(operation.apply(str)));
   }));
-  
+
   it('InvertMethod', function() {
     var str = h.randomString(50);
     var operation = h.randomOperation(str);
@@ -30,7 +30,7 @@ describe('WrappedOperation', function() {
     var wrapped = new WrappedOperation(operation, meta);
     expect(wrapped.invert(str).meta).toBe(str);
   });
-  
+
   it('Compose', helpers.randomTest(n, function() {
     var str = h.randomString(50);
     var a = new WrappedOperation(h.randomOperation(str), { a: 1, b: 2 });
@@ -42,7 +42,7 @@ describe('WrappedOperation', function() {
     expect(ab.meta.c).toBe(4);
     expect(ab.apply(str)).toBe(b.apply(strN));
   }));
-  
+
   it('ComposeMethod', function() {
     var meta = {
       timesComposed: 0,
@@ -60,7 +60,7 @@ describe('WrappedOperation', function() {
     var ab = a.compose(b);
     expect(ab.meta.timesComposed).toBe(1);
   });
-  
+
   it('Transform', helpers.randomTest(n, function() {
     var str = h.randomString(50);
     var metaA = {};
@@ -74,7 +74,7 @@ describe('WrappedOperation', function() {
     expect(bPrime.meta).toBe(metaB);
     expect(aPrime.apply(b.apply(str))).toBe(bPrime.apply(a.apply(str)));
   }));
-  
+
   it('TransformMethod', function() {
     var str = 'Loorem ipsum';
     var a = new WrappedOperation(

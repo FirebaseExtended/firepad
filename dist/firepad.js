@@ -168,6 +168,7 @@ firepad.Span = (function () {
 
   return Span;
 }());
+
 var firepad = firepad || { };
 
 firepad.TextOp = (function() {
@@ -1251,6 +1252,7 @@ firepad.AnnotationList = (function () {
 
   return AnnotationList;
 }());
+
 var firepad = firepad || { };
 firepad.Cursor = (function () {
   'use strict';
@@ -2027,6 +2029,7 @@ firepad.UndoManager = (function () {
   return UndoManager;
 
 }());
+
 var firepad = firepad || { };
 firepad.Client = (function () {
   'use strict';
@@ -2858,6 +2861,7 @@ firepad.Entity = (function() {
 
   return Entity;
 })();
+
 var firepad = firepad || { };
 
 firepad.RichTextCodeMirror = (function () {
@@ -4462,6 +4466,7 @@ firepad.Text = (function() {
 
   return Text;
 })();
+
 var firepad = firepad || { };
 
 /**
@@ -4486,7 +4491,7 @@ firepad.LineFormatting = (function() {
     ORDERED: 'o',
     UNORDERED: 'u',
     TODO: 't',
-    TODOCHECKED: 'tc' 
+    TODOCHECKED: 'tc'
   };
 
   LineFormatting.prototype.cloneWithNewAttribute_ = function(attribute, value) {
@@ -4534,6 +4539,7 @@ firepad.LineFormatting = (function() {
 
   return LineFormatting;
 })();
+
 var firepad = firepad || { };
 
 /**
@@ -4560,6 +4566,7 @@ firepad.Line = (function() {
 
   return Line;
 })();
+
 var firepad = firepad || { };
 
 /**
