@@ -33,13 +33,17 @@ module.exports = function (grunt) {
       "firepadjs": {
         options: {
           banner: [
-            '/*',
-            ' * Firepad http://www.firepad.io/',
+            '/*!',
+            ' * Firepad is an open-source, collaborative code and text editor. It was designed',
+            ' * to be embedded inside larger applications. Since it uses Firebase as a backend,',
+            ' * it requires no server-side code and can be added to any web app simply by',
+            ' * including a couple JavaScript files.',
             ' *',
-            ' * Copyright 2014 Firebase',
-            ' * with code from ot.js (Copyright 2012-2013 Tim Baumann)',
-            ' *',
-            ' * Version 0.1.4',
+            ' * Firepad 0.0.0',
+            ' * http://www.firepad.io/',
+            ' * License: MIT',
+            ' * Copyright: 2014 Firebase',
+            ' * With code from ot.js (Copyright 2012-2013 Tim Baumann)',
             ' */\n',
             '(function (name, definition, context) {',
             '  //try CommonJS, then AMD (require.js), then use global.',
@@ -83,9 +87,12 @@ module.exports = function (grunt) {
       }
     },
     uglify: {
+      options: {
+        preserveComments: "some"
+      },
       "firepad-min-js": {
         src: "dist/firepad.js",
-        dest: "dist/firepad-min.js"
+        dest: "dist/firepad.min.js"
       }
     },
     copy: {

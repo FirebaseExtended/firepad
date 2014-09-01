@@ -4,7 +4,7 @@
  * Copyright 2014 Firebase
  * with code from ot.js (Copyright 2012-2013 Tim Baumann)
  *
- * Version 0.1.4
+ * Version 0.0.0
  */
 
 (function (name, definition, context) {
@@ -5130,20 +5130,9 @@ firepad.Headless = (function() {
   var EntityManager   = firepad.EntityManager;
   var ParseHtml       = firepad.ParseHtml;
 
-  function Headless(refOrPath) {
+  function Headless(ref) {
     // Allow calling without new.
-    if (!(this instanceof Headless)) { return new Headless(refOrPath); }
-
-    if (typeof refOrPath === 'string') {
-      if (typeof Firebase !== 'function') {
-        var firebase = require('firebase');
-      } else {
-        var firebase = Firebase;
-      }
-      var ref = new firebase(refOrPath);
-    } else {
-      var ref = refOrPath;
-    }
+    if (!(this instanceof Headless)) { return new Headless(ref); }
 
     this.adapter        = new FirebaseAdapter(ref);
     this.ready          = false;
@@ -5203,7 +5192,7 @@ firepad.Headless = (function() {
 
     self.initializeFakeDom(function() {
       self.getDocument(function(doc) {
-        callback(firepad.SerializeHtml(doc, self.entityManager));
+        callback(firepad.SerializeHtml(doc, this.entityManager));
       });
     });
   }
@@ -5430,7 +5419,6 @@ firepad.Firepad = (function(global) {
       this.codeMirror_.getWrapperElement().setAttribute('style', '');
       this.codeMirror_.refresh();
     }
-    this.editorAdapter_.setCursor({position: 0, selectionEnd: 0});
   };
 
   Firepad.prototype.insertTextAtCursor = function(textPieces) {

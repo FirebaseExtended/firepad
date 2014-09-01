@@ -1,8 +1,9 @@
 .idea
 *.iml
-node_modules
-bower_components
-build
+dist/
+build/
+node_modules/
+bower_components/
 *.sw?
 .DS_Store
 
