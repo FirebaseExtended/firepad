@@ -2,12 +2,12 @@ describe('UndoManager', function() {
   var UndoManager = firepad.UndoManager;
   var TextOperation = firepad.TextOperation;
   var h = helpers;
-  
+
   function Editor (doc) {
     this.doc = doc;
     this.undoManager = new UndoManager();
   }
-  
+
   Editor.prototype.doEdit = function (operation, dontCompose) {
     function last (arr) { return arr[arr.length - 1]; }
     var compose = !dontCompose && this.undoManager.undoStack.length > 0 &&
@@ -15,12 +15,12 @@ describe('UndoManager', function() {
     this.undoManager.add(operation.invert(this.doc), compose);
     this.doc = operation.apply(this.doc);
   };
-  
+
   Editor.prototype.serverEdit = function (operation) {
     this.doc = operation.apply(this.doc);
     this.undoManager.transform(operation);
   };
-  
+
   it('UndoManager', function() {
     var editor = new Editor("Looremipsum");
     var undoManager = editor.undoManager;
@@ -40,7 +40,7 @@ describe('UndoManager', function() {
       });
       expect(undoManager.isRedoing()).toBe(false);
     };
-  
+
     expect(undoManager.canUndo()).toBe(false);
     expect(undoManager.canRedo()).toBe(false);
     editor.doEdit(new TextOperation().retain(2)['delete'](1).retain(8));
@@ -87,7 +87,7 @@ describe('UndoManager', function() {
     editor.undo();
     expect(editor.doc).toBe("LooremIpsum");
   });
-  
+
   it('UndoManagerMaxItems', function() {
     var doc = h.randomString(50);
     var undoManager = new UndoManager(42);

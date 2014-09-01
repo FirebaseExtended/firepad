@@ -168,6 +168,7 @@ firepad.Span = (function () {
 
   return Span;
 }());
+
 var firepad = firepad || { };
 
 firepad.TextOp = (function() {
@@ -1251,6 +1252,7 @@ firepad.AnnotationList = (function () {
 
   return AnnotationList;
 }());
+
 var firepad = firepad || { };
 firepad.Cursor = (function () {
   'use strict';
@@ -2027,6 +2029,7 @@ firepad.UndoManager = (function () {
   return UndoManager;
 
 }());
+
 var firepad = firepad || { };
 firepad.Client = (function () {
   'use strict';
@@ -2858,6 +2861,7 @@ firepad.Entity = (function() {
 
   return Entity;
 })();
+
 var firepad = firepad || { };
 
 firepad.RichTextCodeMirror = (function () {
@@ -3713,8 +3717,8 @@ firepad.RichTextCodeMirror = (function () {
     });
   };
 
-	RichTextCodeMirror.prototype.toggleTodo = function(noRemove) {
-  	var attribute = ATTR.LIST_TYPE;
+  RichTextCodeMirror.prototype.toggleTodo = function(noRemove) {
+    var attribute = ATTR.LIST_TYPE;
     var currentAttributes = this.getCurrentLineAttributes_();
     var newValue;
     if (!(attribute in currentAttributes) || ((currentAttributes[attribute] !== 't') && (currentAttributes[attribute] !== 'tc'))) {
@@ -3722,23 +3726,23 @@ firepad.RichTextCodeMirror = (function () {
     } else if (currentAttributes[attribute] === 't') {
       newValue = 'tc';
     } else if (currentAttributes[attribute] === 'tc') {
-	    newValue = noRemove ? 't' : false;
+      newValue = noRemove ? 't' : false;
     }
     this.setLineAttribute(attribute, newValue);
-	};
+  };
 
   RichTextCodeMirror.prototype.makeTodoListElement_ = function(checked, getMarkerLine) {
-  	var params = {
-    	'type': "checkbox",
+    var params = {
+      'type': "checkbox",
       'class': 'firepad-todo-left'
     };
     if (checked) params['checked'] = true;
     var el = utils.elt('input', false, params);
     var self = this;
     utils.on(el, 'click', utils.stopEventAnd(function(e) {
-	    self.codeMirror.setCursor({line: getMarkerLine(), ch: 1});
-	  	self.toggleTodo(true);
-		}));
+      self.codeMirror.setCursor({line: getMarkerLine(), ch: 1});
+      self.toggleTodo(true);
+    }));
     return el;
   };
 
@@ -3749,7 +3753,12 @@ firepad.RichTextCodeMirror = (function () {
   };
 
   RichTextCodeMirror.prototype.onCursorActivity_ = function() {
-    this.updateCurrentAttributes_();
+    var self = this;
+
+    clearTimeout(self.cursorTimeout);
+    self.cursorTimeout = setTimeout(function() {
+      self.updateCurrentAttributes_();
+    }, 1);
   };
 
   RichTextCodeMirror.prototype.getCurrentAttributes_ = function() {
@@ -4457,6 +4466,7 @@ firepad.Text = (function() {
 
   return Text;
 })();
+
 var firepad = firepad || { };
 
 /**
@@ -4481,7 +4491,7 @@ firepad.LineFormatting = (function() {
     ORDERED: 'o',
     UNORDERED: 'u',
     TODO: 't',
-    TODOCHECKED: 'tc' 
+    TODOCHECKED: 'tc'
   };
 
   LineFormatting.prototype.cloneWithNewAttribute_ = function(attribute, value) {
@@ -4529,6 +4539,7 @@ firepad.LineFormatting = (function() {
 
   return LineFormatting;
 })();
+
 var firepad = firepad || { };
 
 /**
@@ -4555,6 +4566,7 @@ firepad.Line = (function() {
 
   return Line;
 })();
+
 var firepad = firepad || { };
 
 /**
@@ -5543,7 +5555,7 @@ firepad.Firepad = (function(global) {
   };
 
   Firepad.prototype.todo = function() {
-  	this.richTextCodeMirror_.toggleTodo();
+    this.richTextCodeMirror_.toggleTodo();
     this.codeMirror_.focus();
   };
 
