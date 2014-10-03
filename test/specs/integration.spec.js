@@ -94,7 +94,7 @@ describe('Integration tests', function() {
 
     waitsFor(function() { return firepad.ready_ }, 'firepad is ready');
 
-    var html = '<b>bold</b>';
+    var html = '<blockquote><div><b>bold</b></div></blockquote>';
     runs(function() {
       firepad.setHtml(html);
       expect(firepad.getHtml()).toContain(html);
@@ -180,6 +180,7 @@ describe('Integration tests', function() {
       '<br/>' +
       '<div style="font-size: 18px">' +
       'Supports:<br/>' +
+      '<blockquote>' +
       '<ul>' +
         '<li>Different ' +
           '<span style="font-family: impact">fonts,</span>' +
@@ -201,6 +202,7 @@ describe('Integration tests', function() {
         '<li>Cursor / selection synchronization.</li>' +
         '<li>And it\'s all fully collaborative!</li>' +
       '</ul>' +
+      '</blockquote>' +
       '</div>'
 
     var headlessHtml = null;
