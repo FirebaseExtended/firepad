@@ -111,7 +111,7 @@ describe('Parse HTML Tests', function() {
 
   it('Ordered list', function() {
     var t = Text('Foo', tf);
-    parseTest('<ol><li>Foo</li><li>Foo</li></ul>', [
+    parseTest('<ol><li>Foo</li><li>Foo</li></ol>', [
       Line([t], lf.indent(1).listItem(LIST_TYPE.ORDERED)),
       Line([t], lf.indent(1).listItem(LIST_TYPE.ORDERED))
     ]);
@@ -119,7 +119,7 @@ describe('Parse HTML Tests', function() {
 
   it('Divs listed in list items', function() {
     var t = Text('Foo', tf);
-    parseTest('<ol><li><div>Foo</div><div>Foo</div></li><li>Foo</li></ul>', [
+    parseTest('<ol><li><div>Foo</div><div>Foo</div></li><li>Foo</li></ol>', [
       Line([t], lf.indent(1).listItem(LIST_TYPE.ORDERED)),
       Line([t], lf.indent(1)), // should be indented, but no list item.
       Line([t], lf.indent(1).listItem(LIST_TYPE.ORDERED))
