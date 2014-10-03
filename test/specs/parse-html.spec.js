@@ -101,6 +101,18 @@ describe('Parse HTML Tests', function() {
     ]);
   });
 
+  it('Blockquotes', function() {
+    var t = Text('Foo', tf);
+    parseTest('Foo<blockquote><p>Foo</p></blockquote>Foo<blockquote><blockquote><p>Foo</p></blockquote><div>Foo</div></blockquote>Foo', [
+      Line([t], lf),
+      Line([t], lf.indent(1)),
+      Line([t], lf),
+      Line([t], lf.indent(2)),
+      Line([t], lf.indent(1)),
+      Line([t], lf),
+    ]);
+  });
+
   it('Unordered list', function() {
     var t = Text('Foo', tf);
     parseTest('<ul><li>Foo</li><li>Foo</li></ul>', [
@@ -128,22 +140,22 @@ describe('Parse HTML Tests', function() {
 
   it('Complex list (1)', function() {
     var t = Text('Foo', tf);
-    parseTest('<ol><li>Foo<ol><li>Foo</li><li>Foo</li></ol></li><li>Foo</li></ol>', [
-      Line([t], lf.indent(1).listItem(LIST_TYPE.ORDERED)),
-      Line([t], lf.indent(2).listItem(LIST_TYPE.ORDERED)),
-      Line([t], lf.indent(2).listItem(LIST_TYPE.ORDERED)),
-      Line([t], lf.indent(1).listItem(LIST_TYPE.ORDERED))
+    parseTest('<blockquote><blockquote><ol><li>Foo<ol><li>Foo</li><li>Foo</li></ol></li><li>Foo</li></ol></blockquote></blockquote>', [
+      Line([t], lf.indent(3).listItem(LIST_TYPE.ORDERED)),
+      Line([t], lf.indent(4).listItem(LIST_TYPE.ORDERED)),
+      Line([t], lf.indent(4).listItem(LIST_TYPE.ORDERED)),
+      Line([t], lf.indent(3).listItem(LIST_TYPE.ORDERED))
     ]);
   });
 
   // same as last, but with no text on each line.
   it('Complex list (2)', function() {
     var t = Text('Foo', tf);
-    parseTest('<ol><li><ol><li></li><li></li></ol></li><li></li></ol>', [
-      Line([], lf.indent(1).listItem(LIST_TYPE.ORDERED)),
-      Line([], lf.indent(2).listItem(LIST_TYPE.ORDERED)),
-      Line([], lf.indent(2).listItem(LIST_TYPE.ORDERED)),
-      Line([], lf.indent(1).listItem(LIST_TYPE.ORDERED))
+    parseTest('<blockquote><blockquote><ol><li><ol><li></li><li></li></ol></li><li></li></ol></blockquote></blockquote>', [
+      Line([], lf.indent(3).listItem(LIST_TYPE.ORDERED)),
+      Line([], lf.indent(4).listItem(LIST_TYPE.ORDERED)),
+      Line([], lf.indent(4).listItem(LIST_TYPE.ORDERED)),
+      Line([], lf.indent(3).listItem(LIST_TYPE.ORDERED))
     ]);
   });
 
