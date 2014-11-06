@@ -117,7 +117,7 @@ module.exports = function (grunt) {
     // Unit tests
     karma: {
       options: {
-        configFile: 'test/unit_karma.conf.js',
+        configFile: 'test/karma.conf.js',
       },
       unit: {
         autowatch: false,

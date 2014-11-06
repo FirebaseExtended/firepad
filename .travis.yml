@@ -10,3 +10,5 @@ install:
 - bower install
 script:
 - npm run travis
+after_script:
+- cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
