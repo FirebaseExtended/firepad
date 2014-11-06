@@ -97,7 +97,7 @@ var FirepadUserList = (function() {
     var userId2Element = { };
 
     function updateChild(userSnapshot, prevChildName) {
-      var userId = userSnapshot.name();
+      var userId = userSnapshot.key();
       var div = userId2Element[userId];
       if (div) {
         userList.removeChild(div);
@@ -136,7 +136,7 @@ var FirepadUserList = (function() {
     this.firebaseOn_(this.ref_, 'child_changed', updateChild);
     this.firebaseOn_(this.ref_, 'child_moved', updateChild);
     this.firebaseOn_(this.ref_, 'child_removed', function(removedSnapshot) {
-      var userId = removedSnapshot.name();
+      var userId = removedSnapshot.key();
       var div = userId2Element[userId];
       if (div) {
         userList.removeChild(div);

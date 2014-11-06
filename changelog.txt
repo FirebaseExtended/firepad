@@ -1,0 +1,1 @@
+feature - Upgraded Firebase dependency to 2.0.x.

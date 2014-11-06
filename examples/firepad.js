@@ -1363,7 +1363,7 @@ firepad.FirebaseAdapter = (function (global) {
         self.monitorCursors_();
       });
     } else {
-      this.userId_ = ref.push().name();
+      this.userId_ = ref.push().key();
     }
 
     // Avoid triggering any events until our callers have had a chance to attach their listeners.
@@ -1491,7 +1491,7 @@ firepad.FirebaseAdapter = (function (global) {
     var usersRef = this.ref_.child('users'), self = this;
 
     function childChanged(childSnap) {
-      var userId = childSnap.name();
+      var userId = childSnap.key();
       var userData = childSnap.val();
       self.trigger('cursor', userId, userData.cursor, userData.color);
     }
@@ -1500,7 +1500,7 @@ firepad.FirebaseAdapter = (function (global) {
     this.firebaseOn_(usersRef, 'child_changed', childChanged);
 
     this.firebaseOn_(usersRef, 'child_removed', function(childSnap) {
-      var userId = childSnap.name();
+      var userId = childSnap.key();
       self.trigger('cursor', userId, null);
     });
   };
@@ -1528,7 +1528,7 @@ firepad.FirebaseAdapter = (function (global) {
 
     setTimeout(function() {
       self.firebaseOn_(historyRef, 'child_added', function(revisionSnapshot) {
-        var revisionId = revisionSnapshot.name();
+        var revisionId = revisionSnapshot.key();
         self.pendingReceivedRevisions_[revisionId] = revisionSnapshot.val();
         if (self.ready_) {
           self.handlePendingReceivedRevisions_();
@@ -5309,7 +5309,7 @@ firepad.Firepad = (function(global) {
     if (this.codeMirror_)
       this.codeMirror_.refresh();
 
-    var userId = this.getOption('userId', ref.push().name());
+    var userId = this.getOption('userId', ref.push().key());
     var userColor = this.getOption('userColor', colorFromUserId(userId));
 
     this.entityManager_ = new EntityManager();
