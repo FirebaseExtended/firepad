@@ -1,8 +1,26 @@
 module.exports = function(config) {
   config.set({
     frameworks: ["jasmine"],
-    reporters: ["dots", "failed"],
     browsers: ["PhantomJS"],
+
+    preprocessors: {
+      "../lib/*.js": "coverage"
+    },
+
+    reporters: ["spec", "failed", "coverage"],
+    coverageReporter: {
+      reporters: [
+        {
+          type: "lcovonly",
+          dir: "coverage",
+          subdir: "."
+        },
+        {
+          type: "text-summary"
+        }
+      ]
+    },
+
     files: [
       "../bower_components/codemirror/lib/codemirror.js",
       "../bower_components/firebase/firebase.js",

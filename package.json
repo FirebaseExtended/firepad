@@ -40,19 +40,22 @@
     "firebase": "1.0.x"
   },
   "devDependencies": {
+    "coveralls": "^2.11.2",
     "grunt": "~0.4.5",
     "grunt-cli": "0.1.13",
-    "grunt-contrib-concat": "~0.1.3",
-    "grunt-contrib-uglify": "~0.2.0",
-    "grunt-contrib-copy": "~0.4.1",
-    "grunt-contrib-coffee": "~0.7.0",
     "grunt-coffeelint": "0.0.7",
+    "grunt-contrib-coffee": "~0.7.0",
+    "grunt-contrib-concat": "~0.1.3",
+    "grunt-contrib-copy": "~0.4.1",
+    "grunt-contrib-uglify": "~0.2.0",
     "grunt-contrib-watch": "~0.6.1",
-    "karma": "^0.12.16",
     "grunt-karma": "^0.8.3",
-    "karma-jasmine": "~0.1.3",
+    "karma": "^0.12.16",
+    "karma-coverage": "^0.2.6",
     "karma-failed-reporter": "0.0.2",
-    "karma-phantomjs-launcher": "~0.1.0"
+    "karma-jasmine": "~0.1.3",
+    "karma-phantomjs-launcher": "~0.1.0",
+    "karma-spec-reporter": "0.0.13"
   },
   "scripts": {
     "test": "grunt test",
