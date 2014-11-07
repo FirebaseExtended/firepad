@@ -215,7 +215,7 @@ describe('Integration tests', function() {
 
   it('Headless firepad takes a string path as well', function() {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-    var path = 'https://firepad-test.firebaseio-demo.com/' + ref.name();
+    var path = 'https://firepad-test.firebaseio-demo.com/' + ref.key();
     var text = 'Hello from headless firepad!';
     var firepadHeadless = new Headless(path);
     var headlessText = null;
