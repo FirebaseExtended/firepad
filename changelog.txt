@@ -1,1 +1,3 @@
 feature - Upgraded Firebase dependency to 2.0.x.
+fixed - Fixed an issue with updating one of several consecutive entities.
+fixed - Fixed an issue when unindenting lines.
