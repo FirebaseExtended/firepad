@@ -1,8 +1,11 @@
 .idea
 *.iml
 *sw?
-node_modules
-bower_components
+lib/
+dist/
+test/
+node_modules/
+bower_components/
 
 # Jekyll stuff.
 _site
