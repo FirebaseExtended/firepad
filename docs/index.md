@@ -34,7 +34,7 @@ Include Firebase, CodeMirror, and Firepad in the &lt;head&gt; section of your pa
 
 <!-- Firepad -->
 <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.1.0/firepad.css" />
-<script src="https://cdn.firebase.com/libs/firepad/1.1.0/firepad-min.js"></script>
+<script src="https://cdn.firebase.com/libs/firepad/1.1.0/firepad.min.js"></script>
 {% endhighlight %}
 
 
@@ -113,7 +113,7 @@ Include Firebase, Ace, and Firepad in the &lt;head&gt; section of your page.
 
 <!-- Firepad -->
 <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.1.0/firepad.css" />
-<script src="https://cdn.firebase.com/libs/firepad/1.1.0/firepad-min.js"></script>
+<script src="https://cdn.firebase.com/libs/firepad/1.1.0/firepad.min.js"></script>
 {% endhighlight %}
 
 
