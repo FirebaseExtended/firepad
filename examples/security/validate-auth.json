@@ -4,22 +4,22 @@
     "history": {
       ".read": "auth != null",
       "$revision": {
-        /* Allow writing a revision as long as it doesn't already exist and  you write your auth.id as the 'a' field. */
-        ".write": "data.val() === null && newData.child('a').val() === auth.id"
+        /* Allow writing a revision as long as it doesn't already exist and  you write your auth.uid as the 'a' field. */
+        ".write": "data.val() === null && newData.child('a').val() === auth.uid"
       }
     },
     "users": {
       ".read": "auth != null",
       "$userid": {
         /* You may freely modify your own user info. */
-        ".write": "$userid === auth.id"
+        ".write": "$userid === auth.uid"
       }
     },
     "checkpoint": {
       ".read": "auth != null",
-      /* You may write a checkpoint as long as you're writing your auth.id as the 'a' field and you
+      /* You may write a checkpoint as long as you're writing your auth.uid as the 'a' field and you
          also wrote the revision that you're checkpointing. */
-      ".write": "newData.child('a').val() === auth.id && root.child('history').child(newData.child('id').val()).child('a').val() === auth.id"
+      ".write": "newData.child('a').val() === auth.uid && root.child('history').child(newData.child('id').val()).child('a').val() === auth.uid"
     }
   }
 }
