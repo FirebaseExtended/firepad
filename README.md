@@ -24,7 +24,8 @@ code. It can be added to any web app by including a few JavaScript files
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js"></script>
 
 	<!-- Firepad -->
-	<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.1.0/firepad.css" />
+	<link rel="stylesheet"
+	    href="https://cdn.firebase.com/libs/firepad/1.1.0/firepad.css" />
 	<script src="https://cdn.firebase.com/libs/firepad/1.1.0/firepad.min.js"></script>
 
 and calling an init function.
