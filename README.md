@@ -17,26 +17,30 @@ Visit [firepad.io](http://demo.firepad.io/) to see a live demo of Firepad in ric
 Firepad uses [Firebase](https://www.firebase.com/?utm_source=firepad) as a backend, so it requires no server-side
 code. It can be added to any web app by including a few JavaScript files
 
-	<!-- Firebase -->
-	<script src="https://cdn.firebase.com/js/client/2.0.2/firebase.js"></script>
+```HTML
+<!-- Firebase -->
+<script src="https://cdn.firebase.com/js/client/2.0.2/firebase.js"></script>
 
-  <!-- CodeMirror -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/4.3.0/codemirror.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/4.3.0/codemirror.css"/>
+<!-- CodeMirror -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/4.3.0/codemirror.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/4.3.0/codemirror.css"/>
 
-	<!-- Firepad -->
-	<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.1.0/firepad.css" />
-	<script src="https://cdn.firebase.com/libs/firepad/1.1.0/firepad.min.js"></script>
+<!-- Firepad -->
+<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.1.0/firepad.css" />
+<script src="https://cdn.firebase.com/libs/firepad/1.1.0/firepad.min.js"></script>
+```
 
 and calling an init function.
 
-	<div id="firepad"></div>
-  <script>
-    var firepadRef = new Firebase('<FIREBASE URL>');
-    var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
-    var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
-        { richTextShortcuts: true, richTextToolbar: true, defaultText: 'Hello, World!' });
-  </script>
+```HTML
+<div id="firepad"></div>
+<script>
+  var firepadRef = new Firebase('<FIREBASE URL>');
+  var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
+  var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
+      { richTextShortcuts: true, richTextToolbar: true, defaultText: 'Hello, World!' });
+</script>
+```
     
 It supports rich text with [CodeMirror](http://codemirror.net/) and code via [ACE](http://ace.c9.io/). Check out the
 detailed setup instructions at [firepad.io/docs](http://www.firepad.io/docs).
