@@ -42,8 +42,8 @@ and calling an init function.
 </script>
 ```
     
-It supports rich text with [CodeMirror](http://codemirror.net/) and code via [ACE](http://ace.c9.io/). Check out the
-detailed setup instructions at [firepad.io/docs](http://www.firepad.io/docs).
+Firepad supports rich text editing with [CodeMirror](http://codemirror.net/) and code editing via 
+[ACE](http://ace.c9.io/). Check out the detailed setup instructions at [firepad.io/docs](http://www.firepad.io/docs).
 
 ### What's Here
 
