@@ -8,9 +8,10 @@ designed to be embedded inside larger web applications.
 
 ## Live Demo
 
-Visit [firepad.io](http://www.firepad.io/) to see a live demo of Firepad in rich text mode, or the [examples page](http://www.firepad.io/examples/) to see it setup for collaborative code editing.
+Visit [firepad.io](http://demo.firepad.io/) to see a live demo of Firepad in rich text mode, or the
+[examples page](http://www.firepad.io/examples/) to see it setup for collaborative code editing.
 
-[![a screenshot of the Firepad demo](screenshot.png)](http://www.firepad.io/)
+[![a screenshot of demo.firepad.io including a picture of two cats and a discussion about fonts](screenshot.png)](http://demo.firepad.io/)
 
 ## Setup
 Firepad uses [Firebase](https://www.firebase.com/?utm_source=firepad) as a backend, so it requires no server-side
@@ -35,7 +36,8 @@ and calling an init function.
 	  var firepad = Firepad.fromACE(firepadRef, editor);
 	</script>
     
-It supports rich text and code via [ACE]() or [CodeMirror]. Check out the detailed setup instructions at [firepad.io/docs](http://www.firepad.io/docs).
+It supports rich text and code via [ACE](http://ace.c9.io/) or [CodeMirror](http://codemirror.net/). Check out the
+detailed setup instructions at [firepad.io/docs](http://www.firepad.io/docs).
 
 ### What's Here
 
@@ -59,8 +61,7 @@ Here are some highlights of the directory structure and notable source files:
 
 ## Contributing
 
-If you'd like to contribute to Firepad, you'll need to run the following commands to get your
-environment set up:
+We love pull requests. If you'd like to contribute to Firepad, run the following commands to get your environment set up:
 
 ```bash
 $ git clone https://github.com/firebase/firepad.git
