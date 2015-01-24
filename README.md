@@ -1,6 +1,7 @@
 # Firepad
 
 [![Build Status](https://travis-ci.org/firebase/firepad.svg?branch=master)](https://travis-ci.org/firebase/firepad)
+[![Coverage Status](https://img.shields.io/coveralls/firebase/firepad.svg?branch=master&style=flat)](https://coveralls.io/r/firebase/firepad)
 [![Version](https://badge.fury.io/gh/firebase%2Ffirepad.svg)](http://badge.fury.io/gh/firebase%2Ffirepad)
 
 [Firepad](http://www.firepad.io/) is an open-source, collaborative code and text editor. It is
