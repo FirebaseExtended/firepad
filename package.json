@@ -36,8 +36,8 @@
     "package.json"
   ],
   "dependencies": {
-    "jsdom": "0.10.x",
-    "firebase": "2.0.x"
+    "jsdom": "3.x",
+    "firebase": "2.x"
   },
   "devDependencies": {
     "coveralls": "^2.11.2",
