@@ -1,0 +1,1 @@
+fixed - Fixed CodeMirror version detection so firepad now works with CodeMirror 5.x.
