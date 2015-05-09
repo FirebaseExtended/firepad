@@ -20,11 +20,11 @@ code. It can be added to any web app by including a few JavaScript files
 
 ```HTML
 <!-- Firebase -->
-<script src="https://cdn.firebase.com/js/client/2.0.2/firebase.js"></script>
+<script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
 
 <!-- CodeMirror -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/4.3.0/codemirror.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/4.3.0/codemirror.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.2.0/codemirror.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.2.0/codemirror.css"/>
 
 <!-- Firepad -->
 <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.1.0/firepad.css" />
