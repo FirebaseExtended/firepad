@@ -1,7 +1,7 @@
 {
   "name": "firepad",
   "description": "Collaborative text editing powered by Firebase",
-  "version": "0.0.0",
+  "version": "1.1.1",
   "authors": [
     "Firebase <support@firebase.com> (https://www.firebase.com/)",
     "Michael Lehenbauer <michael@firebase.com>"
