@@ -5,7 +5,7 @@
 [![Version](https://badge.fury.io/gh/firebase%2Ffirepad.svg)](http://badge.fury.io/gh/firebase%2Ffirepad)
 
 [Firepad](http://www.firepad.io/) is an open-source, collaborative code and text editor. It is
-designed to be embedded inside larger web applications. 
+designed to be embedded inside larger web applications.
 
 ## Live Demo
 
@@ -42,8 +42,8 @@ and calling an init function.
       { richTextShortcuts: true, richTextToolbar: true, defaultText: 'Hello, World!' });
 </script>
 ```
-    
-Firepad supports rich text editing with [CodeMirror](http://codemirror.net/) and code editing via 
+
+Firepad supports rich text editing with [CodeMirror](http://codemirror.net/) and code editing via
 [ACE](http://ace.c9.io/). Check out the detailed setup instructions at [firepad.io/docs](http://www.firepad.io/docs).
 
 ### What's Here
@@ -88,11 +88,10 @@ command line using `grunt test`.
 
 ## Getting Started with Firebase
 
-Firepad requires Firebase in order to store data. You can
-[sign up here](https://www.firebase.com/signup/?utm_source=firepad) for a free account.
+Firepad stores its data in a Firebase database. You can
+[sign up here](https://www.firebase.com/signup/?utm_source=firepad) for a free Firebase account.
 
 ## Getting Help
 
 Join our [Firepad Google Group](https://groups.google.com/forum/#!forum/firepad-io) to ask
 questions, request features, or share your Firepad apps with the community.
-
