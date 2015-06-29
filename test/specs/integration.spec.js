@@ -36,6 +36,22 @@ describe('Integration tests', function() {
     });
   }
 
+  beforeEach(function() {
+    // Make sure we're connected to Firebase.  This can take a while on slow
+    // connections.
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com/.info/connected');
+    var connected = false;
+    var listener = ref.on('value', function(s) {
+      connected = s.val() == true;
+    });
+
+    waitsFor(function() { return connected; }, 'connected', 10000);
+
+    runs(function() {
+      ref.off('value', listener);
+    });
+  });
+
   it('Out-of-order edit', function () {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm1 = CodeMirror(cmDiv());
