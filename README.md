@@ -83,7 +83,7 @@ $ grunt watch               # watch for source file changes
 `grunt watch` will watch for changes in the `/lib/` directory and lint, concatenate, and minify the
 source files when a change occurs. The output files are written to the `/dist/` directory.
 
-You can run the test suite by navigating to `file:///path/to/firepad/tests/index.html` or via the
+You can run the test suite by navigating to `file:///path/to/firepad/test/index.html` or via the
 command line using `grunt test`.
 
 ## Getting Started with Firebase
