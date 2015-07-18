@@ -75,12 +75,14 @@ var FirepadUserList = (function() {
     if (this.hasName_) nameHint.style.display = 'none';
 
     // Update Firebase when name changes.
+    var self = this;
     on(nameInput, 'change', function(e) {
       var name = nameInput.value || "Guest " + Math.floor(Math.random() * 1000);
       myUserRef.child('name').onDisconnect().remove();
       myUserRef.child('name').set(name);
       nameHint.style.display = 'none';
       nameInput.blur();
+      self.displayName_ = name;
       stopEvent(e);
     });
 
