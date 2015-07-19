@@ -134,11 +134,9 @@ describe('Integration tests', function() {
       firepad2 = new Firepad(ref, cm2, { defaultText: text});
     });
 
-    waits(500);
+    waitsFor(function() { return firepad2.ready_ }, 'firepad2 is ready');
 
-    runs(function() {
-      expect(firepad2.getText()).toEqual(text2);
-    });
+    waitsFor(function() { return firepad2.getText() == text2 }, 'edited text won over default');
   });
 
   it('Emits sync events as users edit the pad', function() {
