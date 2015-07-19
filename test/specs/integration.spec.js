@@ -151,14 +151,10 @@ describe('Integration tests', function() {
 
     runs(function() {
       randomOperation(cm);
+      expect(syncHistory[0]).toBe(false);  // immediately after local edit
     });
 
-    waits(500);
-
-    runs(function() {
-      expect(syncHistory[0]).toBe(false);
-      expect(syncHistory[syncHistory.length - 1]).toBe(true);
-    });
+    waitsFor(function() { return syncHistory[syncHistory.length - 1] === true; }, 'synced again.');
   });
 
   it('Performs headless get/set plaintext', function(){
