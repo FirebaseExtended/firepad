@@ -21,6 +21,8 @@ module.exports = function(config) {
       ]
     },
 
+    browserNoActivityTimeout: 30000,
+
     files: [
       "../bower_components/codemirror/lib/codemirror.js",
       "../bower_components/firebase/firebase.js",
