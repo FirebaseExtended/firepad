@@ -36,6 +36,22 @@ describe('Integration tests', function() {
     });
   }
 
+  beforeEach(function() {
+    // Make sure we're connected to Firebase.  This can take a while on slow
+    // connections.
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com/.info/connected');
+    var connected = false;
+    var listener = ref.on('value', function(s) {
+      connected = s.val() == true;
+    });
+
+    waitsFor(function() { return connected; }, 'connected', 10000);
+
+    runs(function() {
+      ref.off('value', listener);
+    });
+  });
+
   it('Out-of-order edit', function () {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm1 = CodeMirror(cmDiv());
@@ -118,11 +134,9 @@ describe('Integration tests', function() {
       firepad2 = new Firepad(ref, cm2, { defaultText: text});
     });
 
-    waits(500);
+    waitsFor(function() { return firepad2.ready_ }, 'firepad2 is ready');
 
-    runs(function() {
-      expect(firepad2.getText()).toEqual(text2);
-    });
+    waitsFor(function() { return firepad2.getText() == text2 }, 'edited text won over default');
   });
 
   it('Emits sync events as users edit the pad', function() {
@@ -137,14 +151,10 @@ describe('Integration tests', function() {
 
     runs(function() {
       randomOperation(cm);
+      expect(syncHistory[0]).toBe(false);  // immediately after local edit
     });
 
-    waits(500);
-
-    runs(function() {
-      expect(syncHistory[0]).toBe(false);
-      expect(syncHistory[syncHistory.length - 1]).toBe(true);
-    });
+    waitsFor(function() { return syncHistory[syncHistory.length - 1] === true; }, 'synced again.');
   });
 
   it('Performs headless get/set plaintext', function(){
