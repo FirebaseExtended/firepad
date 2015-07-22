@@ -151,7 +151,9 @@ describe('Integration tests', function() {
 
     runs(function() {
       randomOperation(cm);
-      expect(syncHistory[0]).toBe(false);  // immediately after local edit
+      setTimeout(function() {
+        expect(syncHistory[0]).toBe(false);  // semi-immediately after local edit
+      }, 1);
     });
 
     waitsFor(function() { return syncHistory[syncHistory.length - 1] === true; }, 'synced again.');
