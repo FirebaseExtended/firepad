@@ -159,7 +159,7 @@ describe('Integration tests', function() {
     waitsFor(function() { return syncHistory[syncHistory.length - 1] === true; }, 'synced again.');
   });
 
-  it('Performs headless get/set plaintext', function(){
+  it('Performs headless get/set plaintext & dispose', function(){
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm = CodeMirror(cmDiv());
     var firepadCm = new Firepad(ref, cm);
@@ -175,13 +175,22 @@ describe('Integration tests', function() {
       var headlessText = null;
       firepadHeadless.getText(function(val) {
         headlessText = val;
-      })
+      });
 
       waitsFor(function() { return headlessText == text; }, 'firepad headless matches text');
     });
+
+    runs(function() {
+      firepadHeadless.dispose();
+      // We'd like to know all firebase callbacks were removed.
+      // This does not prove there was no leak but it shows we tried.
+      expect(firepadHeadless.firebaseAdapter_.firebaseCallbacks_).toEqual([]);
+      expect(function() { firepadHeadless.getText(function() {}); }).toThrow();
+      expect(function() { firepadHeadless.setText("I'm a zombie.  Braaaains..."); }).toThrow();
+    });
   });
 
-  it('Performs headless get/set html', function() {
+  it('Performs headless get/set html & dispose', function() {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm = CodeMirror(cmDiv());
     var firepadCm = new Firepad(ref, cm);
@@ -223,6 +232,15 @@ describe('Integration tests', function() {
     });
 
     waitsFor(function() { return headlessHtml == firepadCm.getHtml(); }, 'firepad headless html matches cm-firepad html');
+
+    runs(function() {
+      firepadHeadless.dispose();
+      // We'd like to know all firebase callbacks were removed.
+      // This does not prove there was no leak but it shows we tried.
+      expect(firepadHeadless.firebaseAdapter_.firebaseCallbacks_).toEqual([]);
+      expect(function() { firepadHeadless.getHtml(function() {}); }).toThrow();
+      expect(function() { firepadHeadless.setHtml("<p>I'm a zombie.  Braaaains...</p>"); }).toThrow();
+    });
   });
 
   it('Headless firepad takes a string path as well', function() {
