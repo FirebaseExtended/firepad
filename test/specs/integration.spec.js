@@ -159,6 +159,26 @@ describe('Integration tests', function() {
     waitsFor(function() { return syncHistory[syncHistory.length - 1] === true; }, 'synced again.');
   });
 
+  it('Performs Firepad.dispose', function(){
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var cm = CodeMirror(cmDiv());
+    var firepad = new Firepad(ref, cm, { defaultText: "It\'s alive." });
+
+    waitsFor(function() { return firepad.ready_ }, 'firepad is ready');
+
+    runs(function() {
+      firepad.dispose();
+      // We'd like to know all firebase callbacks were removed.
+      // This does not prove there was no leak but it shows we tried.
+      expect(firepad.firebaseAdapter_.firebaseCallbacks_).toEqual([]);
+      expect(function() { firepad.isHistoryEmpty(); }).toThrow();
+      expect(function() { firepad.getText(); }).toThrow();
+      expect(function() { firepad.setText("I'm a zombie.  Braaaains..."); }).toThrow();
+      expect(function() { firepad.getHtml(); }).toThrow();
+      expect(function() { firepad.setHtml("<p>I'm a zombie.  Braaaains...</p>"); }).toThrow();
+    });
+  });
+
   it('Performs headless get/set plaintext & dispose', function(){
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm = CodeMirror(cmDiv());
