@@ -242,7 +242,7 @@ describe('Integration tests', function() {
         '<li>Cursor / selection synchronization.</li>' +
         '<li>And it\'s all fully collaborative!</li>' +
       '</ul>' +
-      '</div>'
+      '</div>';
 
     var headlessHtml = null;
     firepadHeadless.setHtml(html, function() {
@@ -250,6 +250,8 @@ describe('Integration tests', function() {
         headlessHtml = val;
       })
     });
+
+    waitsFor(function() { return firepadCm.ready_ }, 'firepad is ready');
 
     waitsFor(function() { return headlessHtml == firepadCm.getHtml(); }, 'firepad headless html matches cm-firepad html');
 
