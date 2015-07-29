@@ -179,6 +179,16 @@ describe('Integration tests', function() {
     });
   });
 
+  it('Safely performs Firepad.dispose immediately after construction', function(){
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var cm = CodeMirror(cmDiv());
+    var firepad = new Firepad(ref, cm);
+
+    runs(function() {
+      firepad.dispose();
+    });
+  });
+
   it('Performs headless get/set plaintext & dispose', function(){
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm = CodeMirror(cmDiv());
@@ -280,6 +290,15 @@ describe('Integration tests', function() {
 
     runs(function() {
       waitsFor(function() { return headlessText == text; }, 'firepad headless matches text');
+    });
+  });
+
+  it('Safely performs Headless.dispose immediately after construction', function(){
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var firepadHeadless = new Headless(ref);
+
+    runs(function() {
+      firepadHeadless.dispose();
     });
   });
 });
