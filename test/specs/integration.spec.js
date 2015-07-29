@@ -282,4 +282,13 @@ describe('Integration tests', function() {
       waitsFor(function() { return headlessText == text; }, 'firepad headless matches text');
     });
   });
+
+  it('Safely performs Headless.dispose immediately after construction', function(){
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var firepadHeadless = new Headless(ref);
+
+    runs(function() {
+      firepadHeadless.dispose();
+    });
+  });
 });
