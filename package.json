@@ -40,7 +40,6 @@
     "firebase": "2.x"
   },
   "devDependencies": {
-    "bower": "^1.4.1",
     "coveralls": "^2.11.2",
     "grunt": "~0.4.5",
     "grunt-cli": "0.1.13",
@@ -63,7 +62,6 @@
     "test": "grunt test",
     "travis": "grunt",
     "dev": "grunt watch",
-    "build": "grunt build",
-    "install": "bower install"
+    "build": "grunt build"
   }
 }

@@ -75,8 +75,9 @@ $ git clone https://github.com/firebase/firepad.git
 $ cd firepad                # go to the firepad directory
 $ npm install -g grunt-cli  # globally install grunt task runner
 $ npm install -g bower      # globally install Bower package manager
-$ npm install               # install local build / test dependencies and bower dependencies
-$ grunt build               # build once initially (so tests will work)
+$ npm install               # install local npm build / test dependencies
+$ bower install             # install local JavaScript dependencies
+$ grunt coffee              # build coffee once initially (so tests will work)
 $ grunt watch               # watch for source file changes
 ```
 
