@@ -3,14 +3,14 @@ describe('Integration tests', function() {
   var Firepad = firepad.Firepad;
   var Headless = Firepad.Headless;
 
-  var _cmDiv;
-  function cmDiv() {
-    if (!_cmDiv) {
-      _cmDiv = document.createElement('div');
-      _cmDiv.style.display = 'none';
-      document.body.appendChild(_cmDiv);
+  var _hiddenDiv;
+  function hiddenDiv() {
+    if (!_hiddenDiv) {
+      _hiddenDiv = document.createElement('div');
+      _hiddenDiv.style.display = 'none';
+      document.body.appendChild(_hiddenDiv);
     }
-    return _cmDiv;
+    return _hiddenDiv;
   }
 
   function randomEdit (cm) {
@@ -36,26 +36,23 @@ describe('Integration tests', function() {
     });
   }
 
-  beforeEach(function() {
+  beforeEach(function(done) {
     // Make sure we're connected to Firebase.  This can take a while on slow
     // connections.
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com/.info/connected');
     var connected = false;
     var listener = ref.on('value', function(s) {
-      connected = s.val() == true;
-    });
-
-    waitsFor(function() { return connected; }, 'connected', 10000);
-
-    runs(function() {
-      ref.off('value', listener);
+      if(s.val() == true){
+        done();
+        ref.off('value', listener);
+      }
     });
   });
 
-  it('Out-of-order edit', function () {
+  it('Out-of-order edit', function (done) {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-    var cm1 = CodeMirror(cmDiv());
-    var cm2 = CodeMirror(cmDiv());
+    var cm1 = CodeMirror(hiddenDiv());
+    var cm2 = CodeMirror(hiddenDiv());
     var firepad1 = new Firepad(ref, cm1);
     var firepad2 = new Firepad(ref, cm2);
 
@@ -65,125 +62,116 @@ describe('Integration tests', function() {
         cm1.replaceRange('', {line: 0, ch: 10}, {line: 0, ch: 13});
         cm1.replaceRange('', {line: 0, ch: 0},  {line: 0, ch: 3});
       });
+      setTimeout(function() {
+        expect(cm2.getValue()).toEqual('3456789');
+        done();
+      }, 500);
     });
-    waitsFor(function() { return cm2.getValue() === '3456789' }, 'Got correct end value.');
   });
 
-  it('Random text changes', function () {
+  it('Random text changes', function (done) {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-    var cm1 = CodeMirror(cmDiv());
-    var cm2 = CodeMirror(cmDiv());
+    var cm1 = CodeMirror(hiddenDiv());
+    var cm2 = CodeMirror(hiddenDiv());
     var firepad1 = new Firepad(ref, cm1);
     var firepad2 = new Firepad(ref, cm2);
 
-    var n = 25;
-
-    var done = false;
-    function step () {
-      if (n == 0) {
-        done = true;
-        return;
+    function step (times) {
+      if (times == 0) {
+        done();
+      }else{
+        randomOperation(cm1);
+        setTimeout(function() {
+          expect(cm1.getValue()).toEqual(cm2.getValue());
+          step(times - 1);
+        }, 400);
       }
-
-      n--;
-      randomOperation(cm1);
-
-      waitsFor(function() { return cm1.getValue() == cm2.getValue(); }, 'firepads to match');
-      runs(step);
     }
 
-    var ready = false;
     firepad1.on('ready', function() {
       firepad1.setText('lorem ipsum');
-      ready = true;
+      step(25);
     });
+  }, 777 * 25 + 1000);
 
-    waitsFor(function() { return ready; }, 'Firepad ready.');
-
-    runs(step);
-  });
-
-  it('Performs getHtml responsively', function() {
+  it('Performs getHtml responsively', function(done) {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-    var cm = CodeMirror(cmDiv());
+    var cm = CodeMirror(hiddenDiv());
     var firepad = new Firepad(ref, cm);
 
-    waitsFor(function() { return firepad.ready_ }, 'firepad is ready');
-
-    var html = '<b>bold</b>';
-    runs(function() {
+    firepad.on('ready', function() {
+      var html = '<b>bold</b>';
       firepad.setHtml(html);
       expect(firepad.getHtml()).toContain(html);
+      done();
     });
   });
 
-  it('Uses defaultText to initialize the pad properly', function() {
+  it('Uses defaultText to initialize the pad properly', function(done) {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-    var cm = CodeMirror(cmDiv());
-    var cm2 = CodeMirror(cmDiv());
+    var cm = CodeMirror(hiddenDiv());
+    var cm2 = CodeMirror(hiddenDiv());
     var text = 'This should be the starting text';
     var text2 = 'this is a new, different text';
     var firepad = new Firepad(ref, cm, { defaultText: text});
-    var firepad2 = null;
 
-    waitsFor(function() { return firepad.ready_ }, 'firepad is ready');
-
-    runs(function() {
+    firepad.on('ready', function() {
       expect(firepad.getText()).toEqual(text);
       firepad.setText(text2);
-      firepad2 = new Firepad(ref, cm2, { defaultText: text});
+      var firepad2 = new Firepad(ref, cm2, { defaultText: text});
+      firepad2.on('ready', function() {
+        if(firepad2.getText() == text2){
+          done();
+        }else if(firepad2.getText() == text){
+          done(new Error("Default text won over edited text"));
+        }else{
+          done(new Error("Second Firepad got neither default nor edited text: " + JSON.stringify(firepad2.getText())));
+        }
+      });
     });
-
-    waitsFor(function() { return firepad2.ready_ }, 'firepad2 is ready');
-
-    waitsFor(function() { return firepad2.getText() == text2 }, 'edited text won over default');
   });
 
-  it('Emits sync events as users edit the pad', function() {
+  it('Emits sync events as users edit the pad', function(done) {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-    var cm = CodeMirror(cmDiv());
+    var cm = CodeMirror(hiddenDiv());
     var firepad = new Firepad(ref, cm, { defaultText: 'XXXXXXXX' });
-    var syncHistory = [];
-
-    firepad.on('synced', function(synced) { syncHistory.push(synced); });
-
-    waitsFor(function() { return firepad.ready_ }, 'firepad is ready');
-
-    runs(function() {
+    var startedSyncing = false;
+    
+    firepad.on('ready', function() {
       randomOperation(cm);
-      setTimeout(function() {
-        expect(syncHistory[0]).toBe(false);  // semi-immediately after local edit
-      }, 1);
+      firepad.on('synced', function(synced) {
+        if(startedSyncing){
+          if(synced == true){
+            done();
+          }
+        }else{
+          expect(synced).toBe(false);
+          startedSyncing = true;
+        }
+      });
     });
-
-    waitsFor(function() { return syncHistory[syncHistory.length - 1] === true; }, 'synced again.');
   });
 
-  it('Performs headless get/set plaintext', function(){
+  it('Performs headless get/set plaintext', function(done){
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-    var cm = CodeMirror(cmDiv());
+    var cm = CodeMirror(hiddenDiv());
     var firepadCm = new Firepad(ref, cm);
     var firepadHeadless = new Headless(ref);
 
     var text = 'Hello from headless firepad!';
 
-    firepadHeadless.setText(text);
-
-    waitsFor(function() { return cm.getValue() == text; }, 'cm matches text');
-
-    runs(function() {
-      var headlessText = null;
-      firepadHeadless.getText(function(val) {
-        headlessText = val;
+    firepadHeadless.setText(text, function() {
+      firepadHeadless.getText(function(headlessText) {
+        expect(headlessText).toEqual(firepadCm.getText());
+        expect(headlessText).toEqual(text);
+        done();
       })
-
-      waitsFor(function() { return headlessText == text; }, 'firepad headless matches text');
     });
   });
 
-  it('Performs headless get/set html', function() {
+  it('Performs headless get/set html', function(done) {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-    var cm = CodeMirror(cmDiv());
+    var cm = CodeMirror(hiddenDiv());
     var firepadCm = new Firepad(ref, cm);
     var firepadHeadless = new Headless(ref);
 
@@ -213,33 +201,43 @@ describe('Integration tests', function() {
         '<li>Cursor / selection synchronization.</li>' +
         '<li>And it\'s all fully collaborative!</li>' +
       '</ul>' +
-      '</div>'
+      '</div>';
 
-    var headlessHtml = null;
     firepadHeadless.setHtml(html, function() {
-      firepadHeadless.getHtml(function(val) {
-        headlessHtml = val;
-      })
+      firepadHeadless.getHtml(function(headlessHtml) {
+        expect(headlessHtml).toEqual(firepadCm.getHtml());
+        done();
+      });
     });
-
-    waitsFor(function() { return headlessHtml == firepadCm.getHtml(); }, 'firepad headless html matches cm-firepad html');
   });
 
-  it('Headless firepad takes a string path as well', function() {
+  it('Headless firepad takes a string path as well', function(done) {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var path = 'https://firepad-test.firebaseio-demo.com/' + ref.key();
     var text = 'Hello from headless firepad!';
     var firepadHeadless = new Headless(path);
-    var headlessText = null;
 
     firepadHeadless.setText(text, function() {
-      firepadHeadless.getText(function(val) {
-        headlessText = val;
+      firepadHeadless.getText(function(headlessText) {
+        expect(headlessText).toEqual(text);
+        done();
       });
     });
+  });
 
-    runs(function() {
-      waitsFor(function() { return headlessText == text; }, 'firepad headless matches text');
+  it('Ace editor', function (done) {
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+
+    var editor = ace.edit(hiddenDiv().appendChild(document.createElement("div")));
+
+    var text = '// JavaScript in Firepad!\nfunction log(message) {\n  console.log(message);\n}';
+    var firepad = Firepad.fromACE(ref, editor);
+
+    firepad.on('ready', function() {
+      firepad.setText(text);
+      expect(firepad.getText()).toEqual(text);
+      done();
     });
   });
+
 });

@@ -8,7 +8,7 @@ module.exports = function (grunt) {
         },
         line_endings: {
           value: "unix",
-          level: "error"
+          level: "warn"
         },
         no_trailing_semicolons: {
           level: "ignore"
@@ -23,7 +23,7 @@ module.exports = function (grunt) {
           src: ['**/*.coffee'], // Actual pattern(s) to match.
           dest: 'lib/',         // Destination path prefix.
           ext: '.js'            // Dest filepaths will have this extension.
-          }],
+        }],
         options: {
           bare: true            // Skip surrounding IIFE in compiled output.
         }

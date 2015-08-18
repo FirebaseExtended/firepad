@@ -1,6 +1,6 @@
 firepad = {} unless firepad?
 
-firepad.ACEAdapter = class ACEAdapter
+class firepad.ACEAdapter
   ignoreChanges: false
 
   constructor: (aceInstance) ->
@@ -39,9 +39,9 @@ firepad.ACEAdapter = class ACEAdapter
     @trigger 'focus'
 
   onCursorActivity: =>
-    setTimeout ( =>
+    setTimeout =>
       @trigger 'cursorActivity'
-    ), 0
+    , 0
 
   # Converts an ACE change object into a TextOperation and its inverse
   # and returns them as a two-element array.

@@ -26,6 +26,7 @@ module.exports = function(config) {
     files: [
       "../bower_components/codemirror/lib/codemirror.js",
       "../bower_components/firebase/firebase.js",
+      "./vendor/ace-1.1.3.js",
 
       "../lib/utils.js",
       "../lib/span.js",

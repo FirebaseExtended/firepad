@@ -217,6 +217,7 @@ describe('Parse HTML Tests', function() {
     if (i < actLines.length) {
       throw new Error("Unexpected extra line " + i + ":" + dumpLine(actLines[i]));
     }
+    expect(actLines.length).toEqual(expLines.length);
   }
 
   function dumpLine(line) {

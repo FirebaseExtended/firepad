@@ -42,7 +42,7 @@
     "firebase": "2.x"
   },
   "devDependencies": {
-    "jasmine": "1.3.1",
+    "jasmine-core": "2.3.4",
     "codemirror": "5.x.x"
   }
 }

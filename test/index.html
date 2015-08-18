@@ -4,9 +4,13 @@
     <title>Firepad Tests</title>
 
     <!-- Jasmine -->
-    <script src="../bower_components/jasmine/lib/jasmine-core/jasmine.js"></script>
-    <script src="../bower_components/jasmine/lib/jasmine-core/jasmine-html.js"></script>
-    <link rel="stylesheet" href="../bower_components/jasmine/lib/jasmine-core/jasmine.css">
+    <script src="../bower_components/jasmine-core/lib/jasmine-core/jasmine.js"></script>
+    <script src="../bower_components/jasmine-core/lib/jasmine-core/jasmine-html.js"></script>
+    <script src="../bower_components/jasmine-core/lib/jasmine-core/boot.js"></script>
+    <link rel="stylesheet" href="../bower_components/jasmine-core/lib/jasmine-core/jasmine.css">
+
+    <!-- ACE -->
+    <script src="./vendor/ace-1.1.3.js"></script>
 
     <!-- CodeMirror -->
     <script src="../bower_components/codemirror/lib/codemirror.js"></script>
@@ -26,28 +30,9 @@
     <script src="specs/client.spec.js"></script>
     <script src="specs/annotation-list.spec.js"></script>
     <script src="specs/parse-html.spec.js"></script>
-    <script src="specs/integration.spec.js"></script>
+    <script src="specs/integration.spec.js" async></script>
 
-    <!-- Jasmine environment variables -->
-    <script type="text/javascript">
-      (function() {
-        var jasmineEnv = jasmine.getEnv();
-        jasmineEnv.updateInterval = 1000;
-
-        var htmlReporter = new jasmine.HtmlReporter();
-        jasmineEnv.addReporter(htmlReporter);
-
-        jasmineEnv.specFilter = function(spec) {
-          return htmlReporter.specFilter(spec);
-        };
-
-        window.onload = function() {
-          jasmineEnv.execute();
-        };
-      })();
-    </script>
   </head>
-
   <body>
   </body>
 </html>
