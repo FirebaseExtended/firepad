@@ -13,6 +13,15 @@ describe('Integration tests', function() {
     return _hiddenDiv;
   }
 
+  function waitFor(check, callback) {
+    var iid = setInterval(function() {
+      if(check()){
+        clearInterval(iid);
+        callback();
+      }
+    }, 15);
+  }
+
   function randomEdit (cm) {
     var length = cm.getValue().length;
     var start = h.randomInt(length);
@@ -31,7 +40,7 @@ describe('Integration tests', function() {
   }
 
   function randomOperation (cm) {
-    cm.operation(function () {
+    cm.operation(function() {
       randomChange(cm);
     });
   }
@@ -42,7 +51,7 @@ describe('Integration tests', function() {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com/.info/connected');
     var connected = false;
     var listener = ref.on('value', function(s) {
-      if(s.val() == true){
+      if (s.val() == true) {
         done();
         ref.off('value', listener);
       }
@@ -62,29 +71,33 @@ describe('Integration tests', function() {
         cm1.replaceRange('', {line: 0, ch: 10}, {line: 0, ch: 13});
         cm1.replaceRange('', {line: 0, ch: 0},  {line: 0, ch: 3});
       });
-      setTimeout(function() {
-        expect(cm2.getValue()).toEqual('3456789');
-        done();
-      }, 500);
+      cm2.on('change', function() {
+        if (cm2.getValue() === '3456789') {
+          expect(cm2.getValue()).toEqual('3456789');
+          done();
+        }
+      });
     });
   });
 
-  it('Random text changes', function (done) {
+  it('Random text changes', function(done) {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm1 = CodeMirror(hiddenDiv());
     var cm2 = CodeMirror(hiddenDiv());
     var firepad1 = new Firepad(ref, cm1);
     var firepad2 = new Firepad(ref, cm2);
 
-    function step (times) {
+    function step(times) {
       if (times == 0) {
+        expect(cm1.getValue()).toEqual(cm2.getValue());
         done();
-      }else{
+      } else {
         randomOperation(cm1);
-        setTimeout(function() {
-          expect(cm1.getValue()).toEqual(cm2.getValue());
+        waitFor(function() {
+          return cm1.getValue() === cm2.getValue();
+        }, function() {
           step(times - 1);
-        }, 400);
+        });
       }
     }
 
@@ -92,7 +105,7 @@ describe('Integration tests', function() {
       firepad1.setText('lorem ipsum');
       step(25);
     });
-  }, 777 * 25 + 1000);
+  }, 200 * 25);
 
   it('Performs getHtml responsively', function(done) {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
@@ -120,12 +133,12 @@ describe('Integration tests', function() {
       firepad.setText(text2);
       var firepad2 = new Firepad(ref, cm2, { defaultText: text});
       firepad2.on('ready', function() {
-        if(firepad2.getText() == text2){
+        if (firepad2.getText() == text2) {
           done();
-        }else if(firepad2.getText() == text){
-          done(new Error("Default text won over edited text"));
-        }else{
-          done(new Error("Second Firepad got neither default nor edited text: " + JSON.stringify(firepad2.getText())));
+        } else if (firepad2.getText() == text) {
+          done(new Error('Default text won over edited text'));
+        } else {
+          done(new Error('Second Firepad got neither default nor edited text: ' + JSON.stringify(firepad2.getText())));
         }
       });
     });
@@ -140,11 +153,11 @@ describe('Integration tests', function() {
     firepad.on('ready', function() {
       randomOperation(cm);
       firepad.on('synced', function(synced) {
-        if(startedSyncing){
-          if(synced == true){
+        if (startedSyncing) {
+          if (synced == true) {
             done();
           }
-        }else{
+        } else {
           expect(synced).toBe(false);
           startedSyncing = true;
         }
@@ -228,7 +241,7 @@ describe('Integration tests', function() {
   it('Ace editor', function (done) {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
 
-    var editor = ace.edit(hiddenDiv().appendChild(document.createElement("div")));
+    var editor = ace.edit(hiddenDiv().appendChild(document.createElement('div')));
 
     var text = '// JavaScript in Firepad!\nfunction log(message) {\n  console.log(message);\n}';
     var firepad = Firepad.fromACE(ref, editor);
