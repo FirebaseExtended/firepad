@@ -105,7 +105,7 @@ describe('Integration tests', function() {
       firepad1.setText('lorem ipsum');
       step(25);
     });
-  }, 200 * 25);
+  });
 
   it('Performs getHtml responsively', function(done) {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
