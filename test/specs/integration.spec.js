@@ -159,7 +159,37 @@ describe('Integration tests', function() {
     waitsFor(function() { return syncHistory[syncHistory.length - 1] === true; }, 'synced again.');
   });
 
-  it('Performs headless get/set plaintext', function(){
+  it('Performs Firepad.dispose', function(){
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var cm = CodeMirror(cmDiv());
+    var firepad = new Firepad(ref, cm, { defaultText: "It\'s alive." });
+
+    waitsFor(function() { return firepad.ready_ }, 'firepad is ready');
+
+    runs(function() {
+      firepad.dispose();
+      // We'd like to know all firebase callbacks were removed.
+      // This does not prove there was no leak but it shows we tried.
+      expect(firepad.firebaseAdapter_.firebaseCallbacks_).toEqual([]);
+      expect(function() { firepad.isHistoryEmpty(); }).toThrow();
+      expect(function() { firepad.getText(); }).toThrow();
+      expect(function() { firepad.setText("I'm a zombie.  Braaaains..."); }).toThrow();
+      expect(function() { firepad.getHtml(); }).toThrow();
+      expect(function() { firepad.setHtml("<p>I'm a zombie.  Braaaains...</p>"); }).toThrow();
+    });
+  });
+
+  it('Safely performs Firepad.dispose immediately after construction', function(){
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var cm = CodeMirror(cmDiv());
+    var firepad = new Firepad(ref, cm);
+
+    runs(function() {
+      firepad.dispose();
+    });
+  });
+
+  it('Performs headless get/set plaintext & dispose', function(){
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm = CodeMirror(cmDiv());
     var firepadCm = new Firepad(ref, cm);
@@ -175,13 +205,22 @@ describe('Integration tests', function() {
       var headlessText = null;
       firepadHeadless.getText(function(val) {
         headlessText = val;
-      })
+      });
 
       waitsFor(function() { return headlessText == text; }, 'firepad headless matches text');
     });
+
+    runs(function() {
+      firepadHeadless.dispose();
+      // We'd like to know all firebase callbacks were removed.
+      // This does not prove there was no leak but it shows we tried.
+      expect(firepadHeadless.firebaseAdapter_.firebaseCallbacks_).toEqual([]);
+      expect(function() { firepadHeadless.getText(function() {}); }).toThrow();
+      expect(function() { firepadHeadless.setText("I'm a zombie.  Braaaains..."); }).toThrow();
+    });
   });
 
-  it('Performs headless get/set html', function() {
+  it('Performs headless get/set html & dispose', function() {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm = CodeMirror(cmDiv());
     var firepadCm = new Firepad(ref, cm);
@@ -213,7 +252,7 @@ describe('Integration tests', function() {
         '<li>Cursor / selection synchronization.</li>' +
         '<li>And it\'s all fully collaborative!</li>' +
       '</ul>' +
-      '</div>'
+      '</div>';
 
     var headlessHtml = null;
     firepadHeadless.setHtml(html, function() {
@@ -222,7 +261,18 @@ describe('Integration tests', function() {
       })
     });
 
+    waitsFor(function() { return firepadCm.ready_ }, 'firepad is ready');
+
     waitsFor(function() { return headlessHtml == firepadCm.getHtml(); }, 'firepad headless html matches cm-firepad html');
+
+    runs(function() {
+      firepadHeadless.dispose();
+      // We'd like to know all firebase callbacks were removed.
+      // This does not prove there was no leak but it shows we tried.
+      expect(firepadHeadless.firebaseAdapter_.firebaseCallbacks_).toEqual([]);
+      expect(function() { firepadHeadless.getHtml(function() {}); }).toThrow();
+      expect(function() { firepadHeadless.setHtml("<p>I'm a zombie.  Braaaains...</p>"); }).toThrow();
+    });
   });
 
   it('Headless firepad takes a string path as well', function() {
@@ -240,6 +290,15 @@ describe('Integration tests', function() {
 
     runs(function() {
       waitsFor(function() { return headlessText == text; }, 'firepad headless matches text');
+    });
+  });
+
+  it('Safely performs Headless.dispose immediately after construction', function(){
+    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
+    var firepadHeadless = new Headless(ref);
+
+    runs(function() {
+      firepadHeadless.dispose();
     });
   });
 });
