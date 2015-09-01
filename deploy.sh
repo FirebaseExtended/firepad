@@ -1,0 +1,1 @@
+jekyll build && firebase deploy

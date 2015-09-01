@@ -1,4 +1,2 @@
-safe: true
-lsi: false
-highlighter: pygments
+source: src
 markdown: rdiscount
