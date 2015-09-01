@@ -242,13 +242,13 @@ firepad.on('synced', function(isSynced) {
 > Sets the color (as a css color, e.g. "#333") to use for this user's cursor.
 
 `firepad.dispose()`
-> Cleans everything up (clears presence data, DOM elements, etc.) and returns CodeMirror
-  to its original state.
+> Cleans everything up (clears presence data, DOM elements, Firebase listeners etc.)
+> and returns CodeMirror to its original state.
 
 `firepad.insertEntity(type, attributes, origin)`
 > Inserts an entity of the specified type and with the specified attributes dictionary.
-  To insert images, type = 'img' and attributes must contain 'src'; other attributes
-  that can be provided are 'alt', 'width', 'height', 'style' and 'class'.
+> To insert images, type = 'img' and attributes must contain 'src'; other attributes
+> that can be provided are 'alt', 'width', 'height', 'style' and 'class'.
 
 <a name="headless"> </a>
 
@@ -281,14 +281,14 @@ var headless = new Firepad.Headless(ref)
 
 Headless supports a few methods with similar call signatures as regular Firepad, with the notable addition of a callback parameter.
 
-`firepad.getText(callback)` and `firepad.getHtml(callback)` both function as follows:
+`headless.getText(callback)` and `headless.getHtml(callback)` both function as follows:
 {% highlight javascript %}
 headless.getText(function(text) {
   console.log("Contents of firepad retrieved: " + text);
 });
 {% endhighlight %}
 
-`firepad.setText(text, callback)` and `firepad.setHtml(html, callback)` as well:
+`headless.setText(text, callback)` and `headless.setHtml(html, callback)` as well:
 {% highlight javascript %}
 headless.setHtml('<b>Welcome to Firepad!</b>', function(err, committed) {
   // *err*       will be set if there was a catastrophic failure
@@ -296,6 +296,12 @@ headless.setHtml('<b>Welcome to Firepad!</b>', function(err, committed) {
   //               conflict writing to the pad's history.
 });
 {% endhighlight %}
+
+When you don't need it any more, you should explicitly destroy it:
+{% highlight javascript %}
+headless.dispose();
+{% endhighlight %}
+If you just drop your references to the `Headless` object without calling `dispose()`, it will still listen to any changes in the underlying Firebase data and apply the changes in-memory.  Besides a memory leak you'll have a *bandwidth* and *CPU* leak.
 
 <a name="firebase"> </a>
 
