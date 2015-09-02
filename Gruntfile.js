@@ -8,7 +8,7 @@ module.exports = function (grunt) {
         },
         line_endings: {
           value: "unix",
-          level: "warn"
+          level: "error"
         },
         no_trailing_semicolons: {
           level: "ignore"
