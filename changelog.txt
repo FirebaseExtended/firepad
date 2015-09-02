@@ -1,0 +1,5 @@
+feature - Added `.dispose()` for headless firepad instances.
+changed - Add transparency to other users' selections.
+fixed - Can safely call `.dispose()` before firepad is ready.
+fixed - Ensure CM cursor updates always follow history updates.
+
