@@ -46,20 +46,29 @@ class firepad.ACEAdapter
   # Converts an ACE change object into a TextOperation and its inverse
   # and returns them as a two-element array.
   operationFromACEChange: (change) ->
-    delta = change.data
-    if delta.action in ["insertLines", "removeLines"]
-      text = delta.lines.join("\n") + "\n"
-      action = delta.action.replace "Lines", ""
+    if change.data
+      # Ace < 1.2.0
+      delta = change.data
+      if delta.action in ['insertLines', 'removeLines']
+        text = delta.lines.join('\n') + '\n'
+        action = delta.action.replace 'Lines', ''
+      else
+        text = delta.text.replace(@aceDoc.getNewLineCharacter(), '\n')
+        action = delta.action.replace 'Text', ''
+      start = @indexFromPos delta.range.start
     else
-      text = delta.text.replace(@aceDoc.getNewLineCharacter(), '\n')
-      action = delta.action.replace "Text", ""
-    start = @indexFromPos delta.range.start
+      # Ace 1.2.0+
+      text = change.lines.join('\n')
+      start = @indexFromPos change.start
+    
     restLength = @lastDocLines.join('\n').length - start
-    restLength -= text.length if action is "remove"
-    operation = new firepad.TextOperation().retain(start).insert(text).retain(restLength)
-    inverse = new firepad.TextOperation().retain(start).delete(text).retain(restLength)
-    [operation, inverse] = [inverse, operation] if action is 'remove'
-    [operation, inverse]
+    restLength -= text.length if change.action is 'remove'
+    insert_op = new firepad.TextOperation().retain(start).insert(text).retain(restLength)
+    delete_op = new firepad.TextOperation().retain(start).delete(text).retain(restLength)
+    if change.action is 'remove'
+      [delete_op, insert_op]
+    else
+      [insert_op, delete_op]
 
   # Apply an operation to an ACE instance.
   applyOperationToACE: (operation) ->
