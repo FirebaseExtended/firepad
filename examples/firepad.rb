@@ -1,151 +1,63 @@
-require 'rest-client'
-require 'json'
-
-# usage: Firepad.load 'coderpad.firebaseio.com/111111'
-# => 'contents of the last revision of your firepad'
+# This module requires that a global FIREBASE object is initialized, from the gem
+# `firebase` (https://rubygems.org/gems/firebase). If you don't want to do that, it's
+# pretty easy to tweak this code to take the FIREBASE object as a param, or even
+# to hit the REST endpoints yourself using whatever HTTP client you prefer.
+#
+# To load the final text value of a pad created through the official JavaScript
+# Firepad client, call `Firepad.load "PADNAME"`. This will check for a snapshot,
+# then mutate a string in place to produce the final output. We also account for
+# JavaScript's shitty string representation (JS expresses the poop emoji as two chars).
 
 module Firepad
-  def self.load base_url
-    resp = RestClient.get "https://#{base_url}/history.json"
-    resp = JSON.parse resp
-    ops = resp.sort.map { |key, op| TextOperation.fromJSON op['o'] }
-    ops.inject('') { |prev, cur| cur.apply prev }
-  end
-
-  class TextOp
-    attr_accessor :type, :chars, :text
-
-    # Operation are essentially lists of ops. There are three types of ops:
-    #
-    # * Retain ops: Advance the cursor position by a given number of characters.
-    #   Represented by positive ints.
-    # * Insert ops: Insert a given string at the current cursor position.
-    #   Represented by strings.
-    # * Delete ops: Delete the next n characters. Represented by negative ints.
-    def initialize (type, arg)
-      @type = type
-      case type
-      when 'insert'
-        @text = arg.to_s
-      when 'delete'
-        @chars = arg.to_i
-      when 'retain'
-        @chars = arg.to_i
-      end
+  def self.load pad_path
+    if checkpoint = FIREBASE.get("#{pad_path}/checkpoint").body
+      doc = checkpoint['o'].first
+      doc = '' unless doc.is_a? String
+      history = FIREBASE.get("#{pad_path}/history", orderBy: '"$key"', startAt: "\"#{checkpoint['id']}\"").body.sort
+      history.shift
+    else
+      doc = ''
+      history = FIREBASE.get("#{pad_path}/history").body
+      return nil unless history
+      history = history.sort
     end
 
-    def isInsert
-      @type == "insert"
-    end
-
-    def isDelete
-      @type == "delete"
-    end
-
-    def isRetain
-      @type == "retain"
-    end
-  end
-
-  # Constructor for new operations.
-  class TextOperation
-
-    def initialize
-      @ops = []
-      @baseLength = 0
-      @targetLength = 0
-    end
-
-    def retain n
-      raise "retain expects a positive integer." if !n.is_a?(Fixnum) or n < 0
-      return self if n == 0
-      @baseLength += n
-      @targetLength += n
-      prevOp = @ops.length > 0 ? @ops[@ops.length - 1] : nil
-      if prevOp and prevOp.isRetain()
-        prevOp.chars += n
-      else
-        @ops.push TextOp.new("retain", n)
-      end
-      self
-    end
-
-    def insert str
-      raise "insert expects a string" unless str.is_a? String
-      return self if str == ""
-      @targetLength += str.length
-      prevOp = @ops.length > 0 ? @ops[@ops.length - 1] : nil
-      prevPrevOp = @ops.length > 1 ? @ops[@ops.length - 2] : nil
-      if prevOp and prevOp.isInsert()
-        prevOp.text += str
-      elsif prevOp and prevOp.isDelete()
-        if prevPrevOp and prevPrevOp.isInsert()
-          prevPrevOp.text += str
-        else
-          @ops[@ops.length - 1] = TextOp.new("insert", str)
-          @ops.push prevOp
-        end
-      else
-        @ops.push TextOp.new("insert", str)
-      end
-      self
-    end
-
-    def delete n
-      n = n.length if n.is_a? String
-      raise "delete expects a positive integer or a string" if !n.is_a?(Fixnum) or n < 0
-      return self if n == 0
-      @baseLength += n
-      prevOp = @ops.length > 0 ? @ops[@ops.length - 1] : nil
-      if prevOp and prevOp.isDelete()
-        prevOp.chars += n
-      else
-        @ops.push TextOp.new("delete", n)
-      end
-      self
-    end
-
-    def self.fromJSON ops
-      o = TextOperation.new
-
-      ops.each do |op|
+    doc.pad_surrogate_pairs!
+    history.each do |_, ops|
+      idx = 0
+      ops['o'].each do |op|
         if op.is_a? Fixnum
           if op > 0
-            o.retain op
+            # retain
+            idx += op
           else
-            o.delete -op
+            # delete
+            doc.slice! idx, -op
           end
         else
-          o.insert op
+          # insert
+          op.pad_surrogate_pairs!
+          doc.insert idx, op
+          idx += op.length
         end
       end
-      o
+      raise "The operation didn't operate on the whole string." if idx != doc.length
     end
 
-    def apply str
-      raise "The operation's base length must be equal to the string's length." if str.length != @baseLength
-      newStringParts = []
-      k = nil
-      oldIndex = 0
-      ops = @ops
-      i = 0
-      l = ops.length
+    doc.delete! "\0".freeze
+    doc
+  end
+end
 
-      while i < l
-        op = ops[i]
-        if op.isRetain()
-          raise "Operation can't retain more characters than are left in the string." if oldIndex + op.chars > str.length
-          newStringParts.push str[oldIndex, op.chars]
-          oldIndex += op.chars
-        elsif op.isInsert()
-          newStringParts.push op.text
-        else
-          oldIndex += op.chars
-        end
-        i += 1
+class String
+  def pad_surrogate_pairs!
+    offset = 0
+    self.each_codepoint.with_index do |codepoint, idx|
+      if codepoint >= 0x10000 && codepoint <= 0x10FFFF
+        self.insert idx + offset, "\0".freeze
+        offset += 1
       end
-      raise "The operation didn't operate on the whole string." if oldIndex != str.length
-      newStringParts.join('')
     end
+    self
   end
 end
