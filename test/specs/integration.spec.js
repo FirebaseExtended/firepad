@@ -2,7 +2,12 @@ describe('Integration tests', function() {
   var h = helpers;
   var Firepad = firepad.Firepad;
   var Headless = Firepad.Headless;
-
+  beforeEach(function (done) {
+        window.jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function () {
+            done();
+        }, 500);
+  });
   var _hiddenDiv;
   function hiddenDiv() {
     if (!_hiddenDiv) {
@@ -79,7 +84,7 @@ describe('Integration tests', function() {
       });
     });
   });
-
+  
   it('Random text changes', function(done) {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm1 = CodeMirror(hiddenDiv());
