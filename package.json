@@ -36,7 +36,7 @@
     "package.json"
   ],
   "dependencies": {
-    "jsdom": "3.x",
+    "jsdom": ">3",
     "firebase": "2.x"
   },
   "devDependencies": {
