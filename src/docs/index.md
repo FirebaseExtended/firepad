@@ -26,15 +26,15 @@ Include Firebase, CodeMirror, and Firepad in the &lt;head&gt; section of your pa
 
 {% highlight html %}
 <!-- Firebase -->
-<script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
+<script src="https://cdn.firebase.com/js/client/2.3.2/firebase.js"></script>
 
 <!-- CodeMirror -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.2.0/codemirror.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.2.0/codemirror.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.10.0/codemirror.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.10.0/codemirror.css" />
 
 <!-- Firepad -->
-<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.2.0/firepad.css" />
-<script src="https://cdn.firebase.com/libs/firepad/1.2.0/firepad.min.js"></script>
+<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.3.0/firepad.css" />
+<script src="https://cdn.firebase.com/libs/firepad/1.3.0/firepad.min.js"></script>
 {% endhighlight %}
 
 
@@ -106,14 +106,14 @@ Include Firebase, Ace, and Firepad in the &lt;head&gt; section of your page.
 
 {% highlight html %}
 <!-- Firebase -->
-<script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
+<script src="https://cdn.firebase.com/js/client/2.3.2/firebase.js"></script>
 
 <!-- ACE -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.2/ace.js"></script>
 
 <!-- Firepad -->
-<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.2.0/firepad.css" />
-<script src="https://cdn.firebase.com/libs/firepad/1.2.0/firepad.min.js"></script>
+<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.3.0/firepad.css" />
+<script src="https://cdn.firebase.com/libs/firepad/1.3.0/firepad.min.js"></script>
 {% endhighlight %}
 
 
