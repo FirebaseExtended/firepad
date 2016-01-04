@@ -1,0 +1,5 @@
+feature - Added support for Ace 1.2.0.
+fixed - Fixed issue with setHtml() inserting extra newline.
+fixed - Fixed some issues with DEL behavior.
+changed - bumped jsdom dependency to play well with node 5.x.
+
