@@ -11,6 +11,9 @@
     "type": "git",
     "url": "https://github.com/firebase/firepad.git"
   },
+  "browser": {
+    "jsdom": false
+  },
   "bugs": {
     "url": "https://github.com/firebase/firepad/issues"
   },
