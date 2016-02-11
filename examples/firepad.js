@@ -4,7 +4,7 @@
  * it requires no server-side code and can be added to any web app simply by
  * including a couple JavaScript files.
  *
- * Firepad 1.2.0
+ * Firepad 0.0.0
  * http://www.firepad.io/
  * License: MIT
  * Copyright: 2014 Firebase
@@ -2495,26 +2495,32 @@ firepad.ACEAdapter = (function() {
   };
 
   ACEAdapter.prototype.operationFromACEChange = function(change) {
-    var action, delta, inverse, operation, restLength, start, text, _ref, _ref1;
-    delta = change.data;
-    if ((_ref = delta.action) === "insertLines" || _ref === "removeLines") {
-      text = delta.lines.join("\n") + "\n";
-      action = delta.action.replace("Lines", "");
+    var action, delete_op, delta, insert_op, restLength, start, text, _ref;
+    if (change.data) {
+      delta = change.data;
+      if ((_ref = delta.action) === 'insertLines' || _ref === 'removeLines') {
+        text = delta.lines.join('\n') + '\n';
+        action = delta.action.replace('Lines', '');
+      } else {
+        text = delta.text.replace(this.aceDoc.getNewLineCharacter(), '\n');
+        action = delta.action.replace('Text', '');
+      }
+      start = this.indexFromPos(delta.range.start);
     } else {
-      text = delta.text.replace(this.aceDoc.getNewLineCharacter(), '\n');
-      action = delta.action.replace("Text", "");
+      text = change.lines.join('\n');
+      start = this.indexFromPos(change.start);
     }
-    start = this.indexFromPos(delta.range.start);
     restLength = this.lastDocLines.join('\n').length - start;
-    if (action === "remove") {
+    if (change.action === 'remove') {
       restLength -= text.length;
     }
-    operation = new firepad.TextOperation().retain(start).insert(text).retain(restLength);
-    inverse = new firepad.TextOperation().retain(start)["delete"](text).retain(restLength);
-    if (action === 'remove') {
-      _ref1 = [inverse, operation], operation = _ref1[0], inverse = _ref1[1];
+    insert_op = new firepad.TextOperation().retain(start).insert(text).retain(restLength);
+    delete_op = new firepad.TextOperation().retain(start)["delete"](text).retain(restLength);
+    if (change.action === 'remove') {
+      return [delete_op, insert_op];
+    } else {
+      return [insert_op, delete_op];
     }
-    return [operation, inverse];
   };
 
   ACEAdapter.prototype.applyOperationToACE = function(operation) {
@@ -3922,6 +3928,14 @@ firepad.RichTextCodeMirror = (function () {
     if (this.emptySelection_() && emptyLine && nextLineText[0] === LineSentinelCharacter) {
       // Delete the empty line but not the line sentinel character on the next line.
       cm.replaceRange('', { line: cursorPos.line, ch: 0 }, { line: cursorPos.line + 1, ch: 0}, '+input');
+
+      // HACK: Once we've deleted this line, the cursor will be between the newline on the previous
+      // line and the line sentinel character on the next line, which is an invalid position.
+      // CodeMirror tends to therefore move it to the end of the previous line, which is undesired.
+      // So we explicitly set it to ch: 0 on the current line, which seems to move it after the line
+      // sentinel character(s) as desired.
+      // (see https://github.com/firebase/firepad/issues/209).
+      cm.setCursor({ line: cursorPos.line, ch: 0 });
     } else {
       cm.deleteH(1, "char");
     }
@@ -5522,18 +5536,20 @@ firepad.Firepad = (function(global) {
       textPieces = [textPieces];
     }
 
-    // TODO: Batch this all into a single operation.
-    // HACK: We should check if we're actually at the beginning of a line; but checking for index == 0 is sufficient
-    // for the setText() case.
-    var atNewLine = index === 0;
-    var inserts = firepad.textPiecesToInserts(atNewLine, textPieces);
+    var self = this;
+    self.codeMirror_.operation(function() {
+      // HACK: We should check if we're actually at the beginning of a line; but checking for index == 0 is sufficient
+      // for the setText() case.
+      var atNewLine = index === 0;
+      var inserts = firepad.textPiecesToInserts(atNewLine, textPieces);
 
-    for (var i = 0; i < inserts.length; i++) {
-      var string     = inserts[i].string;
-      var attributes = inserts[i].attributes;
-      this.richTextCodeMirror_.insertText(index, string, attributes);
-      index += string.length;
-    }
+      for (var i = 0; i < inserts.length; i++) {
+        var string     = inserts[i].string;
+        var attributes = inserts[i].attributes;
+        self.richTextCodeMirror_.insertText(index, string, attributes);
+        index += string.length;
+      }
+    });
   };
 
   Firepad.prototype.getOperationForSpan = function(start, end) {
