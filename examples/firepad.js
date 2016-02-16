@@ -2923,6 +2923,10 @@ firepad.RichTextCodeMirror = (function () {
     bind(this, 'onCodeMirrorChange_');
     bind(this, 'onCursorActivity_');
 
+    bind(this, 'onCopy_');
+    bind(this, 'onCut_');
+    bind(this, 'onPaste_');
+
     if (parseInt(CodeMirror.version) >= 4) {
       this.codeMirror.on('changes', this.onCodeMirrorChange_);
     } else {
@@ -2946,6 +2950,11 @@ firepad.RichTextCodeMirror = (function () {
     this.codeMirror.off('change', this.onCodeMirrorChange_);
     this.codeMirror.off('changes', this.onCodeMirrorChange_);
     this.codeMirror.off('cursorActivity', this.onCursorActivity_);
+
+    this.codeMirror.getWrapperElement().removeEventListener('copy');
+    this.codeMirror.getWrapperElement().removeEventListener('cut');
+    this.codeMirror.off('paste', this.onCodeMirrorPaste_);
+
     this.clearAnnotations_();
   };
 
@@ -3456,6 +3465,97 @@ firepad.RichTextCodeMirror = (function () {
       change.update(change.from, change.to, newText);
     }
   };
+
+  // return true if e.preventDefault() was called
+  RichTextCodeMirror.prototype.onCopy_ = function(fp, e) {
+      if (!e.clipboardData) return false; // sanity, revert to CM copy
+
+      var IE = !!navigator.userAgent.match(/MSIE\s([\d.]+)/);
+      if (navigator.userAgent.match(/Trident\/7.0/) && navigator.userAgent.match(/rv:11/)) IE=true; //IE 11
+      if (navigator.userAgent.match(/Edge/g))  IE=true; //IE edge
+      if (IE) return false; // IE does not support document.execCommand('copy') of html, revert to CM copy
+
+      if (!fp.selectionHasAttributes()) return false; // not rich text, revert to CM copy
+      
+      var html=fp.getHtmlFromSelection(); // IE does not support document.execCommand('copy') of html
+      if (!html) return false; // something went wrong, revert to CM copy
+
+      // caching some default styles needed later
+      var cm=fp.codeMirror_;
+      if (!this.defaultStyles) {
+        var style = window.getComputedStyle(cm.getWrapperElement());
+        this.defaultStyles={
+          fontFamily: style.getPropertyValue('font-family'),
+          fontSize: style.getPropertyValue('font-size'),
+          bgColor: style.getPropertyValue('background-color')
+        };
+      }
+
+      // add default font to the html
+      html='<span style="font-family:'+this.defaultStyles.fontFamily+';font-size:'+this.defaultStyles.fontSize+'">'+html+'</span>';
+      if (!copyHtmlToClipboard(html)) return false; // something went wrong, revert to CM copy
+      //console.log('html copy '+html);
+      e.preventDefault();
+      return true;
+  };
+
+  RichTextCodeMirror.prototype.onCut_ = function(fp, e) {
+    if (!e.clipboardData) return; // older browsers
+    if (!this.onCopy_(fp, e)) return; // default to cm cut
+    fp.codeMirror_.replaceSelection('');
+  };
+
+  RichTextCodeMirror.prototype.onPaste_ = function(fp, e) {
+    if (!e.clipboardData) return;  // sanity, revert to CM paste
+
+    var html = e.clipboardData.getData('text/html');
+    if (!html) return null; // something went wrong, revert to CM paste
+    
+    // setting bg color when not needed can break selection, so removing it here
+    if (this.defaultStyles) html = html.split('background-color: '+this.defaultStyles.bgColor).join('background-color:transparent');
+
+    fp.codeMirror_.replaceSelection('');
+    fp.insertHtmlAtCursor(html);
+    e.preventDefault();
+  };
+
+  function copyHtmlToClipboard(html) {
+    var div = document.createElement('div');
+    div.style.opacity = 0;
+    div.style.position = 'absolute';
+    div.style.pointerEvents = 'none';
+    div.style.zIndex = -1;
+    div.setAttribute('tabindex', '-1'); // so it can be focused
+    div.innerHTML = html;
+    document.body.appendChild(div);
+    
+    var focused=document.activeElement;
+    div.focus();
+    
+    window.getSelection().removeAllRanges();
+    var range = document.createRange();
+    // not using range.selectNode(div) as that makes chrome add an extra <br>
+    range.setStartBefore(div.firstChild);
+    range.setEndAfter(div.lastChild);
+    window.getSelection().addRange(range);
+
+    var ok=false;
+    try {
+      ok = document.execCommand('copy');
+    } catch (err) {
+      console.log(err);
+    }
+    if (!ok) {
+      console.log('execCommand failed!');
+      return false;
+    }
+
+    window.getSelection().removeAllRanges();
+    document.body.removeChild(div);
+    
+    focused.focus();
+    return true;
+  }
 
   function cmpPos (a, b) {
     return (a.line - b.line) || (a.ch - b.ch);
@@ -4024,7 +4124,7 @@ firepad.RichTextCodeMirror = (function () {
   function bind (obj, method) {
     var fn = obj[method];
     obj[method] = function () {
-      fn.apply(obj, arguments);
+      return fn.apply(obj, arguments);
     };
   }
 
@@ -5351,6 +5451,8 @@ firepad.Firepad = (function(global) {
   var ace = global.ace;
 
   function Firepad(ref, place, options) {
+    var self = this;
+
     if (!(this instanceof Firepad)) { return new Firepad(ref, place, options); }
 
     if (!CodeMirror && !ace) {
@@ -5394,6 +5496,10 @@ firepad.Firepad = (function(global) {
       }
       this.codeMirror_.setOption('keyMap', 'richtext');
       this.firepadWrapper_.className += ' firepad-richtext';
+
+      this.codeMirror_.getWrapperElement().addEventListener('copy', function(e) { if (self.richTextCodeMirror_) self.richTextCodeMirror_.onCopy_(self, e); });
+      this.codeMirror_.getWrapperElement().addEventListener('cut', function(e) { if (self.richTextCodeMirror_) self.richTextCodeMirror_.onCut_(self, e); });
+      this.codeMirror_.on('paste', function(cm, e) { if (self.richTextCodeMirror_) self.richTextCodeMirror_.onPaste_(self, e); });
     }
 
     this.imageInsertionUI = this.getOption('imageInsertionUI', true);
@@ -5423,7 +5529,6 @@ firepad.Firepad = (function(global) {
     }
     this.client_ = new EditorClient(this.firebaseAdapter_, this.editorAdapter_);
 
-    var self = this;
     this.firebaseAdapter_.on('cursor', function() {
       self.trigger.apply(self, ['cursor'].concat([].slice.call(arguments)));
     });
@@ -5567,6 +5672,28 @@ firepad.Firepad = (function(global) {
   Firepad.prototype.getHtml = function() {
     return this.getHtmlFromRange(null, null);
   };
+
+  Firepad.prototype.selectionHasAttributes = function() {
+    var startPos = this.codeMirror_.getCursor('start'), endPos = this.codeMirror_.getCursor('end');
+    var startIndex = this.codeMirror_.indexFromPos(startPos), endIndex = this.codeMirror_.indexFromPos(endPos);
+    return this.rangeHasAttributes(startIndex, endIndex);
+  };
+
+  Firepad.prototype.rangeHasAttributes = function(start, end) {
+    this.assertReady_('rangeHasAttributes');
+    var doc = (start != null && end != null) ?
+      this.getOperationForSpan(start, end) :
+      this.getOperationForSpan(0, this.codeMirror_.getValue().length);
+
+    var op;
+    for (var i = 0; i < doc.ops.length; i++) { 
+      op = doc.ops[i];   
+      for(var prop in op.attributes) if (op.attributes.hasOwnProperty(prop) && prop!=ATTR.LINE_SENTINEL) return true; // found an attribute
+    }
+    
+    return false;
+  };
+
 
   Firepad.prototype.getHtmlFromSelection = function() {
     var startPos = this.codeMirror_.getCursor('start'), endPos = this.codeMirror_.getCursor('end');
