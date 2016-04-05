@@ -113,19 +113,6 @@ describe('Integration tests', function() {
     });
   }, extendedTimeoutLength);
 
-  it('Performs getHtml responsively', function(done) {
-    var ref = rootRef.push();
-    var cm = CodeMirror(hiddenDiv());
-    var firepad = new Firepad(ref, cm);
-
-    firepad.on('ready', function() {
-      var html = '<b>bold</b>';
-      firepad.setHtml(html);
-      expect(firepad.getHtml()).toContain(html);
-      done();
-    });
-  }, extendedTimeoutLength);
-
   it('Uses defaultText to initialize the pad properly', function(done) {
     var ref = rootRef.push();
     var cm = CodeMirror(hiddenDiv());
@@ -199,6 +186,7 @@ describe('Integration tests', function() {
       firepad.dispose();
     }).not.toThrow();
   });
+<<<<<<< HEAD
 
   it('Performs headless get/set plaintext & dispose', function(done){
     var ref = rootRef.push();
@@ -309,4 +297,6 @@ describe('Integration tests', function() {
       firepadHeadless.dispose();
     }).not.toThrow();
   });
+=======
+>>>>>>> Firepad Lite initial commit
 });
