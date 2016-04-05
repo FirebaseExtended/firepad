@@ -2903,8 +2903,6 @@ firepad.RichTextCodeMirror = (function () {
     'li' : function(indent) { return 'padding-left: ' + (indent * 40) + 'px'; }
   };
 
-  var firepadDefaultStyles=null;
-
   // A cache of dynamically-created styles so we can re-use them.
   var StyleCache_ = {};
 
@@ -2925,8 +2923,7 @@ firepad.RichTextCodeMirror = (function () {
     bind(this, 'onCodeMirrorChange_');
     bind(this, 'onCursorActivity_');
 
-    bind(this, 'onCodeMirrorCopy_');
-    bind(this, 'onCodeMirrorCut_');
+	 bind(this, 'onCodeMirrorCopyCut_');
     bind(this, 'onCodeMirrorPaste_');
 
     if (parseInt(CodeMirror.version) >= 4) {
@@ -2937,23 +2934,13 @@ firepad.RichTextCodeMirror = (function () {
     this.codeMirror.on('beforeChange', this.onCodeMirrorBeforeChange_);
     this.codeMirror.on('cursorActivity', this.onCursorActivity_);
 
-    this.codeMirror.on('copy', this.onCodeMirrorCopy_);
-    this.codeMirror.on('cut', this.onCodeMirrorCut_);
+	 this.codeMirror.on('copy', this.onCodeMirrorCopyCut_);
+	 this.codeMirror.on('cut', this.onCodeMirrorCopyCut_);
     this.codeMirror.on('paste', this.onCodeMirrorPaste_);
 
     this.changeId_ = 0;
     this.outstandingChanges_ = { };
     this.dirtyLines_ = [];
-
-    // caching some default styles needed later
-    var style = window.getComputedStyle(this.codeMirror.getWrapperElement());
-    firepadDefaultStyles=[
-      'font-family: '+style.getPropertyValue('font-family')+';',
-      'font-size: '+style.getPropertyValue('font-size')+';',
-      'background-color: '+style.getPropertyValue('background-color')+';',
-      'color: '+style.getPropertyValue('color')+';',
-      'text-align: '+style.getPropertyValue('text-align')+';'
-    ];
   }
   utils.makeEventEmitter(RichTextCodeMirror, ['change', 'attributesChange', 'newLine']);
 
@@ -2967,8 +2954,8 @@ firepad.RichTextCodeMirror = (function () {
     this.codeMirror.off('changes', this.onCodeMirrorChange_);
     this.codeMirror.off('cursorActivity', this.onCursorActivity_);
 
-    this.codeMirror.off('copy', this.onCodeMirrorCopy_);
-    this.codeMirror.off('cut', this.onCodeMirrorCut_);
+    this.codeMirror.off('copy', this.onCodeMirrorCopyCut_);
+    this.codeMirror.off('cut', this.onCodeMirrorCopyCut_);
     this.codeMirror.off('paste', this.onCodeMirrorPaste_);
 
     this.clearAnnotations_();
@@ -3482,89 +3469,43 @@ firepad.RichTextCodeMirror = (function () {
     }
   };
 
-  // return true if e.preventDefault() was called
-  RichTextCodeMirror.prototype.onCodeMirrorCopy_ = function(cm, e) {
+  RichTextCodeMirror.prototype.onCodeMirrorCopyCut_ = function(cm, e) {
     var fp=this.codeMirror.firepad;
-    if (!e.clipboardData) return false; // sanity, revert to CM copy
+      if (!fp.selectionHasAttributes()) return ; // not rich text
 
-    var IE = !!navigator.userAgent.match(/MSIE\s([\d.]+)/);
-    if (navigator.userAgent.match(/Trident\/7.0/) && navigator.userAgent.match(/rv:11/)) IE=true; //IE 11
-    if (navigator.userAgent.match(/Edge/g))  IE=true; //IE edge
-    if (IE) return false; // IE does not support document.execCommand('copy') of html, revert to CM copy
+      var html=fp.getHtmlFromSelection(); 
+      if (!html) return; // something  went wrong
 
-    if (!fp.selectionHasAttributes()) return false; // not rich text, revert to CM copy
+      if (!this.firepadStyleWrapper) {    
+        var style = window.getComputedStyle(this.codeMirror.getWrapperElement());
+        this.firepadStyleWrapper=
+        'font-family:'+style.getPropertyValue('font-family')+';'+
+        'font-size:'+style.getPropertyValue('font-size')+';'+
+        'background-color:'+style.getPropertyValue('background-color')+';'+
+        'color:'+style.getPropertyValue('color')+';'+
+        'text-align:'+style.getPropertyValue('text-align')+';';
+      }
+      html='<span style="'+this.firepadStyleWrapper+'">'+html+'</span>';
 
-    var html=fp.getHtmlFromSelection(); // IE does not support document.execCommand('copy') of html
-    if (!html) return false; // something went wrong, revert to CM copy
+      var ios = /AppleWebKit/.test(navigator.userAgent) && /Mobile\/\w+/.test(navigator.userAgent);
+      if (!e.clipboardData || ios) return; // clipboard ops not supported
 
-    // add default styles to html
-    html='<span style="'+firepadDefaultStyles.join('')+'">'+html+'</span>';
+      if (e.type == "cut") cm.replaceSelection("", null, "cut");      
 
-    if (!copyHtmlToClipboard(html)) return false; // something went wrong, revert to CM copy
-    //console.log('html copy '+html);
-    e.preventDefault();
-    return true;
-  };
+      e.preventDefault();
+      e.clipboardData.clearData();
+      e.clipboardData.setData("text/html", html);
+    };
 
-  RichTextCodeMirror.prototype.onCodeMirrorCut_ = function(cm, e) {
-    if (!e.clipboardData) return; // older browsers
-    //var fp=this.codeMirror.firepad;
-    if (!this.onCodeMirrorCopy_(cm, e)) return; // default to cm cut
-    cm.replaceSelection('');
-  };
-
-  RichTextCodeMirror.prototype.onCodeMirrorPaste_ = function(cm, e) {
-    if (!e.clipboardData) return;  // sanity, revert to CM paste
-
-    var fp=this.codeMirror.firepad;
-    var html = e.clipboardData.getData('text/html');
-    if (!html) return null; // something went wrong, revert to CM paste
-    
-    // removing default styles
-    firepadDefaultStyles.forEach(function(s) { html = html.split(s).join(''); });
+    RichTextCodeMirror.prototype.onCodeMirrorPaste_ = function(cm, e) {
+      var html = e.clipboardData ? e.clipboardData.getData('text/html') : null;
+    if (!html) return; // something went wrong, revert to CM paste
 
     cm.replaceSelection('');
+    var fp=this.codeMirror.firepad;
     fp.insertHtmlAtCursor(html);
     e.preventDefault();
   };
-
-  function copyHtmlToClipboard(html) {
-    var div = document.createElement('div');
-    div.style.opacity = 0;
-    div.style.position = 'absolute';
-    div.style.pointerEvents = 'none';
-    div.style.zIndex = -1;
-    div.setAttribute('tabindex', '-1'); // so it can be focused
-    div.innerHTML = html;
-    document.body.appendChild(div);
-    
-    var focused=document.activeElement;
-    div.focus();
-    
-    window.getSelection().removeAllRanges();
-    var range = document.createRange();
-    // not using range.selectNode(div) as that makes chrome add an extra <br>
-    range.setStartBefore(div.firstChild);
-    range.setEndAfter(div.lastChild);
-    window.getSelection().addRange(range);
-
-    var ok=false;
-    try {
-      ok = document.execCommand('copy');
-    } catch (err) {
-      console.log(err);
-    }
-    if (!ok) {
-      console.log('execCommand failed!');
-      return false;
-    }
-
-    window.getSelection().removeAllRanges();
-    document.body.removeChild(div);
-    
-    focused.focus();
-    return true;
-  }
 
   function cmpPos (a, b) {
     return (a.line - b.line) || (a.ch - b.ch);
@@ -4842,14 +4783,15 @@ firepad.ParseHtml = (function () {
     }
   };
 
-  var entityManager_;
-  function parseHtml(html, entityManager) {
+	var entityManager_, codeMirror_;
+	function parseHtml(html, entityManager, codeMirror) {
     // Create DIV with HTML (as a convenient way to parse it).
     var div = (firepad.document || document).createElement('div');
     div.innerHTML = html;
 
     // HACK until I refactor this.
     entityManager_ = entityManager;
+    codeMirror_ = codeMirror;
 
     var output = new ParseOutput();
     var state = new ParseState();
@@ -4981,7 +4923,29 @@ firepad.ParseHtml = (function () {
     }
   }
 
+  function styleEqual(s1,s2) {
+    s1=s1.toLowerCase(); // lower
+    s1=s1.split(' ').join(''); // remove spaces
+    s1=s1.lastIndexOf(";") == s1.length - 1 ?  s1.substring(0,  s1.length -1 ) : s1; // remove trailing ;
+    s2=s2.toLowerCase(); // lower
+    s2=s2.split(' ').join(''); // remove spaces
+    s2=s2.lastIndexOf(";") == s2.length - 1 ?  s2.substring(0,  s2.length -1 ) : s2; // remove trailing ;
+    return s1==s2;
+  }
+
   function parseStyle(state, styleString) {
+    if (!this.firepadDefaultStyles) {
+      // caching some default styles needed later
+      var style = window.getComputedStyle(codeMirror_.getWrapperElement());
+      firepadDefaultStyles={
+        fontFamily: style.getPropertyValue('font-family'),
+        fontSize: style.getPropertyValue('font-size'),
+        backgroundColor: style.getPropertyValue('background-color'),
+        color: style.getPropertyValue('color'),
+        textAlign: style.getPropertyValue('text-align')
+      };
+    }
+
     var textFormatting = state.textFormatting;
     var lineFormatting = state.lineFormatting;
     var styles = styleString.split(';');
@@ -5006,15 +4970,19 @@ firepad.ParseHtml = (function () {
           textFormatting = textFormatting.italic(italic);
           break;
         case 'color':
+          if (styleEqual(val, this.firepadDefaultStyles.color)) break;
           textFormatting = textFormatting.color(val);
           break;
         case 'background-color':
+          if (styleEqual(val, this.firepadDefaultStyles.backgroundColor)) break;
           textFormatting = textFormatting.backgroundColor(val);
           break;
         case 'text-align':
+          if (styleEqual(val, this.firepadDefaultStyles.textAlign)) break;
           lineFormatting = lineFormatting.align(val);
           break;
         case 'font-size':
+			 if (styleEqual(val, this.firepadDefaultStyles.fontSize)) break;
           var size = null;
           var allowedValues = ['px','pt','%','em','xx-small','x-small','small','medium','large','x-large','xx-large','smaller','larger'];
           if (firepad.utils.stringEndsWith(val, allowedValues)) {
@@ -5028,6 +4996,7 @@ firepad.ParseHtml = (function () {
           }
           break;
         case 'font-family':
+          if (styleEqual(val, this.firepadDefaultStyles.fontFamily)) break;
           var font = firepad.utils.trim(val.split(',')[0]); // get first font.
           font = font.replace(/['"]/g, ''); // remove quotes.
           font = font.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase() });
@@ -5402,7 +5371,7 @@ firepad.Headless = (function() {
     }
 
     self.initializeFakeDom(function() {
-      var textPieces = ParseHtml(html, self.entityManager_);
+		var textPieces = ParseHtml(html, self.entityManager_, self.codeMirror_);
       var inserts    = firepad.textPiecesToInserts(true, textPieces);
       var op         = new TextOperation();
 
@@ -5645,7 +5614,8 @@ firepad.Firepad = (function(global) {
       textPieces = [textPieces];
     }
 
-    // TODO: Batch this all into a single operation.
+    var self = this;
+    self.codeMirror_.operation(function() {
       // HACK: We should check if we're actually at the beginning of a line; but checking for index == 0 is sufficient
       // for the setText() case.
       var atNewLine = index === 0;
@@ -5654,9 +5624,10 @@ firepad.Firepad = (function(global) {
       for (var i = 0; i < inserts.length; i++) {
         var string     = inserts[i].string;
         var attributes = inserts[i].attributes;
-      this.richTextCodeMirror_.insertText(index, string, attributes);
+        self.richTextCodeMirror_.insertText(index, string, attributes);
         index += string.length;
       }
+    });
   };
 
   Firepad.prototype.getOperationForSpan = function(start, end) {
@@ -5712,7 +5683,7 @@ firepad.Firepad = (function(global) {
   };
 
   Firepad.prototype.insertHtml = function (index, html) {
-    var lines = firepad.ParseHtml(html, this.entityManager_);
+	 var lines = firepad.ParseHtml(html, this.entityManager_, this.codeMirror_);
     this.insertText(index, lines);
   };
 
@@ -5721,7 +5692,7 @@ firepad.Firepad = (function(global) {
   };
 
   Firepad.prototype.setHtml = function (html) {
-    var lines = firepad.ParseHtml(html, this.entityManager_);
+	 var lines = firepad.ParseHtml(html, this.entityManager_, this.codeMirror_);
     this.setText(lines);
   };
 
