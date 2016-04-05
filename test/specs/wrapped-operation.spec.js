@@ -89,6 +89,7 @@ describe('WrappedOperation', function() {
     var aPrime = pair[0];
     var bPrime = pair[1];
     expect("Lorem Ipsum").toBe(bPrime.apply(a.apply(str)));
+    debugger
     expect(aPrime.meta.equals(new Cursor(1, 1))).toBeTruthy();
     expect(bPrime.meta.equals(new Cursor(7, 7))).toBeTruthy();
   });

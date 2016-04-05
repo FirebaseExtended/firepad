@@ -107,19 +107,6 @@ describe('Integration tests', function() {
     });
   });
 
-  it('Performs getHtml responsively', function(done) {
-    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-    var cm = CodeMirror(hiddenDiv());
-    var firepad = new Firepad(ref, cm);
-
-    firepad.on('ready', function() {
-      var html = '<b>bold</b>';
-      firepad.setHtml(html);
-      expect(firepad.getHtml()).toContain(html);
-      done();
-    });
-  });
-
   it('Uses defaultText to initialize the pad properly', function(done) {
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm = CodeMirror(hiddenDiv());
@@ -191,117 +178,6 @@ describe('Integration tests', function() {
 
     expect(function() {
       firepad.dispose();
-    }).not.toThrow();
-  });
-
-  it('Performs headless get/set plaintext & dispose', function(done){
-    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-    var cm = CodeMirror(hiddenDiv());
-    var firepadCm = new Firepad(ref, cm);
-    var firepadHeadless = new Headless(ref);
-
-    var text = 'Hello from headless firepad!';
-
-    firepadHeadless.setText(text, function() {
-      firepadHeadless.getText(function(headlessText) {
-        expect(headlessText).toEqual(firepadCm.getText());
-        expect(headlessText).toEqual(text);
-
-        firepadHeadless.dispose();
-        // We'd like to know all firebase callbacks were removed.
-        // This does not prove there was no leak but it shows we tried.
-        expect(firepadHeadless.firebaseAdapter_.firebaseCallbacks_).toEqual([]);
-        expect(function() { firepadHeadless.getText(function() {}); }).toThrow();
-        expect(function() { firepadHeadless.setText("I'm a zombie.  Braaaains..."); }).toThrow();
-	      done();
-      });
-    });
-  });
-
-  it('Performs headless get/set html & dispose', function(done) {
-    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-    var cm = CodeMirror(hiddenDiv());
-    var firepadCm = new Firepad(ref, cm);
-    var firepadHeadless = new Headless(ref);
-
-    var html =
-      '<span style="font-size: 24px;">Rich-text editing with <span style="color: red">Firepad!</span></span><br/>\n' +
-      '<br/>' +
-      '<div style="font-size: 18px">' +
-      'Supports:<br/>' +
-      '<ul>' +
-        '<li>Different ' +
-          '<span style="font-family: impact">fonts,</span>' +
-          '<span style="font-size: 24px;""> sizes, </span>' +
-          '<span style="color: blue">and colors.</span>' +
-        '</li>' +
-        '<li>' +
-          '<b>Bold, </b>' +
-          '<i>italic, </i>' +
-          '<u>and underline.</u>' +
-        '</li>' +
-        '<li>Lists' +
-          '<ol>' +
-            '<li>One</li>' +
-            '<li>Two</li>' +
-          '</ol>' +
-        '</li>' +
-        '<li>Undo / redo</li>' +
-        '<li>Cursor / selection synchronization.</li>' +
-        '<li>And it\'s all fully collaborative!</li>' +
-      '</ul>' +
-      '</div>';
-
-    firepadHeadless.setHtml(html, function() {
-      firepadHeadless.getHtml(function(headlessHtml) {
-        expect(headlessHtml).toEqual(firepadCm.getHtml());
-
-        firepadHeadless.dispose();
-        // We'd like to know all firebase callbacks were removed.
-        // This does not prove there was no leak but it shows we tried.
-        expect(firepadHeadless.firebaseAdapter_.firebaseCallbacks_).toEqual([]);
-        expect(function() { firepadHeadless.getHtml(function() {}); }).toThrow();
-        expect(function() { firepadHeadless.setHtml("<p>I'm a zombie.  Braaaains...</p>"); }).toThrow();
-        done();
-      });
-    });
-  });
-
-  it('Headless firepad takes a string path as well', function(done) {
-    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-    var path = 'https://firepad-test.firebaseio-demo.com/' + ref.key();
-    var text = 'Hello from headless firepad!';
-    var firepadHeadless = new Headless(path);
-
-    firepadHeadless.setText(text, function() {
-      firepadHeadless.getText(function(headlessText) {
-        expect(headlessText).toEqual(text);
-        done();
-      });
-    });
-  });
-
-  it('Ace editor', function (done) {
-    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-
-    var editor = ace.edit(hiddenDiv().appendChild(document.createElement('div')));
-
-    var text = '// JavaScript in Firepad!\nfunction log(message) {\n  console.log(message);\n}';
-    var firepad = Firepad.fromACE(ref, editor);
-
-    firepad.on('ready', function() {
-      firepad.setText(text);
-      expect(firepad.getText()).toEqual(text);
-      done();
-    });
-  });
-
-  it('Safely performs Headless.dispose immediately after construction', function(){
-    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-    var firepadHeadless = new Headless(ref);
-
-    expect(function() {
-      firepadHeadless.dispose();
     }).not.toThrow();
   });
 });
