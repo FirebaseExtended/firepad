@@ -26,6 +26,7 @@ module.exports = function (grunt) {
           footer: "\nreturn firepad.Firepad; }, this);"
         },
         "src": [
+          "lib/diff_match_patch.js",
           "lib/utils.js",
           "lib/text-op.js",
           "lib/text-operation.js",
@@ -33,7 +34,6 @@ module.exports = function (grunt) {
           "lib/firebase-adapter.js",
           "lib/wrapped-operation.js",
           "lib/undo-manager.js",
-          "lib/client.js",
           "lib/editor-client.js",
           "lib/rich-text-codemirror.js",
           "lib/rich-text-codemirror-adapter.js",

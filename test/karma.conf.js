@@ -28,6 +28,7 @@ module.exports = function(config) {
       "../bower_components/codemirror/lib/codemirror.js",
       "../bower_components/firebase/firebase.js",
 
+      "../lib/diff_match_patch.js",
       "../lib/utils.js",
       "../lib/text-op.js",
       "../lib/text-operation.js",
@@ -35,7 +36,6 @@ module.exports = function(config) {
       "../lib/firebase-adapter.js",
       "../lib/wrapped-operation.js",
       "../lib/undo-manager.js",
-      "../lib/client.js",
       "../lib/editor-client.js",
       "../lib/rich-text-codemirror.js",
       "../lib/rich-text-codemirror-adapter.js",

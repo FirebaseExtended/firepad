@@ -131,27 +131,6 @@ describe('Integration tests', function() {
     });
   });
 
-  it('Emits sync events as users edit the pad', function(done) {
-    var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
-    var cm = CodeMirror(hiddenDiv());
-    var firepad = new Firepad(ref, cm, { defaultText: 'XXXXXXXX' });
-    var startedSyncing = false;
-    
-    firepad.on('ready', function() {
-      randomOperation(cm);
-      firepad.on('synced', function(synced) {
-        if (startedSyncing) {
-          if (synced == true) {
-            done();
-          }
-        } else {
-          expect(synced).toBe(false);
-          startedSyncing = true;
-        }
-      });
-    });
-  });
-
   it('Performs Firepad.dispose', function(done){
     var ref = new Firebase('https://firepad-test.firebaseio-demo.com').push();
     var cm = CodeMirror(hiddenDiv());
