@@ -5,7 +5,7 @@
   "author": "Firebase <support@firebase.com> (https://www.firebase.com/)",
   "contributors": [
     "Michael Lehenbauer <michael@firebase.com>"
-  ],karma-phantomjs-launcher
+  ],
   "homepage": "http://www.firepad.io/",
   "repository": {
     "type": "git",
