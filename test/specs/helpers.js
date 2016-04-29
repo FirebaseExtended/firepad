@@ -1,3 +1,11 @@
+//TODO: Replace with better namespace
+var config = {
+  apiKey: "AIzaSyDOlKivprJ3SquwbMUoBB0uK7V_FjUWAqI",
+  authDomain: "topstory.firebaseapp.com",
+  databaseURL: "https://topstory.firebaseio.com"
+};
+firebase.initializeApp(config);
+
 var helpers = (function() {
   var TextOperation = firepad.TextOperation;
 

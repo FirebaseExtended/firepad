@@ -20,6 +20,7 @@ code. It can be added to any web app by including a few JavaScript files
 
 ```HTML
 <!-- Firebase -->
+//TODO: Update link
 <script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
 
 <!-- CodeMirror -->
@@ -36,6 +37,7 @@ and calling an init function.
 ```HTML
 <div id="firepad"></div>
 <script>
+  //TODO: Update initialization
   var firepadRef = new Firebase('<FIREBASE URL>');
   var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
   var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
