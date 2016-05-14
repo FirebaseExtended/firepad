@@ -15,7 +15,7 @@ Visit [firepad.io](http://demo.firepad.io/) to see a live demo of Firepad in ric
 [![a screenshot of demo.firepad.io including a picture of two cats and a discussion about fonts](screenshot.png)](http://demo.firepad.io/)
 
 ## Setup
-Firepad uses [Firebase](https://www.firebase.com/?utm_source=firepad) as a backend, so it requires no server-side
+Firepad uses [Firebase](https://firebase.google.com/?utm_source=firepad) as a backend, so it requires no server-side
 code. It can be added to any web app by including a few JavaScript files
 
 ```HTML
@@ -92,7 +92,7 @@ command line using `grunt test`.
 ## Getting Started with Firebase
 
 Firepad stores its data in a Firebase database. You can
-[sign up here](https://www.firebase.com/signup/?utm_source=firepad) for a free Firebase account.
+[sign up here](https://firebase.google.com) for a free Firebase account.
 
 ## Getting Help
 
