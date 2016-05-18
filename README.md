@@ -20,16 +20,15 @@ code. It can be added to any web app by including a few JavaScript files
 
 ```HTML
 <!-- Firebase -->
-//TODO: Update link
-<script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
+<script src="https://www.gstatic.com/firebasejs/live/3.0/firebase.js"></script>
 
 <!-- CodeMirror -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.2.0/codemirror.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.2.0/codemirror.css"/>
 
 <!-- Firepad -->
-<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.3.0/firepad.css" />
-<script src="https://cdn.firebase.com/libs/firepad/1.3.0/firepad.min.js"></script>
+<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.3.1/firepad.css" />
+<script src="https://cdn.firebase.com/libs/firepad/1.3.1/firepad.min.js"></script>
 ```
 
 and calling an init function.
@@ -38,7 +37,7 @@ and calling an init function.
 <div id="firepad"></div>
 <script>
   //TODO: Update initialization
-  var firepadRef = new Firebase('<FIREBASE URL>');
+  var firepadRef = firebase.database().ref();
   var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
   var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
       { richTextShortcuts: true, richTextToolbar: true, defaultText: 'Hello, World!' });
