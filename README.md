@@ -36,7 +36,6 @@ and calling an init function.
 ```HTML
 <div id="firepad"></div>
 <script>
-  //TODO: Update initialization
   var firepadRef = firebase.database().ref();
   var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
   var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
