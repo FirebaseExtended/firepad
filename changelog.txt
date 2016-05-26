@@ -1,3 +1,0 @@
-important - See the [Firebase migration guide](https://firebase.google.com/support/guides/firebase-web) for instructions on how to upgrade to the Firebase `3.x.x` SDK.
-feature - Upgraded the `firebase` dependency to `3.x.x`. Firepad will no longer work with Firebase `2.x.x`.
-feature - Made Firepad compatible with Browserify and webpack.
