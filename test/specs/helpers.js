@@ -1,8 +1,8 @@
-//TODO: Replace with better namespace
+// Initialize the Firebase SDK
 var config = {
-  apiKey: "AIzaSyDOlKivprJ3SquwbMUoBB0uK7V_FjUWAqI",
-  authDomain: "topstory.firebaseapp.com",
-  databaseURL: "https://topstory.firebaseio.com"
+  apiKey: "AIzaSyC_JdByNm-E1CAJUkePsr-YJZl7W77oL3g",
+  authDomain: "firepad-tests.firebaseapp.com",
+  databaseURL: "https://firepad-tests.firebaseio.com"
 };
 firebase.initializeApp(config);
 

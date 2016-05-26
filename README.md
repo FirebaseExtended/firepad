@@ -1,8 +1,4 @@
-# Firepad
-
-[![Build Status](https://travis-ci.org/firebase/firepad.svg?branch=master)](https://travis-ci.org/firebase/firepad)
-[![Coverage Status](https://img.shields.io/coveralls/firebase/firepad.svg?branch=master&style=flat)](https://coveralls.io/r/firebase/firepad)
-[![Version](https://badge.fury.io/gh/firebase%2Ffirepad.svg)](http://badge.fury.io/gh/firebase%2Ffirepad)
+# Firepad [![Build Status](https://travis-ci.org/firebase/firepad.svg?branch=master)](https://travis-ci.org/firebase/firepad) [![Coverage Status](https://img.shields.io/coveralls/firebase/firepad.svg?branch=master&style=flat)](https://coveralls.io/r/firebase/firepad) [![Version](https://badge.fury.io/gh/firebase%2Ffirepad.svg)](http://badge.fury.io/gh/firebase%2Ffirepad)
 
 [Firepad](http://www.firepad.io/) is an open-source, collaborative code and text editor. It is
 designed to be embedded inside larger web applications.
@@ -15,20 +11,20 @@ Visit [firepad.io](http://demo.firepad.io/) to see a live demo of Firepad in ric
 [![a screenshot of demo.firepad.io including a picture of two cats and a discussion about fonts](screenshot.png)](http://demo.firepad.io/)
 
 ## Setup
-Firepad uses [Firebase](https://firebase.google.com/?utm_source=firepad) as a backend, so it requires no server-side
+Firepad uses [Firebase](https://firebase.google.com) as a backend, so it requires no server-side
 code. It can be added to any web app by including a few JavaScript files
 
 ```HTML
 <!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/live/3.0/firebase.js"></script>
+<script src="https://www.gstatic.com/firebasejs/3.0.3/firebase.js"></script>
 
 <!-- CodeMirror -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.2.0/codemirror.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.2.0/codemirror.css"/>
 
 <!-- Firepad -->
-<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.3.1/firepad.css" />
-<script src="https://cdn.firebase.com/libs/firepad/1.3.1/firepad.min.js"></script>
+<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.css" />
+<script src="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.min.js"></script>
 ```
 
 and calling an init function.
@@ -36,6 +32,12 @@ and calling an init function.
 ```HTML
 <div id="firepad"></div>
 <script>
+  // Initialize the Firebase SDK
+  firebase.initializeApp({
+    apiKey: '<API_KEY>',
+    databaseURL: 'https://<DATABASE_NAME>.firebaseio.com'
+  });
+
   var firepadRef = firebase.database().ref();
   var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
   var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
@@ -89,8 +91,9 @@ command line using `grunt test`.
 
 ## Getting Started with Firebase
 
-Firepad stores its data in a Firebase database. You can
-[sign up here](https://firebase.google.com) for a free Firebase account.
+Firepad requires [Firebase](https://firebase.google.com/) in order to sync and store data.
+Firebase is a suite of integrated products designed to help you develop your app, grow your user
+base, and earn money. You can [sign up here for a free account](https://console.firebase.google.com/).
 
 ## Getting Help
 

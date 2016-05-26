@@ -40,7 +40,7 @@
   ],
   "dependencies": {
     "jsdom": ">3",
-    "firebase": "2.x"
+    "firebase": "3.x.x"
   },
   "devDependencies": {
     "coveralls": "^2.11.2",

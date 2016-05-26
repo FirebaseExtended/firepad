@@ -39,7 +39,7 @@
   ],
   "dependencies": {
     "jsdom": "3.x",
-    "firebase": "2.x"
+    "firebase": "3.x.x"
   },
   "devDependencies": {
     "jasmine-core": "2.3.4",
