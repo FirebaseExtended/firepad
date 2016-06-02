@@ -23,7 +23,7 @@ other [official support channels](https://firebase.google.com/support/).
 
 **Please avoid double posting across multiple channels!**
 
-see
+
 ## <a name="issue"></a>Think you found a bug?
 
 Yeah, we're definitely not perfect!
