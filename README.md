@@ -3,6 +3,28 @@
 [Firepad](http://www.firepad.io/) is an open-source, collaborative code and text editor. It is
 designed to be embedded inside larger web applications.
 
+Join our [Firepad Google Group](https://groups.google.com/forum/#!forum/firepad-io) to ask
+questions, request features, or share your Firepad apps with the community.
+
+
+## Table of Contents
+
+ * [Getting Started With Firebase](#getting-started-with-firebase)
+ * [Live Demo](#live-demo)
+ * [Downloading Firepad](#downloading-firepad)
+ * [Documentation](#documentation)
+ * [Examples](#examples)
+ * [Contributing](#contributing)
+ * [Repo Structure](#repo-structure)
+
+
+## Getting Started With Firebase
+
+Firepad requires [Firebase](https://firebase.google.com/) in order to sync and store data. Firebase
+is a suite of integrated products designed to help you develop your app, grow your user base, and
+earn money. You can [sign up here for a free account](https://console.firebase.google.com/).
+
+
 ## Live Demo
 
 Visit [firepad.io](http://demo.firepad.io/) to see a live demo of Firepad in rich text mode, or the
@@ -10,9 +32,11 @@ Visit [firepad.io](http://demo.firepad.io/) to see a live demo of Firepad in ric
 
 [![a screenshot of demo.firepad.io including a picture of two cats and a discussion about fonts](screenshot.png)](http://demo.firepad.io/)
 
-## Setup
+
+## Downloading Firepad
+
 Firepad uses [Firebase](https://firebase.google.com) as a backend, so it requires no server-side
-code. It can be added to any web app by including a few JavaScript files
+code. It can be added to any web app by including a few JavaScript files:
 
 ```HTML
 <!-- Firebase -->
@@ -27,7 +51,7 @@ code. It can be added to any web app by including a few JavaScript files
 <script src="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.min.js"></script>
 ```
 
-and calling an init function.
+Then, you need to initialize the Firebase SDK and Firepad:
 
 ```HTML
 <div id="firepad"></div>
@@ -45,10 +69,24 @@ and calling an init function.
 </script>
 ```
 
-Firepad supports rich text editing with [CodeMirror](http://codemirror.net/) and code editing via
-[ACE](http://ace.c9.io/). Check out the detailed setup instructions at [firepad.io/docs](http://www.firepad.io/docs).
+## Documentation
 
-### What's Here
+Firepad supports rich text editing with [CodeMirror](http://codemirror.net/) and code editing via
+[Ace](http://ace.c9.io/). Check out the detailed setup instructions at [firepad.io/docs](http://www.firepad.io/docs).
+
+
+## Examples
+
+You can find some Firepad examples [here](examples/README.md).
+
+
+## Contributing
+
+If you'd like to contribute to Firepad, please first read through our [contribution
+guidelines](.github/CONTRIBUTING.md). Local setup instructions are available [here](.github/CONTRIBUTING.md#local-setup).
+
+
+## Repo Structure
 
 Here are some highlights of the directory structure and notable source files:
 
@@ -67,35 +105,3 @@ Here are some highlights of the directory structure and notable source files:
     * `firebase-adapter.js` - Handles integration with Firebase (appending operations, triggering retries,
       presence, etc.).
 * `test/` - Jasmine tests for Firepad (many of these were borrowed from ot.js).
-
-## Contributing
-
-We love pull requests. If you'd like to contribute to Firepad, run the following commands to get your environment set up:
-
-```bash
-$ git clone https://github.com/firebase/firepad.git
-$ cd firepad                # go to the firepad directory
-$ npm install -g grunt-cli  # globally install grunt task runner
-$ npm install -g bower      # globally install Bower package manager
-$ npm install               # install local npm build / test dependencies
-$ bower install             # install local JavaScript dependencies
-$ grunt coffee              # build coffee once initially (so tests will work)
-$ grunt watch               # watch for source file changes
-```
-
-`grunt watch` will watch for changes in the `/lib/` directory and lint, concatenate, and minify the
-source files when a change occurs. The output files are written to the `/dist/` directory.
-
-You can run the test suite by navigating to `file:///path/to/firepad/test/index.html` or via the
-command line using `grunt test`.
-
-## Getting Started with Firebase
-
-Firepad requires [Firebase](https://firebase.google.com/) in order to sync and store data.
-Firebase is a suite of integrated products designed to help you develop your app, grow your user
-base, and earn money. You can [sign up here for a free account](https://console.firebase.google.com/).
-
-## Getting Help
-
-Join our [Firepad Google Group](https://groups.google.com/forum/#!forum/firepad-io) to ask
-questions, request features, or share your Firepad apps with the community.
