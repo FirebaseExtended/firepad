@@ -18,7 +18,7 @@ which just ask about usage will be closed. Here are some resources to get help:
 - Try out some [examples](../examples/README.md)
 
 If the official documentation doesn't help, try asking a question on the
-[Firepad Google Group](https://groups.google.com/forum/#!forum/firepad-io) or one of our
+[Firebase Google Group](https://groups.google.com/forum/#!forum/firebase-talk) or one of our
 other [official support channels](https://firebase.google.com/support/).
 
 **Please avoid double posting across multiple channels!**
