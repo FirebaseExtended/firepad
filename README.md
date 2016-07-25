@@ -3,7 +3,7 @@
 [Firepad](http://www.firepad.io/) is an open-source, collaborative code and text editor. It is
 designed to be embedded inside larger web applications.
 
-Join our [Firepad Google Group](https://groups.google.com/forum/#!forum/firepad-io) to ask
+Join our [Firebase Google Group](https://groups.google.com/forum/#!forum/firebase-talk) to ask
 questions, request features, or share your Firepad apps with the community.
 
 
