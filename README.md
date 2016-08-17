@@ -39,34 +39,45 @@ Firepad uses [Firebase](https://firebase.google.com) as a backend, so it require
 code. It can be added to any web app by including a few JavaScript files:
 
 ```HTML
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/3.0.3/firebase.js"></script>
+<head>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/3.3.0/firebase.js"></script>
 
-<!-- CodeMirror -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.2.0/codemirror.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.2.0/codemirror.css"/>
+  <!-- CodeMirror -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css"/>
 
-<!-- Firepad -->
-<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.css" />
-<script src="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.min.js"></script>
+  <!-- Firepad -->
+  <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.css" />
+  <script src="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.min.js"></script>
+</head>
 ```
 
 Then, you need to initialize the Firebase SDK and Firepad:
 
 ```HTML
-<div id="firepad"></div>
-<script>
-  // Initialize the Firebase SDK
-  firebase.initializeApp({
-    apiKey: '<API_KEY>',
-    databaseURL: 'https://<DATABASE_NAME>.firebaseio.com'
-  });
+<body onload="init()">
+  <div id="firepad"></div>
+  <script>
+    function init() {
+      // Initialize the Firebase SDK.
+      firebase.initializeApp({
+        apiKey: '<API_KEY>',
+        databaseURL: 'https://<DATABASE_NAME>.firebaseio.com'
+      });
 
-  var firepadRef = firebase.database().ref();
-  var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
-  var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
-      { richTextShortcuts: true, richTextToolbar: true, defaultText: 'Hello, World!' });
-</script>
+      // Get Firebase Database reference.
+      var firepadRef = firebase.database().ref();
+
+      // Create CodeMirror (with lineWrapping on).
+      var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
+
+      // Create Firepad (with rich text toolbar and shortcuts enabled).
+      var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
+          { richTextShortcuts: true, richTextToolbar: true, defaultText: 'Hello, World!' });
+    }
+  </script>
+</body>
 ```
 
 ## Documentation

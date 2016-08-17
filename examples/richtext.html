@@ -5,15 +5,15 @@
 <head>
   <meta charset="utf-8" />
   <!-- Firebase -->
-  <script src="https://cdn.firebase.com/js/client/2.3.2/firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/3.3.0/firebase.js"></script>
 
   <!-- CodeMirror -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.10.0/codemirror.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.10.0/codemirror.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css" />
 
   <!-- Firepad -->
-  <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.3.0/firepad.css" />
-  <script src="https://cdn.firebase.com/libs/firepad/1.3.0/firepad.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.css" />
+  <script src="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.min.js"></script>
 
   <style>
     html { height: 100%; }
@@ -27,15 +27,22 @@
   </style>
 </head>
 
-<body>
+<body onload="init()">
   <div id="firepad-container"></div>
 
   <script>
     function init() {
       //// Initialize Firebase.
+      //// TODO: replace with your Firebase project configuration.
+      var config = {
+        apiKey: "AIzaSyC_JdByNm-E1CAJUkePsr-YJZl7W77oL3g",
+        authDomain: "firepad-tests.firebaseapp.com",
+        databaseURL: "https://firepad-tests.firebaseio.com"
+      };
+      firebase.initializeApp(config);
+
+      //// Get Firebase Database reference.
       var firepadRef = getExampleRef();
-      // TODO: Replace above line with:
-      // var firepadRef = new Firebase('<YOUR FIREBASE URL>');
 
       //// Create CodeMirror (with lineWrapping on).
       var codeMirror = CodeMirror(document.getElementById('firepad-container'), { lineWrapping: true });
@@ -117,20 +124,19 @@
 
     // Helper to get hash from end of URL or generate a random one.
     function getExampleRef() {
-      var ref = new Firebase('https://firepad.firebaseio-demo.com');
+      var ref = firebase.database().ref();
       var hash = window.location.hash.replace(/#/g, '');
       if (hash) {
         ref = ref.child(hash);
       } else {
         ref = ref.push(); // generate unique location.
-        window.location = window.location + '#' + ref.key(); // add it as a hash to the URL.
+        window.location = window.location + '#' + ref.key; // add it as a hash to the URL.
       }
-      if (typeof console !== 'undefined')
+      if (typeof console !== 'undefined') {
         console.log('Firebase data: ', ref.toString());
+      }
       return ref;
     }
-
-    init();
   </script>
 </body>
 </html>

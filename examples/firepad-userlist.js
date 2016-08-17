@@ -12,7 +12,7 @@ var FirepadUserList = (function() {
     var self = this;
     this.hasName_ = !!displayName;
     this.displayName_ = displayName || 'Guest ' + Math.floor(Math.random() * 1000);
-    this.firebaseOn_(ref.root().child('.info/connected'), 'value', function(s) {
+    this.firebaseOn_(ref.root.child('.info/connected'), 'value', function(s) {
       if (s.val() === true && self.displayName_) {
         var nameRef = ref.child(self.userId_).child('name');
         nameRef.onDisconnect().remove();
@@ -99,7 +99,7 @@ var FirepadUserList = (function() {
     var userId2Element = { };
 
     function updateChild(userSnapshot, prevChildName) {
-      var userId = userSnapshot.key();
+      var userId = userSnapshot.key;
       var div = userId2Element[userId];
       if (div) {
         userList.removeChild(div);
@@ -138,7 +138,7 @@ var FirepadUserList = (function() {
     this.firebaseOn_(this.ref_, 'child_changed', updateChild);
     this.firebaseOn_(this.ref_, 'child_moved', updateChild);
     this.firebaseOn_(this.ref_, 'child_removed', function(removedSnapshot) {
-      var userId = removedSnapshot.key();
+      var userId = removedSnapshot.key;
       var div = userId2Element[userId];
       if (div) {
         userList.removeChild(div);
