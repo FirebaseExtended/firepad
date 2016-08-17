@@ -43,7 +43,7 @@
             Add Firepad to your app! Use <a href="https://github.com/firebase/firepad/blob/master/examples/richtext-simple.html">this code</a>:
 
           <pre><span class="kd">var</span> <span class="nx">firepadDiv</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">&#39;firepad&#39;</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">firepadRef</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Firebase</span><span class="p">(</span><span class="s1">&#39;&lt;firebase url...&gt;&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">firepadRef</span> <span class="o">=</span> <span class="nb">firebase</span><span class="p">.</span><span class="nb">database</span><span class="p">()</span><span class="p">.</span><span class="nb">ref</span><span class="p">();</span>
 <span class="kd">var</span> <span class="nx">codeMirror</span> <span class="o">=</span> <span class="nx">CodeMirror</span><span class="p">(</span><span class="nx">firepadDiv</span><span class="p">,</span> <span class="p">{</span> <span class="nx">lineWrapping</span><span class="o">:</span> <span class="kc">true</span> <span class="p">});</span>
 <span class="kd">var</span> <span class="nx">firepad</span> <span class="o">=</span> <span class="nx">Firepad</span><span class="p">.</span><span class="nx">fromCodeMirror</span><span class="p">(</span><span class="nx">firepadRef</span><span class="p">,</span> <span class="nx">codeMirror</span><span class="p">,</span>
     <span class="p">{</span> <span class="nx">richTextShortcuts</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">richTextToolbar</span><span class="o">:</span> <span class="kc">true</span> <span class="p">});</span></pre>
@@ -199,7 +199,7 @@
               <div class="faq-title">How is Firepad different than other collaborative text editors?</div>
               <span>Most collaborative text editors require special code to run on a server, making them
               impractical to use if you're not already using the right server stack. Firepad has no
-              server dependencies and instead relies on <a href="https://www.firebase.com/?utm_source=landing&utm_medium=email&utm_campaign=firepad" target="_blank">Firebase</a> for real-time data synchronization.
+              server dependencies and instead relies on the <a href="https://firebase.google.com/docs/database/?utm_source=landing&utm_medium=email&utm_campaign=firepad" target="_blank">Firebase Realtime Database</a> for real-time data synchronization.
               This means that it's easy to add Firepad to any application, even static websites.
               All you need to do is drop in the JavaScript files and go.</span>
             </div>
@@ -208,7 +208,7 @@
             <div class="faq-question">
             <div class="faq-title">Which technologies does Firepad use?</div>
               <span>Firepad can use either the <a href="http://codemirror.net" target="_blank">CodeMirror</a> editor or the <a href="http://ace.c9.io" target="_blank"> Ace</a> editor to render documents, and its operational transform
-              code borrows from <a href="https://github.com/Operational-Transformation/ot.js/" target="_blank">ot.js</a>. Behind the scenes, Firepad uses <a href="https://www.firebase.com/?utm_source=landing&utm_medium=email&utm_campaign=firepad" target="_blank">Firebase</a>
+              code borrows from <a href="https://github.com/Operational-Transformation/ot.js/" target="_blank">ot.js</a>. Behind the scenes, Firepad uses the <a href="https://firebase.google.com/docs/database/?utm_source=landing&utm_medium=email&utm_campaign=firepad" target="_blank">Firebase Realtime Database</a>
               for cloud data storage and synchronization.</span>
             </div>
             <div class="faq-question">
@@ -250,7 +250,7 @@
         <a href="mailto:firepad@firebase.com?subject=[Firepad Question]" target="_blank">Contact</a>
       </div>
       <div id="powered-by-firebase">
-        <a href="https://www.firebase.com/?utm_source=landing&utm_medium=email&utm_campaign=firepad" target="_blank"><img src="images/powered-by-firebase-dim.png"></a>
+        <a href="https://firebase.google.com/?utm_source=landing&utm_medium=email&utm_campaign=firepad" target="_blank"><img src="images/powered-by-firebase-dim.png"></a>
       </div>
     </div>
   </div>
