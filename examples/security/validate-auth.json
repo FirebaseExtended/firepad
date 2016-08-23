@@ -1,4 +1,4 @@
-/* Example assumes your firepad is at the root of your firebase. */
+/* Example assumes your Firepad is at the root of your Firebase Database. */
 {
   "rules": {
     "history": {
