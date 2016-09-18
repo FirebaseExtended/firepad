@@ -1,3 +1,11 @@
+// Initialize the Firebase SDK
+var config = {
+  apiKey: "AIzaSyC_JdByNm-E1CAJUkePsr-YJZl7W77oL3g",
+  authDomain: "firepad-tests.firebaseapp.com",
+  databaseURL: "https://firepad-tests.firebaseio.com"
+};
+firebase.initializeApp(config);
+
 var helpers = (function() {
   var TextOperation = firepad.TextOperation;
 

@@ -5,12 +5,15 @@
   <meta charset="utf-8" />
   <title>Collaborative editing with CodeMirror</title>
 
-  <!-- Include CodeMirror -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.2.0/codemirror.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.2.0/codemirror.css" />
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/3.3.0/firebase.js"></script>
 
-  <script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
-  <script src="https://cdn.firebase.com/libs/firepad/1.2.0/firepad.min.js"></script>
+  <!-- Include CodeMirror -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css" />
+
+  <!-- Firepad -->
+  <script src="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.min.js"></script>
 
   <style>
     .CodeMirror pre {
@@ -25,126 +28,153 @@
   </style>
 </head>
 
-<body>
+<body onload="init()">
   <h1>Firepad</h1>
   <div id="editor-wrapper">
   <a id="hammer-btn" class="btn" href="#" title="Hammer Time">Hammer Time!</a>
   <span id="hammeringText" style="display: none;">Hammering!</span>
 
   <script>
-    //Firebase.enableLogging(true);
-    var firepadRef = new Firebase('https://firepad.firebaseio-demo.com/hammer');
+    function init() {
+      //// Initialize Firebase.
+      //// TODO: replace with your Firebase project configuration.
+      var config = {
+        apiKey: "AIzaSyC_JdByNm-E1CAJUkePsr-YJZl7W77oL3g",
+        authDomain: "firepad-tests.firebaseapp.com",
+        databaseURL: "https://firepad-tests.firebaseio.com"
+      };
+      firebase.initializeApp(config);
 
-    var editorWrapper = document.getElementById('editor-wrapper');
-    var cm = window.cm = CodeMirror(editorWrapper, {
-      lineNumbers: true,
-      lineWrapping: true,
-      mode: 'markdown'
-    });
-    var firepad = new Firepad(firepadRef, cm);
+      //// Get Firebase Database reference.
+      var firepadRef = getExampleRef();
 
-    var richText = window.location.href.indexOf('#rich') >= 0;
+      var editorWrapper = document.getElementById('editor-wrapper');
+      var cm = window.cm = CodeMirror(editorWrapper, {
+        lineNumbers: true,
+        lineWrapping: true,
+        mode: 'markdown'
+      });
+      var firepad = new Firepad(firepadRef, cm);
 
-    var nextHammerOp;
-    var opNum = 0;
-    function doHammerOp() {
-      var lastLine = cm.lineCount() - 1;
-      var end = cm.indexFromPos({line: lastLine, ch: cm.getLine(lastLine).length});
-      var index = Math.floor(Math.random() * (end+1));
-      var pos = cm.posFromIndex(index);
-      var length = Math.floor(Math.random() * 7);
-      var length2 = Math.floor(Math.random() * 7);
+      var richText = window.location.href.indexOf('#rich') >= 0;
 
-      cm.setCursor(cm.posFromIndex(index));
+      var nextHammerOp;
+      var opNum = 0;
+      function doHammerOp() {
+        var lastLine = cm.lineCount() - 1;
+        var end = cm.indexFromPos({line: lastLine, ch: cm.getLine(lastLine).length});
+        var index = Math.floor(Math.random() * (end+1));
+        var pos = cm.posFromIndex(index);
+        var length = Math.floor(Math.random() * 7);
+        var length2 = Math.floor(Math.random() * 7);
 
-      var op = randInt(0, 100);
-      if (op <= 40) { // insert
-        var string = randString(length, true);
-        if (richText) {
-          rtcm.insertText(index, string, randAttributes());
-        } else {
-          cm.replaceRange(string, pos);
-        }
-        cm.setCursor(cm.posFromIndex(index + length));
-      } else if (op <= 70) {
-        if (richText) {
-          rtcm.updateTextAttributes(index, Math.min(index + length, end), randAttributes(true));
-        } else {
-          var from = pos, to = cm.posFromIndex(index + length2);
-          var old = cm.getRange(from, to).replace(/\n/g, '\\n');
+        cm.setCursor(cm.posFromIndex(index));
+
+        var op = randInt(0, 100);
+        if (op <= 40) { // insert
           var string = randString(length, true);
-          cm.replaceRange(string, from, to);
+          if (richText) {
+            rtcm.insertText(index, string, randAttributes());
+          } else {
+            cm.replaceRange(string, pos);
+          }
+          cm.setCursor(cm.posFromIndex(index + length));
+        } else if (op <= 70) {
+          if (richText) {
+            rtcm.updateTextAttributes(index, Math.min(index + length, end), randAttributes(true));
+          } else {
+            var from = pos, to = cm.posFromIndex(index + length2);
+            var old = cm.getRange(from, to).replace(/\n/g, '\\n');
+            var string = randString(length, true);
+            cm.replaceRange(string, from, to);
+          }
+          cm.setCursor(cm.posFromIndex(index + length));
+        } else if (op <= 100) { // delete
+          var from = pos, to = cm.posFromIndex(index + length);
+          cm.replaceRange("", from, to);
         }
-        cm.setCursor(cm.posFromIndex(index + length));
-      } else if (op <= 100) { // delete
-        var from = pos, to = cm.posFromIndex(index + length);
-        cm.replaceRange("", from, to);
+
+        nextHammerOp = setTimeout(doHammerOp, Math.random() * 500);
       }
 
-      nextHammerOp = setTimeout(doHammerOp, Math.random() * 500);
+      function hammer() {
+        if (nextHammerOp) {
+          clearTimeout(nextHammerOp);
+          nextHammerOp = null;
+          document.getElementById('hammeringText').style.cssText = "display: none;";
+        } else {
+          doHammerOp();
+          document.getElementById('hammeringText').style.cssText = "display: inline;";
+        }
+      }
+
+      function preventDefault (e) {
+        if (e.preventDefault) { e.preventDefault(); }
+      }
+
+      function stopPropagation (e) {
+        if (e.stopPropagation) { e.stopPropagation(); }
+      }
+
+      function stopEvent (e) {
+        preventDefault(e);
+        stopPropagation(e);
+      }
+
+      var hammerBtn = document.getElementById('hammer-btn');
+      hammerBtn.onclick = function(e) { hammer(); stopEvent(e); };
+
+      function randString(length, includeNewlines) {
+        var str = ""
+        for(var i = 0; i < length; i++) {
+          if (includeNewlines && Math.random()*10 < 1)
+            str += '\n';
+          else
+            str += String.fromCharCode(65 + Math.floor(Math.random() * 26));
+        }
+        return str;
+      }
+
+      function randAttributes(isRetain) {
+        var attrs = { };
+        if (Math.random() > 0.9) {
+          attrs['b'] = isRetain ? randBool() : true;
+        }
+        if (Math.random() > 0.9) {
+          attrs['u'] = isRetain ? randBool() : true;
+        }
+        if (Math.random() > 0.9) {
+          attrs['i'] = isRetain ? randBool() : true;
+        }
+        if (Math.random() > 0.9) {
+          attrs['h'] = isRetain ? (randInt(0, 3) || false) : randInt(1, 3);
+        }
+        return attrs;
+      }
+
+      function randBool() {
+        return Math.random() > 0.5;
+      }
+
+      function randInt(min, max) {
+        return min + Math.ceil(Math.random() * (max - min));
+      }
     }
 
-    function hammer() {
-      if (nextHammerOp) {
-        clearTimeout(nextHammerOp);
-        nextHammerOp = null;
-        document.getElementById('hammeringText').style.cssText = "display: none;";
+    // Helper to get hash from end of URL or generate a random one.
+    function getExampleRef() {
+      var ref = firebase.database().ref();
+      var hash = window.location.hash.replace(/#/g, '');
+      if (hash) {
+        ref = ref.child(hash);
       } else {
-        doHammerOp();
-        document.getElementById('hammeringText').style.cssText = "display: inline;";
+        ref = ref.push(); // generate unique location.
+        window.location = window.location + '#' + ref.key; // add it as a hash to the URL.
       }
-    }
-
-    function preventDefault (e) {
-      if (e.preventDefault) { e.preventDefault(); }
-    }
-
-    function stopPropagation (e) {
-      if (e.stopPropagation) { e.stopPropagation(); }
-    }
-
-    function stopEvent (e) {
-      preventDefault(e);
-      stopPropagation(e);
-    }
-
-    var hammerBtn = document.getElementById('hammer-btn');
-    hammerBtn.onclick = function(e) { hammer(); stopEvent(e); };
-
-    function randString(length, includeNewlines) {
-      var str = ""
-      for(var i = 0; i < length; i++) {
-        if (includeNewlines && Math.random()*10 < 1)
-          str += '\n';
-        else
-          str += String.fromCharCode(65 + Math.floor(Math.random() * 26));
+      if (typeof console !== 'undefined') {
+        console.log('Firebase data: ', ref.toString());
       }
-      return str;
-    }
-
-    function randAttributes(isRetain) {
-      var attrs = { };
-      if (Math.random() > 0.9) {
-        attrs['b'] = isRetain ? randBool() : true;
-      }
-      if (Math.random() > 0.9) {
-        attrs['u'] = isRetain ? randBool() : true;
-      }
-      if (Math.random() > 0.9) {
-        attrs['i'] = isRetain ? randBool() : true;
-      }
-      if (Math.random() > 0.9) {
-        attrs['h'] = isRetain ? (randInt(0, 3) || false) : randInt(1, 3);
-      }
-      return attrs;
-    }
-
-    function randBool() {
-      return Math.random() > 0.5;
-    }
-
-    function randInt(min, max) {
-      return min + Math.ceil(Math.random() * (max - min));
+      return ref;
     }
 </script>
 </body>

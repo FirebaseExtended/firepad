@@ -341,7 +341,7 @@ describe('TextOperation', function() {
     var str = h.randomString(20);
     var a = h.randomOperation(str);
     var b = h.randomOperation(str);
-    var primes = TextOperation.transform(a, b);
+    var primes = a.transform(b);
     var aPrime = primes[0];
     var bPrime = primes[1];
     var abPrime = a.compose(bPrime);
@@ -359,7 +359,7 @@ describe('TextOperation', function() {
     var attributes = h.randomAttributesArray(20);
     var a = h.randomOperation(str, /*useAttributes=*/true);
     var b = h.randomOperation(str, /*useAttributes=*/true);
-    var primes = TextOperation.transform(a, b);
+    var primes = a.transform(b);
     var aPrime = primes[0];
     var bPrime = primes[1];
     var abPrime = a.compose(bPrime);

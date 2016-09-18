@@ -1,9 +1,9 @@
 {
   "name": "firepad",
   "description": "Collaborative text editing powered by Firebase",
-  "version": "1.3.0",
+  "version": "0.0.0",
   "authors": [
-    "Firebase <support@firebase.com> (https://www.firebase.com/)",
+    "Firebase (https://firebase.google.com/)",
     "Michael Lehenbauer <michael@firebase.com>"
   ],
   "homepage": "http://www.firepad.io",
@@ -39,7 +39,7 @@
   ],
   "dependencies": {
     "jsdom": "3.x",
-    "firebase": "2.x"
+    "firebase": "3.x.x"
   },
   "devDependencies": {
     "jasmine-core": "2.3.4",

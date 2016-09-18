@@ -67,7 +67,7 @@ describe('WrappedOperation', function() {
     var a = new WrappedOperation(h.randomOperation(str), metaA);
     var metaB = {};
     var b = new WrappedOperation(h.randomOperation(str), metaB);
-    var pair = WrappedOperation.transform(a, b);
+    var pair = a.transform(b);
     var aPrime = pair[0];
     var bPrime = pair[1];
     expect(aPrime.meta).toBe(metaA);
@@ -85,7 +85,7 @@ describe('WrappedOperation', function() {
       new TextOperation().retain(7)['delete'](1).insert("I").retain(4),
       new Cursor(8, 8)
     );
-    var pair = WrappedOperation.transform(a, b);
+    var pair = a.transform(b);
     var aPrime = pair[0];
     var bPrime = pair[1];
     expect("Lorem Ipsum").toBe(bPrime.apply(a.apply(str)));
