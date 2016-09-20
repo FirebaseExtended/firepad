@@ -111,7 +111,6 @@ var examples = {
 
 var currentId;
 $(window).on('ready', function() {
-  var ref = new Firebase('https://firepad-examples.firebaseio-demo.com');
   for(var example in examples) {
     addClickHandler(example);
   }
@@ -145,7 +144,7 @@ function getExampleAndIdFromUrl() {
 
 var initialized = false;
 function initializeExamples(id) {
-  var ref = new Firebase('https://firepad-examples.firebaseio-demo.com').child(id);
+  var ref = new Firebase('https://firepad.firebaseio.com/examples').child(id);
   for(var example in examples) {
     var $div = $('#' + example + ' .example-container');
     if (initialized) {
