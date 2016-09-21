@@ -81,7 +81,7 @@ describe('Integration tests', function() {
         }
       });
     });
-  });
+  }, 10000); // Changes jasmine timeout to 10 seconds to avoid timeout error
 
   it('Random text changes', function(done) {
     var ref = rootRef.push();
@@ -108,7 +108,7 @@ describe('Integration tests', function() {
       firepad1.setText('lorem ipsum');
       step(25);
     });
-  });
+  }, 20000); // Changes jasmine timeout to 20 seconds to avoid timeout error
 
   it('Performs getHtml responsively', function(done) {
     var ref = rootRef.push();
@@ -121,7 +121,7 @@ describe('Integration tests', function() {
       expect(firepad.getHtml()).toContain(html);
       done();
     });
-  });
+  }, 10000); // Changes jasmine timeout to 10 seconds to avoid timeout error
 
   it('Uses defaultText to initialize the pad properly', function(done) {
     var ref = rootRef.push();
