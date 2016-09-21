@@ -59,8 +59,9 @@ describe('Integration tests', function() {
         connectedRef.off('value', listener);
       }
     });
-  });
+  }, 1800000);
 
+  // Passes locally, but times out of Travis regardless of timeout interval
   it('Out-of-order edit', function (done) {
     var ref = rootRef.push();
     var cm1 = CodeMirror(hiddenDiv());
@@ -81,8 +82,9 @@ describe('Integration tests', function() {
         }
       });
     });
-  }, 30000); // Changes jasmine timeout to 30 seconds to avoid timeout error
+  }, 1800000);
 
+  // Passes locally, but times out of Travis regardless of timeout interval
   it('Random text changes', function(done) {
     var ref = rootRef.push();
     var cm1 = CodeMirror(hiddenDiv());
@@ -108,7 +110,7 @@ describe('Integration tests', function() {
       firepad1.setText('lorem ipsum');
       step(25);
     });
-  }, 30000); // Changes jasmine timeout to 30 seconds to avoid timeout error
+  }, 6000000);
 
   it('Performs getHtml responsively', function(done) {
     var ref = rootRef.push();
@@ -121,7 +123,7 @@ describe('Integration tests', function() {
       expect(firepad.getHtml()).toContain(html);
       done();
     });
-  }, 10000); // Changes jasmine timeout to 10 seconds to avoid timeout error
+  }, 1800000);
 
   it('Uses defaultText to initialize the pad properly', function(done) {
     var ref = rootRef.push();
