@@ -2,6 +2,7 @@ describe('Integration tests', function() {
   var h = helpers;
   var Firepad = firepad.Firepad;
   var Headless = Firepad.Headless;
+  var extendedTimeoutLength = 300000;
 
   var _hiddenDiv;
   function hiddenDiv() {
@@ -59,7 +60,7 @@ describe('Integration tests', function() {
         connectedRef.off('value', listener);
       }
     });
-  }, 1800000);
+  }, extendedTimeoutLength);
 
   // Passes locally, but times out of Travis regardless of timeout interval
   it('Out-of-order edit', function (done) {
@@ -82,7 +83,7 @@ describe('Integration tests', function() {
         }
       });
     });
-  }, 1800000);
+  }, extendedTimeoutLength);
 
   // Passes locally, but times out of Travis regardless of timeout interval
   it('Random text changes', function(done) {
@@ -110,7 +111,7 @@ describe('Integration tests', function() {
       firepad1.setText('lorem ipsum');
       step(25);
     });
-  }, 6000000);
+  }, extendedTimeoutLength);
 
   it('Performs getHtml responsively', function(done) {
     var ref = rootRef.push();
@@ -123,7 +124,7 @@ describe('Integration tests', function() {
       expect(firepad.getHtml()).toContain(html);
       done();
     });
-  }, 1800000);
+  }, extendedTimeoutLength);
 
   it('Uses defaultText to initialize the pad properly', function(done) {
     var ref = rootRef.push();
