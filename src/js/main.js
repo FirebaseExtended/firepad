@@ -16,10 +16,15 @@
       room = OFFSET + Math.floor(Math.random() * ROOMS);
     }
 
+    var firepadEl = document.getElementById('firepad');
+    if (firepadEl === null) {
+      return;
+    }
+
     var firebaseUrl = 'https://firepad.firebaseio.com/home/' + room;
     var firepadRef = new Firebase(firebaseUrl);
 
-    codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
+    codeMirror = CodeMirror(firepadEl, { lineWrapping: true });
     var userId = firepadRef.push().key(); // Just a random ID.
     firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
                                      { richTextToolbar: true, richTextShortcuts: true, userId: userId, imageInsertionUI:false });
