@@ -1,21 +1,22 @@
 {
-  "name": "firepad",
+  "name": "@mironal/firepad",
   "description": "Collaborative text editing powered by Firebase",
-  "version": "1.4.0",
-  "author": "Firebase (https://firebase.google.com/)",
+  "version": "1.4.1",
+  "author": "mironal",
   "contributors": [
-    "Michael Lehenbauer <michael@firebase.com>"
+    "Michael Lehenbauer <michael@firebase.com>",
+    "mironal"
   ],
   "homepage": "http://www.firepad.io/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/firebase/firepad.git"
+    "url": "https://github.com/mironal/firepad.git"
   },
   "browser": {
     "jsdom": false
   },
   "bugs": {
-    "url": "https://github.com/firebase/firepad/issues"
+    "url": "https://github.com/mironal/firepad/issues"
   },
   "licenses": [
     {
