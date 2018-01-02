@@ -23,7 +23,7 @@ class firepad.ACEAdapter
   detach: ->
     @ace.removeListener 'change', @onChange
     @ace.removeListener 'blur', @onBlur
-    @ace.removeListener 'focus', @onCursorActivity
+    @ace.removeListener 'focus', @onFocus
     @aceSession.selection.removeListener 'changeCursor', @onCursorActivity
 
   onChange: (change) =>
