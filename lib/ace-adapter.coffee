@@ -124,6 +124,7 @@ class firepad.ACEAdapter
     if cursor.position > cursor.selectionEnd
       [start, end] = [end, start]
     @aceSession.selection.setSelectionRange new @aceRange(start.row, start.column, end.row, end.column)
+    @ace.renderer.scrollCursorIntoView(null, 0.5)
 
   setOtherCursor: (cursor, color, clientId) ->
     @otherCursors ?= {}
