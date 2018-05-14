@@ -16,8 +16,12 @@ class firepad.ACEAdapter
     @aceRange ?= (ace.require ? require)("ace/range").Range
 
   grabDocumentState: ->
+    console.log('grabDocumentState start');
     @lastDocLines = @aceDoc.getAllLines()
+    console.log('lastDocLines', @lastDocLines);
     @lastCursorRange = @aceSession.selection.getRange()
+    console.log('lastCursorRange', @lastCursorRange)
+    console.log('grabDocumentState end');
 
   # Removes all event listeners from the ACE editor instance
   detach: ->
@@ -46,6 +50,7 @@ class firepad.ACEAdapter
   # Converts an ACE change object into a TextOperation and its inverse
   # and returns them as a two-element array.
   operationFromACEChange: (change) ->
+    console.log('operationFromACEChange start');
     if change.data
       # Ace < 1.2.0
       delta = change.data
@@ -59,12 +64,17 @@ class firepad.ACEAdapter
     else
       # Ace 1.2.0+
       text = change.lines.join('\n')
+      console.log('text', text);
       start = @indexFromPos change.start
+      console.log('start', start);
     
     restLength = @lastDocLines.join('\n').length - start
+    console.log('restLength', restLength);
     restLength -= text.length if change.action is 'remove'
+    console.log('restLength-remove', restLength);
     insert_op = new firepad.TextOperation().retain(start).insert(text).retain(restLength)
     delete_op = new firepad.TextOperation().retain(start).delete(text).retain(restLength)
+    console.log('operationFromACEChange end');
     if change.action is 'remove'
       [delete_op, insert_op]
     else
@@ -93,7 +103,9 @@ class firepad.ACEAdapter
     row: row, column: index
 
   indexFromPos: (pos, lines) ->
+    console.log('indexFromPos start');
     lines ?= @lastDocLines
+    console.log('lines', lines);
     index = 0
     for i in [0 ... pos.row]
       index += @lastDocLines[i].length + 1
