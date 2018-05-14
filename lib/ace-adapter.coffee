@@ -50,7 +50,6 @@ class firepad.ACEAdapter
   # Converts an ACE change object into a TextOperation and its inverse
   # and returns them as a two-element array.
   operationFromACEChange: (change) ->
-    console.log('operationFromACEChange start');
     if change.data
       # Ace < 1.2.0
       delta = change.data
@@ -74,7 +73,6 @@ class firepad.ACEAdapter
     console.log('restLength-remove', restLength);
     insert_op = new firepad.TextOperation().retain(start).insert(text).retain(restLength)
     delete_op = new firepad.TextOperation().retain(start).delete(text).retain(restLength)
-    console.log('operationFromACEChange end');
     if change.action is 'remove'
       [delete_op, insert_op]
     else
@@ -103,9 +101,7 @@ class firepad.ACEAdapter
     row: row, column: index
 
   indexFromPos: (pos, lines) ->
-    console.log('indexFromPos start');
     lines ?= @lastDocLines
-    console.log('lines', lines);
     index = 0
     for i in [0 ... pos.row]
       index += @lastDocLines[i].length + 1
