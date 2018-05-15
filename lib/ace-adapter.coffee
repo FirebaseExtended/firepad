@@ -16,12 +16,8 @@ class firepad.ACEAdapter
     @aceRange ?= (ace.require ? require)("ace/range").Range
 
   grabDocumentState: ->
-    console.log('grabDocumentState start');
     @lastDocLines = @aceDoc.getAllLines()
-    console.log('lastDocLines', @lastDocLines);
     @lastCursorRange = @aceSession.selection.getRange()
-    console.log('lastCursorRange', @lastCursorRange)
-    console.log('grabDocumentState end');
 
   # Removes all event listeners from the ACE editor instance
   detach: ->
@@ -68,9 +64,7 @@ class firepad.ACEAdapter
       console.log('start', start);
     
     restLength = @lastDocLines.join('\n').length - start
-    console.log('restLength', restLength);
     restLength -= text.length if change.action is 'remove'
-    console.log('restLength-remove', restLength);
     insert_op = new firepad.TextOperation().retain(start).insert(text).retain(restLength)
     delete_op = new firepad.TextOperation().retain(start).delete(text).retain(restLength)
     if change.action is 'remove'
@@ -81,10 +75,13 @@ class firepad.ACEAdapter
   # Apply an operation to an ACE instance.
   applyOperationToACE: (operation) ->
     index = 0
+    console.log('operation', operation)
     for op in operation.ops
       if op.isRetain()
         index += op.chars
       else if op.isInsert()
+        console.log('isInsert', index)
+        console.log('op.text', op.text)
         @aceDoc.insert @posFromIndex(index), op.text
         index += op.text.length
       else if op.isDelete()
@@ -95,9 +92,12 @@ class firepad.ACEAdapter
     @grabDocumentState()
 
   posFromIndex: (index) ->
+    console.log('posFromIndex', index)
     for line, row in @aceDoc.$lines
       break if index <= line.length
       index -= line.length + 1
+    console.log('row', row)
+    console.log('col', index)
     row: row, column: index
 
   indexFromPos: (pos, lines) ->
@@ -124,9 +124,13 @@ class firepad.ACEAdapter
         [start, end] = [0, 0]
     if start > end
       [start, end] = [end, start]
+#    console.log('start', start);
+#    console.log('end', end);
     new firepad.Cursor start, end
 
   setCursor: (cursor) ->
+    console.log('setCursor')
+    console.log('cursor', cursor)
     start = @posFromIndex cursor.position
     end = @posFromIndex cursor.selectionEnd
     if cursor.position > cursor.selectionEnd
@@ -134,8 +138,11 @@ class firepad.ACEAdapter
     @aceSession.selection.setSelectionRange new @aceRange(start.row, start.column, end.row, end.column)
 
   setOtherCursor: (cursor, color, clientId) ->
+    console.log('setOtherCursor', cursor)
     @otherCursors ?= {}
+    console.log('otherCursors', @otherCursors)
     cursorRange = @otherCursors[clientId]
+    console.log('cursorRange', cursorRange)
     if cursorRange
       cursorRange.start.detach()
       cursorRange.end.detach()
