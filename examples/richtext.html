@@ -5,30 +5,28 @@
 <head>
   <meta charset="utf-8" />
   <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/3.3.0/firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.0.0/firebase.js"></script>
 
-  <!-- CodeMirror -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css" />
+  <!-- Quill -->
+  <link href="https://cdn.quilljs.com/1.2.4/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.quilljs.com/1.2.4/quill.js"></script>
 
   <!-- Firepad -->
-  <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.css" />
-  <script src="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.min.js"></script>
-
-  <style>
-    html { height: 100%; }
-    body { margin: 0; height: 100%; position: relative; }
-      /* Height / width / positioning can be customized for your use case.
-         For demo purposes, we make firepad fill the entire browser. */
-    #firepad-container {
-      width: 100%;
-      height: 100%;
-    }
-  </style>
+  <script src="../lib/utils.js"></script>
+  <script src="../lib/client.js"></script>
+  <script src="../lib/wrapped-operation.js"></script>
+  <script src="../lib/cursor.js"></script>
+  <script src="../lib/firebase-adapter.js"></script>
+  <script src="../lib/undo-manager.js"></script>
+  <script src="../lib/rich-text-quill-adapter.js"></script>
+  <script src="../lib/editor-client.js"></script>
+  <script src="../lib/firepad.js"></script>
 </head>
 
 <body onload="init()">
-  <div id="firepad-container"></div>
+  <!-- Create the container -->
+  <div id="toolbar"></div>
+  <div id="editor-container"></div>
 
   <script>
     function init() {
@@ -44,92 +42,42 @@
       //// Get Firebase Database reference.
       var firepadRef = getExampleRef();
 
-      //// Create CodeMirror (with lineWrapping on).
-      var codeMirror = CodeMirror(document.getElementById('firepad-container'), { lineWrapping: true });
+      //// Create Quill.
+      var toolbarOptions = [
+        ['bold', 'italic', 'underline', 'strike'],
+        [{'color': []}, {'background': []}],          // dropdown with defaults from theme
+        [{'align': []}],
 
-      //// Create Firepad (with rich text toolbar and shortcuts enabled).
-      var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
-          { richTextToolbar: true, richTextShortcuts: true });
+        ['link', 'image'],
 
-      //// Initialize contents.
-      firepad.on('ready', function() {
-        if (firepad.isHistoryEmpty()) {
-          firepad.setHtml(
-              '<span style="font-size: 24px;">Rich-text editing with <span style="color: red">Firepad!</span></span><br/>\n' +
-              '<br/>' +
-              '<div style="font-size: 18px">' +
-              'Supports:<br/>' +
-              '<ul>' +
-                '<li>Different ' +
-                  '<span style="font-family: impact">fonts,</span>' +
-                  '<span style="font-size: 24px;"> sizes, </span>' +
-                  '<span style="color: blue">and colors.</span>' +
-                '</li>' +
-                '<li>' +
-                  '<b>Bold, </b>' +
-                  '<i>italic, </i>' +
-                  '<u>and underline.</u>' +
-                '</li>' +
-                '<li>Lists' +
-                  '<ol>' +
-                    '<li>One</li>' +
-                    '<li>Two</li>' +
-                  '</ol>' +
-                '</li>' +
-                '<li>Undo / redo</li>' +
-                '<li>Cursor / selection synchronization.</li>' +
-                '<li><checkbox></checkbox> It supports customized entities.</li>' +
-                '<li>And it\'s all fully collaborative!</li>' +
-              '</ul>' +
-              '</div>');
-        }
+        [{'font': []}],
+        ['clean']                                         // remove formatting button
+      ];
+      var editor = new Quill('#editor-container', {
+        modules: {
+          toolbar: toolbarOptions
+        },
+        theme: 'snow'  // or 'bubble'
       });
 
-      // An example of a complex custom entity.
-      firepad.registerEntity('checkbox', {
-        render: function (info, entityHandler) {
-          var inputElement = document.createElement('input');
-          inputElement.setAttribute('type', 'checkbox');
-          if(info.checked) {
-            inputElement.checked = 'checked';
-          }
-          inputElement.addEventListener('click', function () {
-            entityHandler.replace({checked:this.checked});
-          });
-          return inputElement;
-        }.bind(this),
-        fromElement: function (element) {
-          var info = {};
-          if(element.hasAttribute('checked')) {
-            info.checked = true;
-          }
-          return info;
-        },
-        update: function (info, element) {
-          if (info.checked) {
-            element.checked = 'checked';
-          } else {
-            element.checked = null;
-          }
-        },
-        export: function (info) {
-          var inputElement = document.createElement('checkbox');
-          if(info.checked) {
-            inputElement.setAttribute('checked', true);
-          }
-          return inputElement;
+      //// Create Firepad.
+      var pad = firepad.Firepad.fromQuill(firepadRef, editor, null);
+      //// Initialize contents.
+      pad.on('ready', function () {
+        if (pad.isHistoryEmpty()) {
+//          pad.setText('Compose an epic...');
         }
       });
     }
 
     // Helper to get hash from end of URL or generate a random one.
     function getExampleRef() {
-      var ref = firebase.database().ref();
+      var ref = firebase.database().ref('richText');
       var hash = window.location.hash.replace(/#/g, '');
       if (hash) {
         ref = ref.child(hash);
       } else {
-        ref = ref.push(); // generate unique location.
+        ref = ref.child('default');
         window.location = window.location + '#' + ref.key; // add it as a hash to the URL.
       }
       if (typeof console !== 'undefined') {
