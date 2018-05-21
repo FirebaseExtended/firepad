@@ -21,7 +21,6 @@ class firepad.ACEAdapter
 
   # Removes all event listeners from the ACE editor instance
   detach: ->
-#    console.log('detach call')
     @ace.removeListener 'change', @onChange
     @ace.removeListener 'blur', @onBlur
     @ace.removeListener 'focus', @onFocus
@@ -47,8 +46,6 @@ class firepad.ACEAdapter
   # Converts an ACE change object into a TextOperation and its inverse
   # and returns them as a two-element array.
   operationFromACEChange: (change) ->
-#    console.log('operationFromACEChange call');
-    console.log(change)
     if change.data
       # Ace < 1.2.0
       delta = change.data
@@ -66,10 +63,6 @@ class firepad.ACEAdapter
 
     restLength = @lastDocLines.join('\n').length - start
     restLength -= text.length if change.action is 'remove'
-    console.log('text', text)
-    console.log('start', start)
-    console.log('restLength', restLength)
-    console.log('docLine', @lastDocLines)
     insert_op = new firepad.TextOperation().retain(start).insert(text).retain(restLength)
     delete_op = new firepad.TextOperation().retain(start).delete(text).retain(restLength)
     if change.action is 'remove'
@@ -79,7 +72,6 @@ class firepad.ACEAdapter
 
   # Apply an operation to an ACE instance.
   applyOperationToACE: (operation) ->
-#    console.log('applyOperation call')
     index = 0
     for op in operation.ops
       if op.isRetain()
@@ -111,7 +103,6 @@ class firepad.ACEAdapter
     @aceDoc.getValue()
 
   getCursor: ->
-#    console.log('getCursor call')
     try
       start = @indexFromPos @aceSession.selection.getRange().start, @aceDoc.$lines
       end = @indexFromPos @aceSession.selection.getRange().end, @aceDoc.$lines
@@ -128,7 +119,6 @@ class firepad.ACEAdapter
     new firepad.Cursor start, end
 
   setCursor: (cursor) ->
-#    console.log('setCuror call')
     start = @posFromIndex cursor.position
     end = @posFromIndex cursor.selectionEnd
     if cursor.position > cursor.selectionEnd
@@ -136,19 +126,14 @@ class firepad.ACEAdapter
     @aceSession.selection.setSelectionRange new @aceRange(start.row, start.column, end.row, end.column)
 
   setOtherCursor: (cursor, color, clientId) ->
-    console.log('setOtherCursor call')
-    console.log('cursor', cursor)
     @otherCursors ?= {}
     cursorRange = @otherCursors[clientId]
-    console.log('cursorRange', cursorRange)
     if cursorRange
       cursorRange.start.detach()
       cursorRange.end.detach()
       @aceSession.removeMarker cursorRange.id
     start = @posFromIndex cursor.position
     end = @posFromIndex cursor.selectionEnd
-    console.log('setOtherCursor start', start)
-    console.log('setOtherCursor end', end)
     if cursor.selectionEnd < cursor.position
       [start, end] = [end, start]
     clazz = "other-client-selection-#{color.replace '#', ''}"
