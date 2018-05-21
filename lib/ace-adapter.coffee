@@ -136,17 +136,19 @@ class firepad.ACEAdapter
     @aceSession.selection.setSelectionRange new @aceRange(start.row, start.column, end.row, end.column)
 
   setOtherCursor: (cursor, color, clientId) ->
-#    console.log('setOtherCursor call')
-#    console.log('cursor', cursor)
+    console.log('setOtherCursor call')
+    console.log('cursor', cursor)
     @otherCursors ?= {}
     cursorRange = @otherCursors[clientId]
-#    console.log('cursorRange', cursorRange)
+    console.log('cursorRange', cursorRange)
     if cursorRange
       cursorRange.start.detach()
       cursorRange.end.detach()
       @aceSession.removeMarker cursorRange.id
     start = @posFromIndex cursor.position
     end = @posFromIndex cursor.selectionEnd
+    console.log('setOtherCursor start', start)
+    console.log('setOtherCursor end', end)
     if cursor.selectionEnd < cursor.position
       [start, end] = [end, start]
     clazz = "other-client-selection-#{color.replace '#', ''}"
