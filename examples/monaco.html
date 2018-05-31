@@ -10,7 +10,7 @@
     <script src="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.min.js"></script>
 
     <!-- Loader.js -->
-    <script src="vs/loader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.13.1/min/vs/loader.js"></script>
 
     <style>
         html { height: 100%; }
@@ -42,8 +42,8 @@
         var firepadRef = getExampleRef();
 
         //// Create Monaco and firepad.
+        require.config({ paths: {'vs': './../node_modules/monaco-editor/min/vs'}});
         require(['vs/editor/editor.main'], function() {
-
             editor = monaco.editor.create(document.getElementById('firepad'));
             Firepad.fromMonaco(firepadRef, editor);
         });
