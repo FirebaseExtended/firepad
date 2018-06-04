@@ -41,7 +41,6 @@
   "dependencies": {
     "firebase": "^3 || ^4",
     "jsdom": ">3",
-    "monaco-editor": "^0.13.1"
   },
   "devDependencies": {
     "coveralls": "^2.11.2",
@@ -60,7 +59,8 @@
     "karma-failed-reporter": "0.0.2",
     "karma-jasmine": "^0.3.6",
     "karma-phantomjs-launcher": "~0.1.0",
-    "karma-spec-reporter": "0.0.13"
+    "karma-spec-reporter": "0.0.13",
+    "monaco-editor": "^0.13.1"
   },
   "scripts": {
     "test": "grunt test",
