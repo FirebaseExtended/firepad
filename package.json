@@ -39,8 +39,8 @@
     "package.json"
   ],
   "dependencies": {
-    "jsdom": ">3",
-    "firebase": "^3 || ^4"
+    "firebase": "^3 || ^4",
+    "jsdom": ">3"
   },
   "devDependencies": {
     "coveralls": "^2.11.2",
@@ -59,7 +59,8 @@
     "karma-failed-reporter": "0.0.2",
     "karma-jasmine": "^1.1.2",
     "karma-phantomjs-launcher": "^1.0.4",
-    "karma-spec-reporter": "0.0.13"
+    "karma-spec-reporter": "0.0.13",
+    "monaco-editor": "^0.13.1"
   },
   "scripts": {
     "test": "grunt test",
