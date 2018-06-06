@@ -1,1 +1,0 @@
-feature - Added support for Monaco editor.  See examples/monaco.html for usage.
