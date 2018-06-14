@@ -1,8 +1,8 @@
 {
-  "name": "firepad",
+  "name": "urim",
   "description": "Collaborative text editing powered by Firebase",
   "version": "1.4.0",
-  "author": "Firebase (https://firebase.google.com/)",
+  "author": "Kyle Bradford",
   "contributors": [
     "Michael Lehenbauer <michael@firebase.com>"
   ],
