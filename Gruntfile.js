@@ -55,6 +55,7 @@ module.exports = function (grunt) {
           footer: "\nreturn firepad.Firepad; }, this);"
         },
         "src": [
+          "lib/rich-text-quill-adapter.js",
           "lib/utils.js",
           "lib/span.js",
           "lib/text-op.js",
