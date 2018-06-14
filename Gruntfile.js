@@ -55,7 +55,6 @@ module.exports = function (grunt) {
           footer: "\nreturn firepad.Firepad; }, this);"
         },
         "src": [
-          "lib/rich-text-quill-adapter.js",
           "lib/utils.js",
           "lib/span.js",
           "lib/text-op.js",
@@ -82,6 +81,7 @@ module.exports = function (grunt) {
           "lib/serialize-html.js",
           "lib/text-pieces-to-inserts.js",
           "lib/headless.js",
+          "lib/rich-text-quill-adapter.js",
           "lib/firepad.js"
         ],
         "dest": "dist/firepad.js"
