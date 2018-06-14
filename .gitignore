@@ -1,6 +1,5 @@
 .idea
 *.iml
-dist/
 build/
 node_modules/
 bower_components/
