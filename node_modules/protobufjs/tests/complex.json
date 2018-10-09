@@ -1,0 +1,114 @@
+{
+    "package": "Game.Cars",
+    "syntax": "proto2",
+    "messages": [
+        {
+            "name": "Car",
+            "syntax": "proto2",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "model",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "Vendor",
+                    "name": "vendor",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "Speed",
+                    "name": "speed",
+                    "id": 3,
+                    "options": {
+                        "default": "FAST"
+                    }
+                }
+            ],
+            "messages": [
+                {
+                    "name": "Vendor",
+                    "syntax": "proto2",
+                    "fields": [
+                        {
+                            "rule": "required",
+                            "type": "string",
+                            "name": "name",
+                            "id": 1
+                        },
+                        {
+                            "rule": "optional",
+                            "type": "Address",
+                            "name": "address",
+                            "id": 2
+                        },
+                        {
+                            "rule": "repeated",
+                            "type": "string",
+                            "name": "models",
+                            "id": 3
+                        }
+                    ],
+                    "messages": [
+                        {
+                            "name": "Address",
+                            "syntax": "proto2",
+                            "fields": [
+                                {
+                                    "rule": "required",
+                                    "type": "string",
+                                    "name": "country",
+                                    "id": 1
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Holder",
+                    "syntax": "proto2",
+                    "fields": [
+                        {
+                            "rule": "optional",
+                            "type": "string",
+                            "name": "first_name",
+                            "id": 1
+                        },
+                        {
+                            "rule": "required",
+                            "type": "string",
+                            "name": "last_name",
+                            "id": 2
+                        },
+                        {
+                            "rule": "optional",
+                            "type": "Vendor.Address",
+                            "name": "address",
+                            "id": 3
+                        }
+                    ]
+                }
+            ],
+            "enums": [
+                {
+                    "name": "Speed",
+                    "syntax": "proto2",
+                    "values": [
+                        {
+                            "name": "FAST",
+                            "id": 1
+                        },
+                        {
+                            "name": "SUPERFAST",
+                            "id": 2
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "isNamespace": true
+}

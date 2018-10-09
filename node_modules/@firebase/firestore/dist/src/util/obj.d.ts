@@ -1,0 +1,15 @@
+export interface Dict<V> {
+    [stringKey: string]: V;
+    [numberKey: number]: V;
+}
+export declare function contains<V>(obj: Dict<V>, key: string | number): boolean;
+export declare function get<V>(obj: Dict<V>, key: string | number): V | null;
+export declare function size<V>(obj: Dict<V>): number;
+/** Returns the given value if it's defined or the defaultValue otherwise. */
+export declare function defaulted<V>(value: V | undefined, defaultValue: V): V;
+export declare function forEachNumber<V>(obj: Dict<V>, fn: (key: number, val: V) => void): void;
+export declare function values<V>(obj: Dict<V>): V[];
+export declare function forEach<V>(obj: Dict<V>, fn: (key: string, val: V) => void): void;
+export declare function lookupOrInsert<V>(obj: Dict<V>, key: string | number, valFn: () => V): V;
+export declare function isEmpty<V>(obj: Dict<V>): boolean;
+export declare function shallowCopy<V>(obj: Dict<V>): Dict<V>;

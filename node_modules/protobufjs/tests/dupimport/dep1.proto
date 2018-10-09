@@ -1,0 +1,7 @@
+package main;
+
+import "common.proto";
+
+message Dep1 {
+    optional main.Common test1 = 1;
+}
