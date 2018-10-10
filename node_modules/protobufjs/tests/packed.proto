@@ -1,4 +1,0 @@
-message Message {
-    repeated int32 a = 1 [packed = true];
-    repeated int32 b = 2;
-}

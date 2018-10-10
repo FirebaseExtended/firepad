@@ -1,7 +1,0 @@
-package My;
-
-import weak "example1.proto";
-
-message Test2 {
-    required Test1 test1 = 1;
-}

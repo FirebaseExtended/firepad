@@ -1,8 +1,0 @@
-package main;
-
-import "dep1.proto";
-
-message Dep2 {
-    optional main.Dep1 test1 = 1;
-    optional main.Common test2 = 2;
-}

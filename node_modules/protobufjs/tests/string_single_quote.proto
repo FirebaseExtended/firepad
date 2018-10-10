@@ -1,3 +1,0 @@
-message TestSingleQuoteString {
-    required string a = 1 [ default = 'hello world' ];
-}
