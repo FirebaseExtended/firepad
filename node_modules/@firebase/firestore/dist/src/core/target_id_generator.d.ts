@@ -1,0 +1,33 @@
+import { TargetId } from './types';
+/**
+ * Generates monotonically increasing target IDs for sending targets to the
+ * watch stream.
+ *
+ * The client constructs two generators, one for the query cache (via
+ * forQueryCache()), and one for limbo documents (via forSyncEngine()). These
+ * two generators produce non-overlapping IDs (by using even and odd IDs
+ * respectively).
+ *
+ * By separating the target ID space, the query cache can generate target IDs
+ * that persist across client restarts, while sync engine can independently
+ * generate in-memory target IDs that are transient and can be reused after a
+ * restart.
+ */
+export declare class TargetIdGenerator {
+    private generatorId;
+    private nextId;
+    /**
+     * Instantiates a new TargetIdGenerator. If a seed is provided, the generator
+     * will use the seed value as the next target ID.
+     */
+    constructor(generatorId: number, seed?: number);
+    next(): TargetId;
+    /**
+     * Returns the ID that follows the given ID. Subsequent calls to `next()`
+     * use the newly returned target ID as their base.
+     */
+    after(targetId: TargetId): TargetId;
+    private seek(targetId);
+    static forQueryCache(): TargetIdGenerator;
+    static forSyncEngine(): TargetIdGenerator;
+}

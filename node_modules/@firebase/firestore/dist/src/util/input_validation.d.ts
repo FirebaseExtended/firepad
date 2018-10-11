@@ -1,0 +1,86 @@
+import { AnyJs } from './misc';
+/** Types accepted by validateType() and related methods for validation. */
+export declare type ValidationType = 'undefined' | 'object' | 'function' | 'boolean' | 'number' | 'string' | 'non-empty string';
+/**
+ * Validates the invocation of functionName has the exact number of arguments.
+ *
+ * Forward the magic "arguments" variable as second parameter on which the
+ * parameter validation is performed:
+ * validateExactNumberOfArgs('myFunction', arguments, 2);
+ */
+export declare function validateExactNumberOfArgs(functionName: string, args: IArguments, numberOfArgs: number): void;
+/**
+ * Validates the invocation of functionName has at least the provided number of
+ * arguments (but can have many more).
+ *
+ * Forward the magic "arguments" variable as second parameter on which the
+ * parameter validation is performed:
+ * validateAtLeastNumberOfArgs('myFunction', arguments, 2);
+ */
+export declare function validateAtLeastNumberOfArgs(functionName: string, args: IArguments, minNumberOfArgs: number): void;
+/**
+ * Validates the invocation of functionName has number of arguments between
+ * the values provided.
+ *
+ * Forward the magic "arguments" variable as second parameter on which the
+ * parameter validation is performed:
+ * validateBetweenNumberOfArgs('myFunction', arguments, 2, 3);
+ */
+export declare function validateBetweenNumberOfArgs(functionName: string, args: IArguments, minNumberOfArgs: number, maxNumberOfArgs: number): void;
+/**
+ * Validates the provided argument is an array and has as least the expected
+ * number of elements.
+ */
+export declare function validateNamedArrayAtLeastNumberOfElements<T>(functionName: string, value: T[], name: string, minNumberOfElements: number): void;
+/**
+ * Validates the provided positional argument has the native JavaScript type
+ * using typeof checks.
+ */
+export declare function validateArgType(functionName: string, type: ValidationType, position: number, argument: AnyJs): void;
+/**
+ * Validates the provided argument has the native JavaScript type using
+ * typeof checks or is undefined.
+ */
+export declare function validateOptionalArgType(functionName: string, type: ValidationType, position: number, argument: AnyJs): void;
+/**
+ * Validates the provided named option has the native JavaScript type using
+ * typeof checks.
+ */
+export declare function validateNamedType(functionName: string, type: ValidationType, optionName: string, argument: AnyJs): void;
+/**
+ * Validates the provided named option has the native JavaScript type using
+ * typeof checks or is undefined.
+ */
+export declare function validateNamedOptionalType(functionName: string, type: ValidationType, optionName: string, argument: AnyJs): void;
+export declare function validateArrayElements<T>(functionName: string, optionName: string, typeDescription: string, argument: T[], validator: (T) => boolean): void;
+export declare function validateOptionalArrayElements<T>(functionName: string, optionName: string, typeDescription: string, argument: T[] | undefined, validator: (T) => boolean): void;
+/**
+ * Validates that the provided named option equals one of the expected values.
+ */
+export declare function validateNamedPropertyEquals<T>(functionName: string, inputName: string, optionName: string, input: T, expected: T[]): void;
+/**
+ * Validates that the provided named option equals one of the expected values or
+ * is undefined.
+ */
+export declare function validateNamedOptionalPropertyEquals<T>(functionName: string, inputName: string, optionName: string, input: T, expected: T[]): void;
+/**
+ * Returns true if it's a non-null object without a custom prototype
+ * (i.e. excludes Array, Date, etc.).
+ */
+export declare function isPlainObject(input: AnyJs): boolean;
+/** Returns a string describing the type / value of the provided input. */
+export declare function valueDescription(input: AnyJs): string;
+/** Hacky method to try to get the constructor name for an object. */
+export declare function tryGetCustomObjectType(input: object): string | null;
+/** Validates the provided argument is defined. */
+export declare function validateDefined(functionName: string, position: number, argument: AnyJs): void;
+/**
+ * Validates the provided positional argument is an object, and its keys and
+ * values match the expected keys and types provided in optionTypes.
+ */
+export declare function validateOptionNames(functionName: string, options: object, optionNames: string[]): void;
+/**
+ * Helper method to throw an error that the provided argument did not pass
+ * an instanceof check.
+ */
+export declare function invalidClassError(functionName: string, type: string, position: number, argument: AnyJs): Error;
