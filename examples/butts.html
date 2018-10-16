@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/5.5.3/firebase.js"></script>
+
+  <!-- Firepad -->
+  <link rel="stylesheet" href="./../dist/firepad.css" />
+  <script src="./../dist/firepad.js"></script>
+
+  <style>
+    html {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      height: 100%;
+      position: relative;
+    }
+
+    /* Height / width / positioning can be customized for your use case.
+           For demo purposes, we make firepad fill the entire browser. */
+    #firepad {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+
+</head>
+
+<body onload="init()">
+  <div id="firepad"></div>
+
+  <script>
+    function init() {
+      //// Initialize Firebase.
+      //// TODO: replace with your Firebase project configuration.
+      var config = {
+        apiKey: "AIzaSyAOK-ANxXkWbUV4Wg59NDo4rVNXCMWwHY8",
+        databaseURL: "https://firepad-test-e4255.firebaseio.com",
+        projectId: "firepad-test-e4255",
+      };
+      firebase.initializeApp(config);
+
+      //// Get Firebase Database reference.
+      var firepadRef = getExampleRef();
+
+      //// Create Monaco and firepad.
+      require.config({ paths: { 'vs': './../node_modules/monaco-editor/min/vs' } });
+      require(['vs/editor/editor.main'], function () {
+        editor = monaco.editor.create(document.getElementById('firepad'));
+        Firepad.fromMonaco(firepadRef, editor);
+      });
+
+    }
+
+    // Helper to get hash from end of URL or generate a random one.
+    function getExampleRef() {
+      var ref = firebase.database().ref();
+      var hash = window.location.hash.replace(/#/g, '');
+      if (hash) {
+        ref = ref.child(hash);
+      } else {
+        ref = ref.push(); // generate unique location.
+        window.location = window.location + '#' + ref.key; // add it as a hash to the URL.
+      }
+      if (typeof console !== 'undefined') {
+        console.log('Firebase data: ', ref.toString());
+      }
+      return ref;
+    }
+  </script>
+</body>
+
+</html>

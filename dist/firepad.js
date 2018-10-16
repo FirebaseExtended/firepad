@@ -2781,7 +2781,11 @@ firepad.ACEAdapter = function () {
   return ACEAdapter;
 }.call(undefined);
 firepad.MonacoAdapter = (function () {
-  var __bind = function (fn, me) { return function () { return fn.apply(me, arguments); }; }
+  var __bind = function (fn, me) { 
+    return function () { 
+      return fn.apply(me, arguments);
+    }; 
+  }
   var __slice = [].slice;
 
   MonacoAdapter.prototype.ignoreChanges = false;
