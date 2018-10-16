@@ -5,6 +5,7 @@ bower_components/
 *.sw?
 .DS_Store
 test/coverage/
+node_modules
 
 # generated
 lib/ace-adapter.js
