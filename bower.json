@@ -38,11 +38,11 @@
     "changelog.txt"
   ],
   "dependencies": {
-    "jsdom": "3.x",
-    "firebase": "3.x.x"
+    "jsdom": "*",
+    "firebase": "5.x.x"
   },
   "devDependencies": {
-    "jasmine-core": "2.3.4",
+    "jasmine-core": "3.x.x",
     "codemirror": "5.x.x"
   }
 }

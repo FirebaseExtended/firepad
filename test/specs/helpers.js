@@ -74,10 +74,10 @@ var helpers = (function() {
 
   // A random test generates random data to check some invariants. To increase
   // confidence in a random test, it is run repeatedly.
-  helpers.randomTest = function(n, fun) {
+  helpers.randomTest = function(n, func) {
     return function () {
       while (n--) {
-        fun();
+        func();
       }
     };
   };

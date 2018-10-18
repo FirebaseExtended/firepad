@@ -130,13 +130,13 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-coffeelint');
   grunt.loadNpmTasks('grunt-contrib-coffee');
   grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-uglify-es');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-karma');
 
   // Tasks
   grunt.registerTask('test', ['karma:unit']);
-  grunt.registerTask('build', ['concat', 'uglify', 'copy'])
+  grunt.registerTask('build', ['coffeelint', 'coffee', 'concat', 'uglify', 'copy'])
   grunt.registerTask('default', ['build', 'test']);
 };

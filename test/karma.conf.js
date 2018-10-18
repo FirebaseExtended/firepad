@@ -1,11 +1,19 @@
 module.exports = function(config) {
   config.set({
     frameworks: ["jasmine"],
-    browsers: ["PhantomJS"],
+    browsers: ["Chrome"],
 
     preprocessors: {
       "../lib/*.js": "coverage"
     },
+
+    plugins: [
+      "karma-chrome-launcher",
+      "karma-jasmine",
+      "karma-coverage",
+      "karma-spec-reporter",
+      "karma-failed-reporter"
+    ],
 
     reporters: ["spec", "failed", "coverage"],
     coverageReporter: {

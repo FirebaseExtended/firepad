@@ -41,7 +41,7 @@ code. It can be added to any web app by including a few JavaScript files:
 ```HTML
 <head>
   <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/3.3.0/firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.5.4/firebase.js"></script>
 
   <!-- CodeMirror -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
