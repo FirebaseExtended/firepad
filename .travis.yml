@@ -1,7 +1,9 @@
 language: node_js
 node_js:
-- 5
-sudo: false
+- 10
+sudo: required
+addons:
+  chrome: stable
 branches:
   except:
     - gh-pages
