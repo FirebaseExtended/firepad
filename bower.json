@@ -38,7 +38,7 @@
     "changelog.txt"
   ],
   "dependencies": {
-    "jsdom": "*",
+    "jsdom": "^12.2.0",
     "firebase": "5.x.x"
   },
   "devDependencies": {

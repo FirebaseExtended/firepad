@@ -1,13 +1,9 @@
 language: node_js
 node_js:
 - 10
-<<<<<<< HEAD
 sudo: required
 addons:
   chrome: stable
-=======
-sudo: false
->>>>>>> 3b2aa1b203735242e5aa84b2f42e416048a059ce
 branches:
   except:
     - gh-pages
