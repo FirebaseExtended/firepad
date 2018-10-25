@@ -44,7 +44,12 @@
         //// Create Monaco and firepad.
         require.config({ paths: {'vs': './../node_modules/monaco-editor/min/vs'}});
         require(['vs/editor/editor.main'], function() {
-            editor = monaco.editor.create(document.getElementById('firepad'));
+            editor = monaco.editor.create(
+                document.getElementById('firepad'),
+                {
+                    language: 'javascript'
+                }
+            );
             Firepad.fromMonaco(firepadRef, editor);
         });
 
