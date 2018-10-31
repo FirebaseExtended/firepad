@@ -1,2 +1,1 @@
 fixed - Fixed an issue in the monaco adapter that could cause errors for certain kinds of edits (#312).
-feature - Enable comment feature in monaco example by adding default language
