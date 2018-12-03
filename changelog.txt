@@ -1,1 +1,2 @@
 fixed - Fixed an issue in the monaco adapter that could cause errors for certain kinds of edits (#312).
+fixed - Fixed an issue in the monaco adapter that could cause errors in different OS (#315).
