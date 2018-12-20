@@ -64,8 +64,8 @@ module.exports = function(config) {
       "../lib/headless.js",
       "../lib/firepad.js",
 
-      "specs/helpers.js",
-      "specs/*.spec.js"
+      "./specs/helpers.js",
+      "./specs/*.spec.js"
     ]
   });
 };
