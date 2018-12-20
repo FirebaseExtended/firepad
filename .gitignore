@@ -1,15 +1,15 @@
 .idea
 *.iml
-dist/
 build/
-node_modules/
 bower_components/
 *.sw?
 .DS_Store
 test/coverage/
+node_modules
 
 # generated
 lib/ace-adapter.js
 dist/firepad.zip
+dist/
 
 *.log
