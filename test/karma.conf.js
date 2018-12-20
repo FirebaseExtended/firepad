@@ -1,7 +1,7 @@
 module.exports = function(config) {
   config.set({
     frameworks: ["jasmine"],
-    browsers: ["ChromeHeadless", "ChromeHeadlessNoSandbox"],
+    browsers: ["ChromeHeadlessNoSandbox"],
 
     // See:
     // https://docs.travis-ci.com/user/chrome
