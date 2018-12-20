@@ -1,7 +1,16 @@
 module.exports = function(config) {
   config.set({
     frameworks: ["jasmine"],
-    browsers: ["Chrome"],
+    browsers: ["ChromeHeadless", "ChromeHeadlessNoSandbox"],
+
+    // See:
+    // https://docs.travis-ci.com/user/chrome
+    customLaunchers: {
+      ChromeHeadlessNoSandbox: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox']
+      }
+    },
 
     preprocessors: {
       "../lib/*.js": "coverage"
