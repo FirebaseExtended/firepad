@@ -1,11 +1,28 @@
 module.exports = function(config) {
   config.set({
     frameworks: ["jasmine"],
-    browsers: ["PhantomJS"],
+    browsers: ["ChromeHeadlessNoSandbox"],
+
+    // See:
+    // https://docs.travis-ci.com/user/chrome
+    customLaunchers: {
+      ChromeHeadlessNoSandbox: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox']
+      }
+    },
 
     preprocessors: {
       "../lib/*.js": "coverage"
     },
+
+    plugins: [
+      "karma-chrome-launcher",
+      "karma-jasmine",
+      "karma-coverage",
+      "karma-spec-reporter",
+      "karma-failed-reporter"
+    ],
 
     reporters: ["spec", "failed", "coverage"],
     coverageReporter: {
@@ -56,8 +73,8 @@ module.exports = function(config) {
       "../lib/headless.js",
       "../lib/firepad.js",
 
-      "specs/helpers.js",
-      "specs/*.spec.js"
+      "./specs/helpers.js",
+      "./specs/*.spec.js"
     ]
   });
 };
