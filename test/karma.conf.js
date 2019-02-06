@@ -58,6 +58,7 @@ module.exports = function(config) {
       "../lib/client.js",
       "../lib/editor-client.js",
       "../lib/ace-adapter.js",
+      "../lib/monaco-adapter.js",
       "../lib/constants.js",
       "../lib/entity-manager.js",
       "../lib/entity.js",
