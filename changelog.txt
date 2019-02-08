@@ -1,0 +1,1 @@
+fixed - Fixed an issue in the monaco adapter that could incorrect offset handling (#327).
