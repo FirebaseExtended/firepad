@@ -1,0 +1,1 @@
+fixed - Multiple bugfixes for support in the Monaco editor (#325)
