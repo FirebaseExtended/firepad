@@ -1,7 +1,5 @@
 /** Monaco Adapter Unit Tests */
 describe('Monaco Operations Test', function () {
-    var MonacoAdapter = firepad.MonacoAdapter;
-
     /** Editor Content */
     var editorContent =
 `module Conway {
@@ -33,7 +31,8 @@ describe('Monaco Operations Test', function () {
     ];
 
     it('should convert Monaco Editor changes to Text Operation', function () {
-        var operationFromMonacoChange = MonacoAdapter.prototype.operationFromMonacoChange;
+        var MonacoAdapter = firepad.MonacoAdapter;
+        var operationFromMonacoChange = MonacoAdapter.prototype.operationFromMonacoChanges;
 
         let offset = 0;
         operations.reverse().forEach((operation, index) => {
@@ -53,4 +52,3 @@ describe('Monaco Operations Test', function () {
         });
     });
 });
-
