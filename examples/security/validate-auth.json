@@ -1,6 +1,13 @@
 /* Example assumes your Firepad is at the root of your Firebase Database. */
 {
   "rules": {
+    "history": {
+      ".read": "auth != null",
+      "$revision": {
+        /* Allow writing a revision as long as it doesn't already exist and  you write your auth.uid as the 'a' field. */
+        ".write": "data.val() === null && newData.child('a').val() === auth.uid"
+      }
+    },
     "users": {
       ".read": "auth != null",
       "$userid": {
@@ -8,27 +15,11 @@
         ".write": "$userid === auth.uid"
       }
     },
-    "$key": {
-      "history": {
-        ".read": "auth != null",
-        "$revision": {
-          /* Allow writing a revision as long as it doesn't already exist and  you write your auth.uid as the 'a' field. */
-          ".write": "data.val() === null && newData.child('a').val() === auth.uid"
-        }
-      },
-      "users": {
-        ".read": "auth != null",
-        "$userid": {
-          /* You may freely modify your own user info. */
-          ".write": "$userid === auth.uid"
-        }
-      },
-      "checkpoint": {
-        ".read": "auth != null",
-        /* You may write a checkpoint as long as you're writing your auth.uid as the 'a' field and you
-           also wrote the revision that you're checkpointing. */
-        ".write": "newData.child('a').val() === auth.uid && root.child($key).child('history').child(newData.child('id').val()).child('a').val() === auth.uid"
-      }
+    "checkpoint": {
+      ".read": "auth != null",
+      /* You may write a checkpoint as long as you're writing your auth.uid as the 'a' field and you
+         also wrote the revision that you're checkpointing. */
+      ".write": "newData.child('a').val() === auth.uid && root.child('history').child(newData.child('id').val()).child('a').val() === auth.uid"
     }
   }
 }
