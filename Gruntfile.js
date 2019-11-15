@@ -27,8 +27,8 @@ module.exports = function (grunt) {
         options: {
           bare: true,           // Skip surrounding IIFE in compiled output.
           transpile: {
-            presets: ['@babel/preset-env'],      // Pass the output through babel
-          }
+            presets: [['@babel/preset-env', { modules: false }]],
+          },
         }
       }
     },
@@ -99,6 +99,15 @@ module.exports = function (grunt) {
         dest: "dist/firepad.min.js"
       }
     },
+    babel: {
+      options: {
+        presets: [['@babel/preset-env', { modules: false }]],
+      },
+      "firepad-transpiled": {
+        src: 'dist/firepad.js',
+        dest: 'dist/firepad.js',
+      }
+    },
     copy: {
       toBuild: {
         files: [
@@ -137,9 +146,10 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-karma');
+  grunt.loadNpmTasks('grunt-babel');
 
   // Tasks
   grunt.registerTask('test', ['karma:unit']);
-  grunt.registerTask('build', ['coffeelint', 'coffee', 'concat', 'uglify', 'copy'])
+  grunt.registerTask('build', ['coffeelint', 'coffee', 'concat', 'babel', 'uglify', 'copy'])
   grunt.registerTask('default', ['build', 'test']);
 };
