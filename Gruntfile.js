@@ -25,7 +25,10 @@ module.exports = function (grunt) {
           ext: '.js'            // Dest filepaths will have this extension.
         }],
         options: {
-          bare: true            // Skip surrounding IIFE in compiled output.
+          bare: true,           // Skip surrounding IIFE in compiled output.
+          transpile: {
+            presets: ['@babel/preset-env'],      // Pass the output through babel
+          }
         }
       }
     },
