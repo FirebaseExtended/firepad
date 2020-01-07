@@ -140,9 +140,9 @@ describe('Integration tests', function() {
       var waitForSync = new Promise(function(resolve) {
         firepad.on('synced', function(isSync) { if (isSync) resolve(); });
       });
-      var firepad2 = new Firepad(ref, cm2, { defaultText: text});
-      firepad2.on('ready', function() {
-        waitForSync.then(function() {
+      waitForSync.then(function() {
+        var firepad2 = new Firepad(ref, cm2, { defaultText: text});
+        firepad2.on('ready', function() {
           if (firepad2.getText() == text2) {
             done();
           } else if (firepad2.getText() == text) {
