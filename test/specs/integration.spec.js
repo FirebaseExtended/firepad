@@ -137,15 +137,20 @@ describe('Integration tests', function() {
     firepad.on('ready', function() {
       expect(firepad.getText()).toEqual(text);
       firepad.setText(text2);
-      var firepad2 = new Firepad(ref, cm2, { defaultText: text});
-      firepad2.on('ready', function() {
-        if (firepad2.getText() == text2) {
-          done();
-        } else if (firepad2.getText() == text) {
-          done(new Error('Default text won over edited text'));
-        } else {
-          done(new Error('Second Firepad got neither default nor edited text: ' + JSON.stringify(firepad2.getText())));
-        }
+      var waitForSync = new Promise(function(resolve) {
+        firepad.on('synced', function(isSync) { if (isSync) resolve(); });
+      });
+      waitForSync.then(function() {
+        var firepad2 = new Firepad(ref, cm2, { defaultText: text});
+        firepad2.on('ready', function() {
+          if (firepad2.getText() == text2) {
+            done();
+          } else if (firepad2.getText() == text) {
+            done(new Error('Default text won over edited text'));
+          } else {
+            done(new Error('Second Firepad got neither default nor edited text: ' + JSON.stringify(firepad2.getText())));
+          }
+        });
       });
     });
   });
