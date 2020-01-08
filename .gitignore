@@ -13,3 +13,4 @@ dist/firepad.zip
 dist/
 
 *.log
+_site
