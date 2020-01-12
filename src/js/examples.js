@@ -111,6 +111,13 @@ var examples = {
 
 var currentId;
 $(window).on('ready', function() {
+  var config = {
+    apiKey: '<API_KEY>',
+    authDomain: "firepad.firebaseapp.com",
+    databaseURL: "https://firepad.firebaseio.com"
+  };
+  firebase.initializeApp(config);
+
   for(var example in examples) {
     addClickHandler(example);
   }
@@ -144,7 +151,7 @@ function getExampleAndIdFromUrl() {
 
 var initialized = false;
 function initializeExamples(id) {
-  var ref = new Firebase('https://firepad.firebaseio.com/examples').child(id);
+  var ref = firebase.database().ref('examples').child(id);
   for(var example in examples) {
     var $div = $('#' + example + ' .example-container');
     if (initialized) {
