@@ -1,0 +1,5 @@
+* Fixed numbering of ordered lists. (#225)
+* Fixed accidental usage of ES6 in Ace Adapter. (#341)
+* Fixed accidental usage of `key` global variable. (#330)
+* Fixed headless mode after jsdom upgrade. (#334)
+* Fixed multiple bugs for Monaco editor support. (#325)
