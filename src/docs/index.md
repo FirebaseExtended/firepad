@@ -36,8 +36,8 @@ Include Firebase, CodeMirror, and Firepad in the &lt;head&gt; section of your pa
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css" />
 
 <!-- Firepad -->
-<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.css" />
-<script src="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.min.js"></script>
+<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/{{site.firepad_version}}/firepad.css" />
+<script src="https://cdn.firebase.com/libs/firepad/{{site.firepad_version}}/firepad.min.js"></script>
 {% endhighlight %}
 
 
@@ -138,8 +138,8 @@ Include Firebase, Ace, and Firepad in the &lt;head&gt; section of your page.
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.5/ace.js"></script>
 
 <!-- Firepad -->
-<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.css" />
-<script src="https://cdn.firebase.com/libs/firepad/1.4.0/firepad.min.js"></script>
+<link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/{{site.firepad_version}}/firepad.css" />
+<script src="https://cdn.firebase.com/libs/firepad/{{site.firepad_version}}/firepad.min.js"></script>
 {% endhighlight %}
 
 
