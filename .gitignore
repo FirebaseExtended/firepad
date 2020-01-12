@@ -6,6 +6,7 @@ dist/
 test/
 node_modules/
 bower_components/
+.firebase/
 
 # Jekyll stuff.
 _site

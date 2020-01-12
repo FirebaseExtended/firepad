@@ -1,1 +1,1 @@
-jekyll build && firebase deploy
+jekyll build && firebase -P firebase-firepad deploy
