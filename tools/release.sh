@@ -32,20 +32,32 @@ fi
 
 which hub &> /dev/null || exit_on_error "Missing hub command. https://github.com/github/hub#installation"
 
-#git diff-index --quiet HEAD || exit_on_error "Modified files present; please commit or revert them."
+branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
+branch_name="(unnamed branch)"     # detached HEAD
+branch_name=${branch_name##refs/heads/}
+if [[ ! ($branch_name == "master") ]]; then
+  exit_on_error "Releases must be run on master branch."
+fi
 
+git diff-index --quiet HEAD || exit_on_error "Modified files present; please commit or revert them."
+
+echo
 echo "Running npm install, build, and test..."
-#npm install
+npm install
 # Make sure there were no package-lock.json changes.
-#git diff-index --quiet HEAD || exit_on_error "Modified files present; please commit or revert them."
-#npm run build
-#npm run test
+git diff-index --quiet HEAD || exit_on_error "Modified files present; please commit or revert them."
+npm run build
+npm run test
+
+echo "Tests passed."
+echo
 
 last_release=$(git describe --tags --abbrev=0)
 echo "Last Release: ${last_release}"
 echo
 echo "Commits Since Last Release:"
 git log "${last_release}..HEAD" --oneline
+
 echo
 echo "Current CHANGELOG.md Contents:"
 cat CHANGELOG.MD
@@ -54,40 +66,46 @@ echo "Does CHANGELOG.md look correct?"
 echo "    <enter> to continue, Ctrl-C to abort (then update and commit it)."
 read
 
-echo "Creating new version (update package.json and create tag)."
-#npm version ${release_type}
-new_release=$(git describe --tags --abbrev=0)
-
-# See http://go/npm-publish
 echo
-echo "Logging into npm via wombat-dressing-room."
+echo "Logging into npm via wombat-dressing-room (see http://go/npm-publish)."
 read -p "Press <enter> to open browser, then click 'Create 24 hour token'."
-#npm login --registry https://wombat-dressing-room.appspot.com
+npm login --registry https://wombat-dressing-room.appspot.com
 
-echo "Publishing ${new_release} to npm..."
-#npm publish --registry https://wombat-dressing-room.appspot.com
+echo
+echo "Bumping version (update package.json and create tag)."
+npm version ${release_type}
+new_release=$(git describe --tags --abbrev=0)
+echo "New Version: ${new_release}"
+
+echo
+echo "Publishing ${new_release} to npm."
+npm publish --registry https://wombat-dressing-room.appspot.com
 
 # Create a separate release notes file to be included in the github release.
 release_notes_file=$(mktemp)
-#echo "${new_release}" >> "${release_notes_file}"
-#echo >> "${release_notes_file}"
-#cat CHANGELOG.md >> "${release_notes_file}"
-#echo ${release_notes_file}
+echo "${new_release}" >> "${release_notes_file}"
+echo >> "${release_notes_file}"
+cat CHANGELOG.md >> "${release_notes_file}"
+echo ${release_notes_file}
 
-echo "Clearing CHANGELOG.md..."
-#echo > CHANGELOG.md
-#git commit -m "[firepad-release] Cleared CHANGELOG.md after ${new_release} release." CHANGELOG.md
+echo
+echo "Clearing CHANGELOG.md."
+echo > CHANGELOG.md
+git commit -m "[firepad-release] Cleared CHANGELOG.md after ${new_release} release." CHANGELOG.md
 
-echo "Pushing changes to GitHub..."
-#git push origin master --tags
+echo
+echo "Pushing changes to GitHub."
+git push origin master --tags
 
-echo "Creating GitHub release..."
-#hub release create \
-#    --file "${release_notes_file}" \
-#    --attach dist/firepad.js \
-#    --attach dist/firepad.min.js \
-#    --attach dist/firepad.css \
-#    --attach dist/firepad.eot \
-#    "${new_release}"
+echo
+echo "Creating GitHub release."
+hub release create \
+    --file "${release_notes_file}" \
+    --attach dist/firepad.js \
+    --attach dist/firepad.min.js \
+    --attach dist/firepad.css \
+    --attach dist/firepad.eot \
+    "${new_release}"
 
-echo "OKAY!"
+echo "Done. ${new_release} pushed to npm and GitHub. To publish assets to firepad.io run:"
+echo "    git checkout gh-pages && git pull && ./update-firepad.sh ${version}"
