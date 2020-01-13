@@ -8,9 +8,7 @@ branches:
   except:
     - gh-pages
 install:
-- npm install -g bower
 - npm install
-- bower install
 script:
 - npm run travis
 after_script:
