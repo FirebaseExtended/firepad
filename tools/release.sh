@@ -60,16 +60,27 @@ git log "${last_release}..HEAD" --oneline
 
 echo
 echo "Current CHANGELOG.md Contents:"
-cat CHANGELOG.MD
+cat CHANGELOG.md
 echo
 echo "Does CHANGELOG.md look correct?"
 echo "    <enter> to continue, Ctrl-C to abort (then update and commit it)."
 read
 
+
 echo
 echo "Logging into npm via wombat-dressing-room (see http://go/npm-publish)."
-read -p "Press <enter> to open browser, then click 'Create 24 hour token'."
-npm login --registry https://wombat-dressing-room.appspot.com
+echo "   Press <enter> to open browser, then click 'Create 24 hour token'."
+echo "   If you can't open a browser, try logging in from a different machine:"
+echo "     npm login --registry https://wombat-dressing-room.appspot.com"
+echo "   And then copy/paste the resulting ~/.npmrc contents here:"
+echo "   (this will overwrite your current ~/.npmrc)"
+read npmrc
+
+if [[ ! $npmrc == "" ]]; then
+  echo $npmrc > ~/.npmrc
+else
+  npm login --registry https://wombat-dressing-room.appspot.com
+fi
 
 echo
 echo "Bumping version (update package.json and create tag)."
