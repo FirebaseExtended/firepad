@@ -13,4 +13,5 @@ dist/firepad.zip
 dist/
 
 *.log
-_site
+_site/
+.firebase/
