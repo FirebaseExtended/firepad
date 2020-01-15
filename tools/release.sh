@@ -111,12 +111,13 @@ git push origin master --tags
 echo
 echo "Creating GitHub release."
 hub release create \
-    --file "${release_notes_file}" \
-    --attach dist/firepad.js \
-    --attach dist/firepad.min.js \
-    --attach dist/firepad.css \
-    --attach dist/firepad.eot \
+    -F "${release_notes_file}" \
+    -a dist/firepad.js \
+    -a dist/firepad.min.js \
+    -a dist/firepad.css \
+    -a dist/firepad.eot \
     "${new_release}"
 
+echo
 echo "Done. ${new_release} pushed to npm and GitHub. To publish assets to firepad.io run:"
-echo "    git checkout gh-pages && git pull && ./update-firepad.sh ${version}"
+echo "    git checkout gh-pages && git pull && ./update-firepad.sh ${new_release}"
