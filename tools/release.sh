@@ -31,6 +31,7 @@ if [[ ! ($release_type == "patch" || $release_type == "minor" || $release_type =
 fi
 
 which hub &> /dev/null || exit_on_error "Missing hub command. https://github.com/github/hub#installation"
+which jekyll &> /dev/null || exit_on_error "Missing jekyll, needed fire firepad.io deploy. See https://github.com/FirebaseExtended/firepad/blob/gh-pages/README.md"
 
 branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
 branch_name="(unnamed branch)"     # detached HEAD
