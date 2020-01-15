@@ -29,7 +29,7 @@ Include Firebase, CodeMirror, and Firepad in the &lt;head&gt; section of your pa
 
 {% highlight html %}
 <!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/3.3.0/firebase.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.6.2/firebase.js"></script>
 
 <!-- CodeMirror -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
@@ -132,7 +132,7 @@ Include Firebase, Ace, and Firepad in the &lt;head&gt; section of your page.
 
 {% highlight html %}
 <!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/3.3.0/firebase.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.6.2/firebase.js"></script>
 
 <!-- Ace -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.5/ace.js"></script>
