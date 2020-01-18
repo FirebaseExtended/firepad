@@ -17,6 +17,8 @@ git diff-index --quiet HEAD || exit_on_error "Modified files present; please com
 git pull &> /dev/null
 
 version=$(npm view . version)
+version = "v${version}"
+
 echo "New Version: ${version}"
 
 firepad_url="https://firepad.io/releases/${version}/firepad.min.js"
