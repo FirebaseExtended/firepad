@@ -17,7 +17,7 @@ git diff-index --quiet HEAD || exit_on_error "Modified files present; please com
 git pull &> /dev/null
 
 version=$(npm view . version)
-version = "v${version}"
+version="v${version}"
 
 echo "New Version: ${version}"
 
@@ -30,7 +30,7 @@ rm *.bak
 
 echo
 echo "Examples updated. Pushing changes to GitHub."
-git commit -m "[firepad-release] Bumped examples to v${version}"
+git commit -am "[firepad-release] Bumped examples to v${version}"
 git push origin master
 
 echo
