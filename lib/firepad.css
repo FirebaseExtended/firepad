@@ -76,7 +76,8 @@
 .firepad-la-right { text-align: right; }
 
 /** Line Styles */
-pre.firepad-lt-o, pre.firepad-lt-u, pre.firepad-lt-t, pre.firepad-lt-tc {
+pre.firepad-lt-o, pre.firepad-lt-u, pre.firepad-lt-t, pre.firepad-lt-tc,
+pre.CodeMirror-line.firepad-lt-o, pre.CodeMirror-line.firepad-lt-u, pre.CodeMirror-line.firepad-lt-t, pre.CodeMirror-line.firepad-lt-tc {
   padding-left: 40px;
 }
 
