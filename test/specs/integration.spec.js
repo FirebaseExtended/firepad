@@ -60,6 +60,9 @@ describe('Integration tests', function() {
         connectedRef.off('value', listener);
       }
     });
+
+    firebase.database().ref('1').remove();
+    firebase.database().ref('2').remove();
   }, extendedTimeoutLength);
 
   // Passes locally, but times out of Travis regardless of timeout interval
@@ -314,4 +317,56 @@ describe('Integration tests', function() {
       firepadHeadless.dispose();
     }).not.toThrow();
   });
+
+  it('Perform dispose - immediatly removes callbacks', function(done){
+    var ref1 = rootRef.push();
+    var cm = CodeMirror(hiddenDiv());
+
+    expect(function() {
+      var firepad = new Firepad(ref1, cm, { defaultText: 'Default Content'});
+      firepad.dispose()
+      // Wait some time for the callbacks to get called, throwing the error
+      setTimeout(done, 1)
+    }).not.toThrow();
+  })
+
+  it('Perform dispose - immediatly noop updates to text editor', function(done){
+    var ref1 = firebase.database().ref('1').push();
+    var ref2 = firebase.database().ref('2').push();
+
+    var cm = CodeMirror(hiddenDiv());
+    var firepad1 = new Firepad(ref1, cm);
+
+    firepad1.on('ready', function() {
+      // Add some text to Firepad
+      expect(cm.getValue()).toEqual('');
+      firepad1.setText('Test Content');
+
+      firepad1.on('synced', function(isSynced){
+        if(isSynced) {
+          firepad1.dispose();
+          cm.setValue('');
+
+          // Create a new Firepad, using the same ref which we added text
+          // This  will start to initialize the Firepad
+          // dispose of this Firepad
+          var firepad2 = new Firepad(ref1, cm);
+          firepad2.dispose()
+          firepad2.on('ready', () => {
+            expect(cm.getValue()).toEqual('Test Content');
+          })
+          cm.setValue('');
+    
+          // Then we create a new instance of Firepad, passing in a different ref
+          // Without the changes in the PR the text from ref1 will be inserted into code mirror
+          // Comment my changes out and you will see this test fail
+          var firepad3 = new Firepad(ref2, cm);
+          firepad3.on('ready', function(synced) {
+            expect(cm.getValue()).toEqual('');
+            done();
+          })
+        }
+      })
+    })
+  })
 });
