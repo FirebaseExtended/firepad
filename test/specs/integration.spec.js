@@ -325,7 +325,7 @@ describe('Integration tests', function() {
     expect(function() {
       var firepad = new Firepad(ref1, cm, { defaultText: 'Default Content'});
       firepad.dispose()
-      // Wait some time for the callbacks to get called, throwing the error
+      // Wait some time for the callbacks to get called
       setTimeout(done, 1)
     }).not.toThrow();
   })
@@ -347,9 +347,7 @@ describe('Integration tests', function() {
           firepad1.dispose();
           cm.setValue('');
 
-          // Create a new Firepad, using the same ref which we added text
-          // This  will start to initialize the Firepad
-          // dispose of this Firepad
+          // Create a new Firepad, using the same ref which we added text to, then dispose it
           var firepad2 = new Firepad(ref1, cm);
           firepad2.dispose()
           firepad2.on('ready', () => {
@@ -357,9 +355,8 @@ describe('Integration tests', function() {
           })
           cm.setValue('');
     
-          // Then we create a new instance of Firepad, passing in a different ref
-          // Without the changes in the PR the text from ref1 will be inserted into code mirror
-          // Comment my changes out and you will see this test fail
+          // Create a new Firepad instance with a different ref
+          // Should not contain text from previously disposed firepad
           var firepad3 = new Firepad(ref2, cm);
           firepad3.on('ready', function(synced) {
             expect(cm.getValue()).toEqual('');
