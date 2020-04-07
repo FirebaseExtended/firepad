@@ -10,3 +10,5 @@ bower_components/
 
 # Jekyll stuff.
 _site
+cert.pem
+.jekyll-cache

@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'jekyll'
+gem 'jekyll', '~>3.0'
 gem 'liquid'
 gem 'rdiscount'
