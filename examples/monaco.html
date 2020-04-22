@@ -3,18 +3,19 @@
 <head>
     <meta charset="utf-8" />
     <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/5.5.4/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.14.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.14.1/firebase-database.js"></script>
 
     <!-- Firepad -->
     <link rel="stylesheet" href="./../dist/firepad.css" />
     <script src="./../dist/firepad.js"></script>
 
     <!-- Loader.js -->
-    <script src="./../node_modules/monaco-editor/min/vs/loader.js"></script>
+    <script src="https://unpkg.com/monaco-editor/min/vs/loader.js"></script>
 
     <style>
         html { height: 100%; }
-        body { margin: 0; height: 100%; position: relative; }
+        body { margin: 0; height: 100%; position: relative; background-color: #1e1e1e;}
         /* Height / width / positioning can be customized for your use case.
            For demo purposes, we make firepad fill the entire browser. */
         #firepad {
@@ -42,15 +43,23 @@
         var firepadRef = getExampleRef();
 
         //// Create Monaco and firepad.
-        require.config({ paths: {'vs': './../node_modules/monaco-editor/min/vs'}});
+        require.config({ paths: {'vs': 'https://unpkg.com/monaco-editor/min/vs'}});
         require(['vs/editor/editor.main'], function() {
-            editor = monaco.editor.create(
-                document.getElementById('firepad'),
-                {
-                    language: 'javascript'
-                }
-            );
-            Firepad.fromMonaco(firepadRef, editor);
+          var editor = monaco.editor.create(document.getElementById('firepad'), {
+            language: 'javascript',
+            fontSize: 18,
+            theme: 'vs-dark',
+            trimAutoWhitespace: false,
+          });
+          var firepad = Firepad.fromMonaco(firepadRef, editor, {
+            defaultText: '// typescript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}'
+          });
+          window.firepad = firepad;
+          window.editor = editor;
+
+          window.addEventListener('resize', function() {
+            editor.layout();
+          });
         });
 
     }

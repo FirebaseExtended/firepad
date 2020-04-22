@@ -4,15 +4,16 @@
 <head>
   <meta charset="utf-8" />
   <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/5.5.4/firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.1/firebase-database.js"></script>
   <!-- ACE and its JavaScript mode and theme files -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.5/ace.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.5/mode-javascript.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.5/theme-textmate.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.11/ace.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.11/mode-typescript.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.11/theme-dracula.js"></script>
 
   <!-- Firepad -->
-  <link rel="stylesheet" href="https://firepad.io/releases/v1.5.9/firepad.css" />
-  <script src="https://firepad.io/releases/v1.5.9/firepad.min.js"></script>
+  <link rel="stylesheet" href="./../dist/firepad.css" />
+  <script src="./../dist/firepad.js"></script>
 
   <style>
     html { height: 100%; }
@@ -35,8 +36,8 @@
       //// TODO: replace with your Firebase project configuration.
       var config = {
         apiKey: '<API_KEY>',
-        authDomain: "firepad-tests.firebaseapp.com",
-        databaseURL: "https://firepad-tests.firebaseio.com"
+        databaseURL: "https://firepad-test-e4255.firebaseio.com",
+        projectId: "firepad-test-e4255",
       };
       firebase.initializeApp(config);
 
@@ -44,16 +45,18 @@
       var firepadRef = getExampleRef();
 
       //// Create ACE
-      var editor = ace.edit("firepad-container");
-      editor.setTheme("ace/theme/textmate");
+      var editor = ace.edit("firepad-container", {
+        fontSize: 18,
+      });
+      editor.setTheme("ace/theme/dracula");
       var session = editor.getSession();
       session.setUseWrapMode(true);
       session.setUseWorker(false);
-      session.setMode("ace/mode/javascript");
+      session.setMode("ace/mode/typescript");
 
       //// Create Firepad.
       var firepad = Firepad.fromACE(firepadRef, editor, {
-        defaultText: '// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}'
+        defaultText: '// typescript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}'
       });
     }
 
