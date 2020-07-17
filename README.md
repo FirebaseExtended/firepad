@@ -50,8 +50,8 @@ code. It can be added to any web app by including a few JavaScript files:
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css"/>
 
   <!-- Firepad -->
-  <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.5.10/firepad.css" />
-  <script src="https://cdn.firebase.com/libs/firepad/1.5.10/firepad.min.js"></script>
+  <link rel="stylesheet" href="https://firepad.io/releases/v1.5.10/firepad.css" />
+  <script src="https://firepad.io/releases/v1.5.10/firepad.min.js"></script>
 </head>
 ```
 
