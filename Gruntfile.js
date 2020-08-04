@@ -7,11 +7,11 @@ module.exports = function (grunt) {
           level: 'ignore'
         },
         line_endings: {
-          value: "unix",
-          level: "error"
+          value: 'unix',
+          level: 'error'
         },
         no_trailing_semicolons: {
-          level: "ignore"
+          level: 'ignore'
         }
       }
     },
@@ -33,10 +33,10 @@ module.exports = function (grunt) {
       }
     },
     concat: {
-      "firepadjs": {
+      'firepadjs': {
         options: {
           banner: [
-            '/*!',
+            '/**',
             ' * Firepad is an open-source, collaborative code and text editor. It was designed',
             ' * to be embedded inside larger applications. Since it uses Firebase as a backend,',
             ' * it requires no server-side code and can be added to any web app simply by',
@@ -55,55 +55,55 @@ module.exports = function (grunt) {
             '  else context[name] = definition();',
             '})(\'Firepad\', function () {'
           ].join('\n'),
-          footer: "\nreturn firepad.Firepad; }, this);"
+          footer: '\nreturn firepad.Firepad; }, this);'
         },
-        "src": [
-          "lib/utils.js",
-          // "lib/span.js",
-          "lib/text-op.js",
-          "lib/text-operation.js",
-          // "lib/annotation-list.js",
-          "lib/cursor.js",
-          "lib/firebase-adapter.js",
-          // "lib/rich-text-toolbar.js",
-          "lib/wrapped-operation.js",
-          "lib/undo-manager.js",
-          "lib/client.js",
-          "lib/editor-client.js",
-          "lib/ace-adapter.js",
-          "lib/monaco-adapter.js",
-          // "lib/constants.js",
-          // "lib/entity-manager.js",
-          // "lib/entity.js",
-          // "lib/rich-text-codemirror.js",
-          // "lib/rich-text-codemirror-adapter.js",
-          // "lib/formatting.js",
-          // "lib/text.js",
-          // "lib/line-formatting.js",
-          // "lib/line.js",
-          // "lib/parse-html.js",
-          // "lib/serialize-html.js",
-          "lib/firepad.js"
+        'src': [
+          'lib/utils.js',
+          // 'lib/span.js',
+          'lib/text-op.js',
+          'lib/text-operation.js',
+          // 'lib/annotation-list.js',
+          'lib/cursor.js',
+          'lib/firebase-adapter.js',
+          // 'lib/rich-text-toolbar.js',
+          'lib/wrapped-operation.js',
+          'lib/undo-manager.js',
+          'lib/client.js',
+          'lib/editor-client.js',
+          'lib/ace-adapter.js',
+          'lib/monaco-adapter.js',
+          // 'lib/constants.js',
+          // 'lib/entity-manager.js',
+          // 'lib/entity.js',
+          // 'lib/rich-text-codemirror.js',
+          // 'lib/rich-text-codemirror-adapter.js',
+          // 'lib/formatting.js',
+          // 'lib/text.js',
+          // 'lib/line-formatting.js',
+          // 'lib/line.js',
+          // 'lib/parse-html.js',
+          // 'lib/serialize-html.js',
+          'lib/firepad.js'
         ],
-        "dest": "dist/firepad.js"
-      }
-    },
-    uglify: {
-      options: {
-        preserveComments: "some"
-      },
-      "firepad-min-js": {
-        src: "dist/firepad.js",
-        dest: "dist/firepad.min.js"
+        'dest': 'dist/firepad.js'
       }
     },
     babel: {
       options: {
         presets: [['@babel/preset-env', { modules: false }]],
       },
-      "firepad-transpiled": {
+      'firepad-transpiled': {
         src: 'dist/firepad.js',
         dest: 'dist/firepad.js',
+      }
+    },
+    uglify: {
+      options: {
+        sourceMap: true,
+      },
+      'firepad-min-js': {
+        src: 'dist/firepad.js',
+        dest: 'dist/firepad.min.js'
       }
     },
     copy: {
