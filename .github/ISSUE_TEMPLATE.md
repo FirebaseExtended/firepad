@@ -25,11 +25,7 @@ repro when opening the issue.
 
 Have a feature request?
 ========================
-Great, we love hearing how we can improve our products! Just remove the template below and
-provide an explanation of your feature request. Provide code samples if applicable. Try to
-think about what it will allow you to do that you can't do today? How will it make current
-workarounds straightforward? What potential bugs and edge cases does it help to avoid?
-
+Sorry, this repo is no longer accepting feature requests.
 -->
 
 
