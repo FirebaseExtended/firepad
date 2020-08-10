@@ -23,6 +23,7 @@ If you maintain a fork of this repository that you believe is healthier than the
  * [Documentation](#documentation)
  * [Examples](#examples)
  * [Contributing](#contributing)
+ * [Database Structure](#database-structure)
  * [Repo Structure](#repo-structure)
 
 
@@ -105,6 +106,24 @@ You can find some Firepad examples [here](examples/README.md).
 
 If you'd like to contribute to Firepad, please first read through our [contribution
 guidelines](.github/CONTRIBUTING.md). Local setup instructions are available [here](.github/CONTRIBUTING.md#local-setup).
+
+## Database Structure
+How is the data structured in Firebase?
+
+* `<document id>/` - A unique hash generated when pushing a new item to Firebase.
+    * `users/`
+        * `<user id>/` - A unique hash that identifies each user. 
+          * `cursor` - The current location of the user's cursor. 
+          * `color` - The color of the user's cursor.
+    * `history/` - The sequence of revisions that are automatically made as the document is edited.
+        * `<revision id>/` - A unique id that ranges from 'A0' onwards.
+            * `a` - The user id that made the revision.
+            * `o/` - Array of operations (eg TextOperation objects) that represent document changes.
+            * `t` - Timestamp in milliseconds determined by the Firebase servers.
+    * `checkpoint/` - Snapshot automatically created every 100 revisions.  
+        * `a` - The user id that triggered the checkpoint.
+        * `id` - The latest revision at the time the checkpoint was taken.
+        * `o/` - A representation of the document state at that time that includes styling and plaintext.   
 
 
 ## Repo Structure
