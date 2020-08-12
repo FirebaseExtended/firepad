@@ -1,7 +1,7 @@
 {
   "name": "firepad-x",
   "description": "Collaborative text editing powered by Firebase",
-  "version": "1.5.19",
+  "version": "1.5.20",
   "author": "Firebase (https://firebase.google.com/)",
   "contributors": [
     "Michael Lehenbauer <michael@firebase.com>"
@@ -39,8 +39,7 @@
     "package.json"
   ],
   "dependencies": {
-    "firebase": "^7.11.0",
-    "jsdom": "^12.2.0"
+    "firebase": "7.17.1"
   },
   "devDependencies": {
     "@babel/core": "^7.7.2",
@@ -58,6 +57,7 @@
     "grunt-contrib-watch": "^1.1.0",
     "grunt-karma": "^3.0.2",
     "jasmine-core": "^3.2.1",
+    "jsdom": "^12.2.0",
     "karma": "^4.4.1",
     "karma-chrome-launcher": "^2.2.0",
     "karma-coverage": "^1.1.2",
