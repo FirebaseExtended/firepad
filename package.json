@@ -1,7 +1,7 @@
 {
   "name": "firepad-x",
   "description": "Collaborative text editing powered by Firebase",
-  "version": "1.5.20",
+  "version": "1.5.21",
   "author": "Firebase (https://firebase.google.com/)",
   "contributors": [
     "Michael Lehenbauer <michael@firebase.com>"
@@ -36,10 +36,11 @@
     "dist/**",
     "LICENSE",
     "README.md",
-    "package.json"
+    "package.json",
+    "yarn.lock"
   ],
   "dependencies": {
-    "firebase": "7.17.1"
+    "firebase": "7.12.0"
   },
   "devDependencies": {
     "@babel/core": "^7.7.2",
