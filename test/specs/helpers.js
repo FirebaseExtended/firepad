@@ -1,8 +1,8 @@
 // Initialize the Firebase SDK
 var config = {
-  apiKey: "AIzaSyC_JdByNm-E1CAJUkePsr-YJZl7W77oL3g",
-  authDomain: "firepad-tests.firebaseapp.com",
-  databaseURL: "https://firepad-tests.firebaseio.com"
+  apiKey: "AIzaSyCxDoxb2xFwh7J3H8gkmdlS_Tu1DRJ0_V0",
+  authDomain: "firepad-gh-tests.firebaseapp.com",
+  databaseURL: "https://firepad-gh-tests.firebaseio.com",
 };
 firebase.initializeApp(config);
 
