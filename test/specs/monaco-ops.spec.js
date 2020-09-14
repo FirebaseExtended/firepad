@@ -20,14 +20,14 @@ describe('Monaco Operations Test', function () {
 
     /** Editor Changes */
     var operations = [
-        { rangeLength: 0, text: ' */', rangeOffset: 299, forceMoveMarkers: false },
-        { rangeLength: 0, text: '/* ', rangeOffset: 21, forceMoveMarkers: false }
+        { rangeLength: 0, text: '/* ', rangeOffset: 21, forceMoveMarkers: false },
+        { rangeLength: 0, text: ' */', rangeOffset: 299, forceMoveMarkers: false }
     ];
 
     /** Expected Text Operations */
     var textOperations = [
         new firepad.TextOperation().retain(21).insert('/* ').retain(281),
-        new firepad.TextOperation().retain(302).insert(' */').retain(3)
+        new firepad.TextOperation().retain(299).insert(' */').retain(6)
     ];
 
     it('should convert Monaco Editor changes to Text Operation', function () {
@@ -35,7 +35,7 @@ describe('Monaco Operations Test', function () {
         var operationFromMonacoChange = MonacoAdapter.prototype.operationFromMonacoChanges;
 
         let offset = 0;
-        operations.reverse().forEach((operation, index) => {
+        operations.forEach((operation, index) => {
             var pair = operationFromMonacoChange.call(null, operation, editorContent, offset);
 
             /** Base Length of First Operation must be Target Length of Second Operation */
