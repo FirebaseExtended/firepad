@@ -1,4 +1,4 @@
-# Firepad [![Build Status](https://travis-ci.org/FirebaseExtended/firepad.svg?branch=master)](https://travis-ci.org/FirebaseExtended/firepad) [![Coverage Status](https://img.shields.io/coveralls/FirebaseExtended/firepad.svg?branch=master&style=flat)](https://coveralls.io/r/FirebaseExtended/firepad) [![Version](https://badge.fury.io/gh/firebase%2Ffirepad.svg)](http://badge.fury.io/gh/firebase%2Ffirepad)
+# Firepad [![Actions Status][gh-actions-badge]][gh-actions] [![Coverage Status](https://img.shields.io/coveralls/FirebaseExtended/firepad.svg?branch=master&style=flat)](https://coveralls.io/r/FirebaseExtended/firepad) [![Version](https://badge.fury.io/gh/firebase%2Ffirepad.svg)](http://badge.fury.io/gh/firebase%2Ffirepad)
 
 [Firepad](http://www.firepad.io/) is an open-source, collaborative code and text editor. It is
 designed to be embedded inside larger web applications.
@@ -145,3 +145,6 @@ Here are some highlights of the directory structure and notable source files:
     * `firebase-adapter.js` - Handles integration with Firebase (appending operations, triggering retries,
       presence, etc.).
 * `test/` - Jasmine tests for Firepad (many of these were borrowed from ot.js).
+
+[gh-actions]: https://github.com/FirebaseExtended/firepad/actions
+[gh-actions-badge]: https://github.com/FirebaseExtended/firepad/workflows/CI%20Tests/badge.svg
