@@ -1,4 +1,7 @@
 # CHANGELOG
+## v1.5.23 [#18](https://github.com/interviewstreet/firepad-x/pull/18)
+  ### Fixes -
+  - Stop selecting text after first initialisation. Move cursor to begining after `setText` call.
 
 ## v1.5.22 [#17](https://github.com/interviewstreet/firepad-x/pull/17)
   ### Improvements -
