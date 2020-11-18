@@ -1,4 +1,8 @@
 # CHANGELOG
+## v1.5.24 [#19](https://github.com/interviewstreet/firepad-x/pull/19)
+  ### Fixes -
+  - Send actual operation in strigified version on event-bus for `undo` and `redo` operation.
+
 ## v1.5.23 [#18](https://github.com/interviewstreet/firepad-x/pull/18)
   ### Fixes -
   - Stop selecting text after first initialisation. Move cursor to begining after `setText` call.
