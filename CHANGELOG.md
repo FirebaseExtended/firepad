@@ -1,4 +1,8 @@
 # CHANGELOG
+## v1.5.25 [#20](https://github.com/interviewstreet/firepad-x/pull/20)
+  ### Fixes -
+  - Remove Data Type Validation for Operation Actor (`op.a`) so that number can used as User ID.
+
 ## v1.5.24 [#19](https://github.com/interviewstreet/firepad-x/pull/19)
   ### Fixes -
   - Send actual operation in strigified version on event-bus for `undo` and `redo` operation.
