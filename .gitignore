@@ -1,6 +1,6 @@
 .idea
 *.iml
-# build/
+build/
 bower_components/
 *.sw?
 .DS_Store
@@ -10,7 +10,7 @@ node_modules
 # generated
 lib/ace-adapter.js
 dist/firepad.zip
-dist/
+# dist/
 
 *.log
 _site/
