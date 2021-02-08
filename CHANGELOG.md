@@ -1,4 +1,13 @@
 # CHANGELOG
+
+## v1.5.26 [#21](https://github.com/interviewstreet/firepad-x/pull/21)
+  ### Fixes -
+  - Sync Cursor with timeout in case of delayed initialisation.
+  - Persist Cursor information even after disposition.
+  - Maintain `sync` state on Cursor in Editor Client.
+  - Trigger `error` event if a valid Edit Operation transaction fails any reason other than client disconnection.
+  - Make default options of Firepad Constructor functions to allow lazy evaluation.
+
 ## v1.5.25 [#20](https://github.com/interviewstreet/firepad-x/pull/20)
   ### Fixes -
   - Remove Data Type Validation for Operation Actor (`op.a`) so that number can used as User ID.
@@ -24,7 +33,7 @@
 
 ## v1.5.20 [#15](https://github.com/interviewstreet/firepad-x/pull/15)
   ### Fixes -
-  - Model Change Evennt Hanndling when no Model Content has changed.
+  - Model Change Event Hanndling when no Model Content has changed.
 
   ### Improvements -
   - Move `jsdom` to devDependency of the project.
