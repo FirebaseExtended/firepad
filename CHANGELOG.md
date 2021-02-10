@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.5.27
+  ### Fixes -
+  - Add `null` check for cursor before invoking `equals` method.
+
 ## v1.5.26 [#21](https://github.com/interviewstreet/firepad-x/pull/21)
   ### Fixes -
   - Sync Cursor with timeout in case of delayed initialisation.
