@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.5.28 [#22](https://github.com/interviewstreet/firepad-x/pull/22)
+  ### Fixes -
+  - More `null` check for cursor before invoking `equals` method.
+
 ## v1.5.27
   ### Fixes -
   - Add `null` check for cursor before invoking `equals` method.
