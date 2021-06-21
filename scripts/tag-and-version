@@ -14,7 +14,7 @@ const Headers = {
 
 const Tags = Object.freeze({
   Beta: "beta",
-  Stable: "stable",
+  Stable: "latest",
 });
 
 const ExitCodes = Object.freeze({

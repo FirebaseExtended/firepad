@@ -1,7 +1,6 @@
 # Firepad
 
 [![Deployment](https://github.com/interviewstreet/firepad-x/actions/workflows/npm-deploy.yml/badge.svg)](https://github.com/interviewstreet/firepad-x/actions/workflows/npm-deploy.yml)
-[![Build](https://img.shields.io/github/workflow/status/interviewstreet/firepad-x/npm-deploy/master?label=master)](https://github.com/interviewstreet/firepad-x/actions/workflows/npm-deploy.yml)
 [![Maintainability](https://api.codeclimate.com/v1/badges/ced47d99ff8a6fcf623c/maintainability)](https://codeclimate.com/repos/60cb4682ff69b40116002c66/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/ced47d99ff8a6fcf623c/test_coverage)](https://codeclimate.com/repos/60cb4682ff69b40116002c66/test_coverage)
 [![Node Version](https://img.shields.io/node/v/@hackerrank/firepad)](https://nodejs.org)
@@ -16,7 +15,6 @@
 [![Closed Issues](https://img.shields.io/github/issues-closed-raw/interviewstreet/firepad-x)](https://github.com/interviewstreet/firepad-x/issues?q=is%3Aissue+is%3Aclosed)
 [![Open Pulls](https://img.shields.io/github/issues-pr-raw/interviewstreet/firepad-x)](https://github.com/interviewstreet/firepad-x/pulls)
 [![Closed Pulls](https://img.shields.io/github/issues-pr-closed-raw/interviewstreet/firepad-x)](https://github.com/interviewstreet/firepad-x/pulls?q=is%3Apr+is%3Aclosed)
-[![TKLOC](https://img.shields.io/tokei/lines/github/interviewstreet/firepad-x)](https://github.com/interviewstreet/firepad-x)
 [![Contributors](https://img.shields.io/github/contributors/interviewstreet/firepad-x)](https://github.com/interviewstreet/firepad-x/graphs/contributors)
 [![Activity](https://img.shields.io/github/last-commit/interviewstreet/firepad-x?label=most%20recent%20activity)](https://github.com/interviewstreet/firepad-x/pulse)
 
