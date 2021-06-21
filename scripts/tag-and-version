@@ -29,7 +29,7 @@ const StableVersionRegex = /^[0-9]+\.[0-9]+\.[0-9]+$/;
  * @returns True if the current branch is `master`, else False.
  */
 function isMasterBranch() {
-  return process.env.BRANCH === "ref/heads/master";
+  return process.env.BRANCH === "refs/heads/master";
 }
 
 /**
