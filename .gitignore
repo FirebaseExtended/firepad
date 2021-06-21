@@ -1,18 +1,18 @@
-.idea
-*.iml
-build/
-bower_components/
-*.sw?
+.husky
 .DS_Store
-test/coverage/
+coverage
 node_modules
 
 # generated
-lib/ace-adapter.js
-dist/firepad.zip
-dist/
+dist
+es
+lib
+types
 
 *.log
 _site/
 .firebase/
+config/firebase.json
 target
+.idea
+.vscode

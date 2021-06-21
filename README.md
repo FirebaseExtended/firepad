@@ -1,118 +1,116 @@
-# Firepad [![Build Status](https://travis-ci.org/FirebaseExtended/firepad.svg?branch=master)](https://travis-ci.org/FirebaseExtended/firepad) [![Coverage Status](https://img.shields.io/coveralls/FirebaseExtended/firepad.svg?branch=master&style=flat)](https://coveralls.io/r/FirebaseExtended/firepad) [![Version](https://badge.fury.io/gh/firebase%2Ffirepad.svg)](http://badge.fury.io/gh/firebase%2Ffirepad)
+# Firepad
 
-[Firepad](http://www.firepad.io/) is an open-source, collaborative code and text editor. It is
-designed to be embedded inside larger web applications.
+[![Deployment](https://github.com/interviewstreet/firepad-x/actions/workflows/npm-deploy.yml/badge.svg)](https://github.com/interviewstreet/firepad-x/actions/workflows/npm-deploy.yml)
+[![Build](https://img.shields.io/github/workflow/status/interviewstreet/firepad-x/npm-deploy/master?label=master)](https://github.com/interviewstreet/firepad-x/actions/workflows/npm-deploy.yml)
+[![Maintainability](https://api.codeclimate.com/v1/badges/ced47d99ff8a6fcf623c/maintainability)](https://codeclimate.com/repos/60cb4682ff69b40116002c66/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/ced47d99ff8a6fcf623c/test_coverage)](https://codeclimate.com/repos/60cb4682ff69b40116002c66/test_coverage)
+[![Node Version](https://img.shields.io/node/v/@hackerrank/firepad)](https://nodejs.org)
+[![Version](https://img.shields.io/npm/v/@hackerrank/firepad?label=stable&color=%2300)](https://www.npmjs.com/package/@hackerrank/firepad)
+[![Beta Version](https://img.shields.io/npm/v/@hackerrank/firepad/beta?label=beta)](https://www.npmjs.com/package/@hackerrank/firepad)
+[![Weekly Downloads](https://img.shields.io/npm/dw/@hackerrank/firepad)](https://www.npmjs.com/package/@hackerrank/firepad)
+[![Built With](https://img.shields.io/badge/built%20with-webpack-green)](https://webpack.js.org)
+[![Tested With](https://img.shields.io/badge/tested%20with-jest-yellowgreen)](https://jestjs.io)
+[![Types](https://img.shields.io/npm/types/@hackerrank/firepad?label=typed%20with)](https://www.typescriptlang.org)
+[![License](https://img.shields.io/npm/l/@hackerrank/firepad)](LICENSE)
+[![Open Issues](https://img.shields.io/github/issues-raw/interviewstreet/firepad-x)](https://github.com/interviewstreet/firepad-x/issues)
+[![Closed Issues](https://img.shields.io/github/issues-closed-raw/interviewstreet/firepad-x)](https://github.com/interviewstreet/firepad-x/issues?q=is%3Aissue+is%3Aclosed)
+[![Open Pulls](https://img.shields.io/github/issues-pr-raw/interviewstreet/firepad-x)](https://github.com/interviewstreet/firepad-x/pulls)
+[![Closed Pulls](https://img.shields.io/github/issues-pr-closed-raw/interviewstreet/firepad-x)](https://github.com/interviewstreet/firepad-x/pulls?q=is%3Apr+is%3Aclosed)
+[![TKLOC](https://img.shields.io/tokei/lines/github/interviewstreet/firepad-x)](https://github.com/interviewstreet/firepad-x)
+[![Contributors](https://img.shields.io/github/contributors/interviewstreet/firepad-x)](https://github.com/interviewstreet/firepad-x/graphs/contributors)
+[![Activity](https://img.shields.io/github/last-commit/interviewstreet/firepad-x?label=most%20recent%20activity)](https://github.com/interviewstreet/firepad-x/pulse)
 
-Join our [Firebase Google Group](https://groups.google.com/forum/#!forum/firebase-talk) to ask
-questions, request features, or share your Firepad apps with the community.
+## History
 
+[Firepad](https://github.com/FirebaseExtended/firepad) was originally developed by [Firebase Team at _Google™_](https://firebase.googleblog.com/2013/04/announcing-firepad-our-open-source.html) to showcase a Serverless and easily configurable Collaborative experience in the year of 2013.
 
-## Table of Contents
+At first it started out with only CodeMirror editor with Rich Text support using [OT](https://en.wikipedia.org/wiki/Operational_transformation) to maintain consistency and concurrency. Over the years, open source contributors across the globe have added support for Ace and more recently Monaco editor, and improved overall product.
 
- * [Getting Started With Firebase](#getting-started-with-firebase)
- * [Live Demo](#live-demo)
- * [Downloading Firepad](#downloading-firepad)
- * [Documentation](#documentation)
- * [Examples](#examples)
- * [Contributing](#contributing)
- * [Repo Structure](#repo-structure)
+## Why this Rewrite was necessary
 
+Over the time, with more editor support the codebase got quite convoluted. And every new commit would increase cognitive complexity exponentially, making it harder for the next person to debug any issue. Also keep in mind, the library was designed when JavaScript language itself was quite in early phase.
 
-## Getting Started With Firebase
+In recent years, we have seen web editor and IDE domain being dominated by [Monaco](https://github.com/Microsoft/monaco-editor) editor from _Microsoft™_ and [Theia](https://github.com/eclipse-theia/theia) from _Eclipse Foundation_ respectively. Both of these products are written in [TypeScript](https://www.typescriptlang.org), a modern type-safe language with superset features of JavaScript, with proper engineering and architecture in place.
 
-Firepad requires [Firebase](https://firebase.google.com/) in order to sync and store data. Firebase
-is a suite of integrated products designed to help you develop your app, grow your user base, and
-earn money. You can [sign up here for a free account](https://console.firebase.google.com/).
+So it was about time, that same would happen to Firepad, and we just pulled the plug. We have rewritten all the modules and few extras using TypeScript while enhancing earlier implemented [Adapter Pattern](https://en.wikipedia.org/wiki/Adapter_pattern) to integrate with external modules, such as Database _(preferably Firebase)_ and editors _(as of now only Monaco is supported, but PRs are welcomed)_. In this process, we have also made few minor improvments to scale at performance _(e.g., [Treeshaking](https://developer.mozilla.org/en-US/docs/Glossary/Tree_shaking))_ and ease of usage while keeping internal modules safe.
 
+## Usage
 
-## Live Demo
+### Public API
 
-Visit [firepad.io](http://demo.firepad.io/) to see a live demo of Firepad in rich text mode, or the
-[examples page](http://www.firepad.io/examples/) to see it setup for collaborative code editing.
+Firepad takes two dependencies, one **Database Adapter** and one **Editor Adapter**, with a custom configuration object like the following:
 
-[![a screenshot of demo.firepad.io including a picture of two cats and a discussion about fonts](screenshot.png)](http://demo.firepad.io/)
+```ts
+import Firepad, { IDatabaseAdapter, IEditorAdapter, IFirepadConstructorOptions } from "@hackerrank/firepad";
 
+const databaseAdapter: IDatabaseAdapter = ...; // Database Adapter instance
 
-## Downloading Firepad
+const editorAdapter: IEditorAdapter = ...; // Editor Adapter instance
 
-Firepad uses [Firebase](https://firebase.google.com) as a backend, so it requires no server-side
-code. It can be added to any web app by including a few JavaScript files:
+const options: IFirepadConstructorOptions = {
+   /** Unique Identifier for current User */
+  userId: ..., // string or number
+  /** Unique Hexadecimal color code for current User */
+  userColor: ..., // string
+  /** Name/Short Name of the current User (optional) */
+  userName: ..., // string
+  /** Default content of Firepad (optional) */
+  defaultText: ..., // string
+};
 
-```HTML
-<head>
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/5.5.4/firebase.js"></script>
-
-  <!-- CodeMirror -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css"/>
-
-  <!-- Firepad -->
-  <link rel="stylesheet" href="https://cdn.firebase.com/libs/firepad/1.5.3/firepad.css" />
-  <script src="https://cdn.firebase.com/libs/firepad/1.5.3/firepad.min.js"></script>
-</head>
+const firepad = new Firepad(databaseAdapter, editorAdapter, options);
 ```
 
-Then, you need to initialize the Firebase SDK and Firepad:
+### Monaco as editor
 
-```HTML
-<body onload="init()">
-  <div id="firepad"></div>
-  <script>
-    function init() {
-      // Initialize the Firebase SDK.
-      firebase.initializeApp({
-        apiKey: '<API_KEY>',
-        databaseURL: 'https://<DATABASE_NAME>.firebaseio.com'
-      });
+If you use Monaco as an editor, we have an shorthand function `fromMonaco` to provide adapters and the binding out of the box with optional configuration object:
 
-      // Get Firebase Database reference.
-      var firepadRef = firebase.database().ref();
+```ts
+import { fromMonaco } from "@hackerrank/firepad";
 
-      // Create CodeMirror (with lineWrapping on).
-      var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
+const databaseRef: string | firebase.database.Reference = ...; // Path to Firebase Database or a Reference Object
 
-      // Create Firepad (with rich text toolbar and shortcuts enabled).
-      var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
-          { richTextShortcuts: true, richTextToolbar: true, defaultText: 'Hello, World!' });
-    }
-  </script>
-</body>
+const editor: monaco.editor.IEditor = ...; // Monaco Editor Instance
+
+const firepad = fromMonaco(databaseRef, editor);
 ```
 
-## Documentation
+### Writing Custom Adapters
 
-Firepad supports rich text editing with [CodeMirror](http://codemirror.net/) and code editing via
-[Ace](http://ace.c9.io/). Check out the detailed setup instructions at [firepad.io/docs](http://www.firepad.io/docs).
+To use Firepad with any other Editor, one simply need to write an implementation of Editor Adapter interface for that editor. This can be done like this:
 
+```ts
+import { IEditorAdapter } from "@hackerrank/firepad";
 
-## Examples
+class MyEditorAdapter implements IEditorAdapter {
+  ...
+}
+```
 
-You can find some Firepad examples [here](examples/README.md).
+Similar thing can be done for Database as well by implementing `IDatabaseAdapter` interface. Keep in mind, you might also need to implement event handlers and event triggers depending upon nature of the adapters.
 
+## Development
+
+We have used [`yarn`](https://yarnpkg.com/) as our package manager through out the project.
+
+We use [`webpack-dev-server`](https://webpack.js.org/configuration/dev-server/) for local development environment and [`webpack`](https://webpack.js.org/api/) for bundling. After installing all the dependencies including all the devDependencies and updating Database (Firebase) configuration, just do `yarn start` to kickoff development server. By default, the dev server opens in `localhost:9000` but this can be configured by passing additional `--port` argument to the start command.
+
+We use [`jest`](https://jestjs.io/docs) as both test runner and test suite to write unit tests. Doing `yarn test` should run all the testcases and publish coverage report.
+
+### Directories
+
+1. [`examples`](examples) - All the working examples are kept and used for manual testing during development.
+2. [`src`](src) - Source directory for all the modules.
+3. [`test`](test) - Specs directory for all the modules.
+
+## Changelog
+
+See [CHANGELOG](CHANGELOG.md) for more details.
 
 ## Contributing
 
-If you'd like to contribute to Firepad, please first read through our [contribution
-guidelines](.github/CONTRIBUTING.md). Local setup instructions are available [here](.github/CONTRIBUTING.md#local-setup).
+See [CONTRIBUTING GUIDELINES](.github/CONTRIBUTING.md) for more details.
 
+## License
 
-## Repo Structure
-
-Here are some highlights of the directory structure and notable source files:
-
-* `dist/` - output directory for all files generated by grunt (`firepad.js`, `firepad.min.js`, `firepad.css`, `firepad.eot`).
-* `examples/` - examples of embedding Firepad.
-* `font/` - icon font used for rich text toolbar.
-* `lib/`
-    * `firepad.js` - Entry point for Firepad.
-    * `text-operation.js`, `client.js` - Heart of the Operation Transformation implementation.  Based on
-      [ot.js](https://github.com/Operational-Transformation/ot.js/) but extended to allow arbitrary
-      attributes on text (for representing rich-text).
-    * `annotation-list.js` - A data model for representing annotations on text (i.e. spans of text with a particular
-      set of attributes).
-    * `rich-text-codemirror.js` - Uses `AnnotationList` to track annotations on the text and maintain the appropriate
-      set of markers on a CodeMirror instance.
-    * `firebase-adapter.js` - Handles integration with Firebase (appending operations, triggering retries,
-      presence, etc.).
-* `test/` - Jasmine tests for Firepad (many of these were borrowed from ot.js).
+See [LICENSE](LICENSE) for more details.

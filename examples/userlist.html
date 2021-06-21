@@ -1,94 +1,121 @@
-<!doctype html>
+<!DOCTYPE html>
 <!-- See http://www.firepad.io/docs/ for detailed embedding docs. -->
 <html>
+  <head>
+    <meta charset="utf-8" />
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/5.5.4/firebase.js"></script>
+    <!-- CodeMirror -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css"
+    />
 
-<head>
-  <meta charset="utf-8" />
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/5.5.4/firebase.js"></script>
-  <!-- CodeMirror -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.17.0/codemirror.css" />
+    <!-- Firepad -->
+    <link
+      rel="stylesheet"
+      href="https://firepad.io/releases/v1.5.9/firepad.css"
+    />
+    <script src="https://firepad.io/releases/v1.5.9/firepad.min.js"></script>
 
-  <!-- Firepad -->
-  <link rel="stylesheet" href="https://firepad.io/releases/v1.5.9/firepad.css" />
-  <script src="https://firepad.io/releases/v1.5.9/firepad.min.js"></script>
-
-  <!-- Include example userlist script / CSS.
+    <!-- Include example userlist script / CSS.
        Can be downloaded from: https://github.com/firebase/firepad/tree/master/examples/ -->
-  <script src="firepad-userlist.js"></script>
-  <link rel="stylesheet" href="firepad-userlist.css" />
+    <script src="firepad-userlist.js"></script>
+    <link rel="stylesheet" href="firepad-userlist.css" />
 
-  <style>
-    html { height: 100%; }
-    body { margin: 0; height: 100%; }
-    /* Height / width / positioning can be customized for your use case.
+    <style>
+      html {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      /* Height / width / positioning can be customized for your use case.
        For demo purposes, we make the user list 175px and firepad fill the rest of the page. */
-    #userlist {
-      position: absolute; left: 0; top: 0; bottom: 0; height: auto;
-      width: 175px;
-    }
-    #firepad {
-      position: absolute; left: 175px; top: 0; bottom: 0; right: 0; height: auto;
-    }
-  </style>
-</head>
+      #userlist {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        height: auto;
+        width: 175px;
+      }
+      #firepad {
+        position: absolute;
+        left: 175px;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        height: auto;
+      }
+    </style>
+  </head>
 
-<body onload="init()">
-  <div id="userlist"></div>
-  <div id="firepad"></div>
+  <body onload="init()">
+    <div id="userlist"></div>
+    <div id="firepad"></div>
 
-  <script>
-    function init() {
-      //// Initialize Firebase.
-      //// TODO: replace with your Firebase project configuration.
-      var config = {
-        apiKey: '<API_KEY>',
-        authDomain: "firepad-tests.firebaseapp.com",
-        databaseURL: "https://firepad-tests.firebaseio.com"
-      };
-      firebase.initializeApp(config);
+    <script>
+      function init() {
+        //// Initialize Firebase.
+        //// TODO: replace with your Firebase project configuration.
+        var config = {
+          apiKey: "<API_KEY>",
+          authDomain: "firepad-tests.firebaseapp.com",
+          databaseURL: "https://firepad-tests.firebaseio.com",
+        };
+        firebase.initializeApp(config);
 
-      //// Get Firebase Database reference.
-      var firepadRef = getExampleRef();
+        //// Get Firebase Database reference.
+        var firepadRef = getExampleRef();
 
-      //// Create CodeMirror (with lineWrapping on).
-      var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
+        //// Create CodeMirror (with lineWrapping on).
+        var codeMirror = CodeMirror(document.getElementById("firepad"), {
+          lineWrapping: true,
+        });
 
-      // Create a random ID to use as our user ID (we must give this to firepad and FirepadUserList).
-      var userId = Math.floor(Math.random() * 9999999999).toString();
+        // Create a random ID to use as our user ID (we must give this to firepad and FirepadUserList).
+        var userId = Math.floor(Math.random() * 9999999999).toString();
 
-      //// Create Firepad (with rich text features and our desired userId).
-      var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror,
-          { richTextToolbar: true, richTextShortcuts: true, userId: userId});
+        //// Create Firepad (with rich text features and our desired userId).
+        var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror, {
+          richTextToolbar: true,
+          richTextShortcuts: true,
+          userId: userId,
+        });
 
-      //// Create FirepadUserList (with our desired userId).
-      var firepadUserList = FirepadUserList.fromDiv(firepadRef.child('users'),
-          document.getElementById('userlist'), userId);
+        //// Create FirepadUserList (with our desired userId).
+        var firepadUserList = FirepadUserList.fromDiv(
+          firepadRef.child("users"),
+          document.getElementById("userlist"),
+          userId
+        );
 
-      //// Initialize contents.
-      firepad.on('ready', function() {
-        if (firepad.isHistoryEmpty()) {
-          firepad.setText('Check out the user list to the left!');
+        //// Initialize contents.
+        firepad.on("ready", function () {
+          if (firepad.isHistoryEmpty()) {
+            firepad.setText("Check out the user list to the left!");
+          }
+        });
+      }
+
+      // Helper to get hash from end of URL or generate a random one.
+      function getExampleRef() {
+        var ref = firebase.database().ref();
+        var hash = window.location.hash.replace(/#/g, "");
+        if (hash) {
+          ref = ref.child(hash);
+        } else {
+          ref = ref.push(); // generate unique location.
+          window.location = window.location + "#" + ref.key; // add it as a hash to the URL.
         }
-      });
-    }
-
-    // Helper to get hash from end of URL or generate a random one.
-    function getExampleRef() {
-      var ref = firebase.database().ref();
-      var hash = window.location.hash.replace(/#/g, '');
-      if (hash) {
-        ref = ref.child(hash);
-      } else {
-        ref = ref.push(); // generate unique location.
-        window.location = window.location + '#' + ref.key; // add it as a hash to the URL.
+        if (typeof console !== "undefined") {
+          console.log("Firebase data: ", ref.toString());
+        }
+        return ref;
       }
-      if (typeof console !== 'undefined') {
-        console.log('Firebase data: ', ref.toString());
-      }
-      return ref;
-    }
-  </script>
-</body>
+    </script>
+  </body>
 </html>

@@ -4,18 +4,50 @@
   min-width: 175px;
 
   background: #ebebeb; /* Old browsers */
-  background: -moz-linear-gradient(left, #ebebeb 0%, #eaeaea 93%, #d9d9d9 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, right top, color-stop(0%,#ebebeb), color-stop(93%,#eaeaea), color-stop(100%,#d9d9d9)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(left, #ebebeb 0%,#eaeaea 93%,#d9d9d9 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(left, #ebebeb 0%,#eaeaea 93%,#d9d9d9 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(left, #ebebeb 0%,#eaeaea 93%,#d9d9d9 100%); /* IE10+ */
-  background: linear-gradient(to right, #ebebeb 0%,#eaeaea 93%,#d9d9d9 100%); /* W3C */
+  background: -moz-linear-gradient(
+    left,
+    #ebebeb 0%,
+    #eaeaea 93%,
+    #d9d9d9 100%
+  ); /* FF3.6+ */
+  background: -webkit-gradient(
+    linear,
+    left top,
+    right top,
+    color-stop(0%, #ebebeb),
+    color-stop(93%, #eaeaea),
+    color-stop(100%, #d9d9d9)
+  ); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(
+    left,
+    #ebebeb 0%,
+    #eaeaea 93%,
+    #d9d9d9 100%
+  ); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(
+    left,
+    #ebebeb 0%,
+    #eaeaea 93%,
+    #d9d9d9 100%
+  ); /* Opera 11.10+ */
+  background: -ms-linear-gradient(
+    left,
+    #ebebeb 0%,
+    #eaeaea 93%,
+    #d9d9d9 100%
+  ); /* IE10+ */
+  background: linear-gradient(
+    to right,
+    #ebebeb 0%,
+    #eaeaea 93%,
+    #d9d9d9 100%
+  ); /* W3C */
   color: #404040;
 }
 
 .firepad-userlist {
   text-align: left;
-  font-family: 'Helvetica Neue', sans-serif;
+  font-family: "Helvetica Neue", sans-serif;
   line-height: normal;
 }
 

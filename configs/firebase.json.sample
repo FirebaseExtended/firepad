@@ -1,0 +1,8 @@
+/**
+ * Copy the file into `./firebase.json`, Add Proper Information and Remove this comment
+ */
+{
+  "apiKey": "<API_KEY>",
+  "databaseURL": "https://<FIREBASE_PROJECT>.firebaseio.com",
+  "projectId": "<FIREBASE_PROJECT>"
+}

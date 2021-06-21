@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "target": "es2019",
+    "outDir": "../es",
+    "module": "es6",
+    "declaration": false,
+    "declarationDir": null,
+    "removeComments": true
+  },
+  "exclude": ["node_modules/**", "../src/firepad-classic.ts"]
+}

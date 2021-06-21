@@ -1,0 +1,215 @@
+#!/usr/bin/env node
+
+const fs = require("fs");
+const path = require("path");
+const fetch = require("node-fetch");
+const exec = require("child-process-promise").exec;
+
+const packageJSON = require("../package.json");
+
+const Headers = {
+  Authorization: `token ${process.env.GITHUB_TOKEN}`,
+  "User-Agent": "HackerRank internal tools",
+};
+
+const Tags = Object.freeze({
+  Beta: "beta",
+  Stable: "stable",
+});
+
+const ExitCodes = Object.freeze({
+  Success: 0,
+});
+
+const BetaVersionRegex = /^[0-9]+\.[0-9]+\.[0-9]+\-[a-zA-z0-9.-]+$/;
+const StableVersionRegex = /^[0-9]+\.[0-9]+\.[0-9]+$/;
+
+/**
+ * Tests whether or not we are in `master` branch.
+ * @returns True if the current branch is `master`, else False.
+ */
+function isMasterBranch() {
+  return process.env.BRANCH === "ref/heads/master";
+}
+
+/**
+ * Tests whether or not the current Configuration allows to release Beta version.
+ * @returns True if the current Configuration allows to release Beta version, else False otherwise.
+ */
+function enableBetaRelease() {
+  return ["True", "true", "1"].includes(process.env.ENABLE_BETA);
+}
+
+/**
+ * Validates package version before release based on branch.
+ * @param isMaster - True if current branch is `master, else False.
+ * @returns True if version is valid against current branch, False otherwise.
+ */
+function validateVersion(isMaster) {
+  if (isMaster) {
+    return StableVersionRegex.test(packageJSON.version);
+  }
+
+  return BetaVersionRegex.test(packageJSON.version);
+}
+
+/**
+ * Provides with right release tag for package.
+ * @param isMaster - True if current branch is `master, else False.
+ * @returns Release Tag (stable/beta).
+ */
+function getReleaseTag(isMaster) {
+  return isMaster ? Tags.Stable : Tags.Beta;
+}
+
+/**
+ * Returns Absolute Path of the given file.
+ * @param filePath - Absolute/Relative Path of the File.
+ * @returns Absolute Path of File.
+ */
+function resolvePath(filePath) {
+  const currentPath = process.cwd();
+
+  if (path.isAbsolute(filePath)) {
+    return filePath;
+  }
+
+  return path.join(currentPath, filePath);
+}
+
+/**
+ * Publish npm package with proper tag.
+ * @param tag - Tag to release the package (stable/beta).
+ * @returns A Promise that resolves once Exec is complete.
+ */
+async function publishToNPM(tag) {
+  const command = `NODE_AUTH_TOKEN=${process.env.NODE_AUTH_TOKEN} npm publish --tag ${tag} --access public`;
+
+  try {
+    const { stdout } = await exec(command);
+
+    console.log("Published package to NPM", stdout);
+  } catch (err) {
+    console.log("Failed to publish to NPM registry.\n", err.stderr);
+    process.exit(ExitCodes.Success);
+  }
+}
+
+/**
+ * Bundles artifacts into compressed archive.
+ * @returns - A Promise that resolves name of the Archive.
+ */
+async function bundleArchive() {
+  const command = "npm pack";
+
+  try {
+    const { stdout } = await exec(command);
+    const tarball = stdout.trimRight().split("\n").pop();
+
+    console.log("Archive packed:", tarball);
+    return tarball;
+  } catch (err) {
+    console.log("Failed to pack archive.\n", err.stderr);
+    process.exit(ExitCodes.Success);
+  }
+}
+
+/**
+ * Create a GitHub Release Tag.
+ * @returns A Promise that resolves Release ID once Create is complete.
+ */
+async function createRelease() {
+  const url = `https://api.github.com/repos/interviewstreet/firepad-x/releases`;
+
+  const options = {
+    method: "POST",
+    headers: {
+      ...Headers,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      tag_name: packageJSON.version,
+    }),
+  };
+
+  console.log("Creating GitHub release for:", packageJSON.version);
+
+  const response = await fetch(url, options);
+  const data = await response.json();
+
+  console.log("Created GitHub release:", data.html_url);
+  return data.id;
+}
+
+async function uploadAssets(releaseId, fileName) {
+  const url = `https://uploads.github.com/repos/interviewstreet/firepad-x/releases/${releaseId}/assets?name=${fileName}`;
+
+  const options = {
+    method: "POST",
+    headers: {
+      ...Headers,
+      "Content-Type": "application/octet-stream",
+    },
+    body: fs.readFileSync(resolvePath(fileName)),
+  };
+
+  console.log("Upload Assets: starting...");
+
+  await fetch(url, options);
+  console.log("Upload Assets: completed.");
+}
+
+/**
+ * Logs error message in case of incorrect version number.
+ * @param isMaster - True if current branch is `master, else False.
+ */
+function logInvalidVersionNameError(isMaster) {
+  let err = "Incorrect version number found, version number should be in the semver pattern: x.y.z";
+
+  if (!isMaster) {
+    err += "-alpha";
+  }
+
+  console.log(err);
+}
+
+/**
+ * Main function that handles validation and attach proper tag to package.json
+ */
+async function main() {
+  const isMaster = isMasterBranch();
+
+  if (!isMaster && !enableBetaRelease()) {
+    console.log("Beta release is disabled for this repository.");
+    return;
+  }
+
+  const isValidVersion = validateVersion(isMaster);
+
+  if (!isValidVersion) {
+    logInvalidVersionNameError(isMaster);
+    return;
+  }
+
+  const releaseTag = getReleaseTag(isMaster);
+  await publishToNPM(releaseTag);
+
+  if (isMaster) {
+    const tarBall = await bundleArchive();
+    const releaseId = await createRelease();
+    await uploadAssets(releaseId, tarBall);
+  }
+}
+
+/**
+ * Execution Hook
+ */
+!(async function () {
+  try {
+    await main();
+  } catch (err) {
+    console.log(err);
+  }
+
+  process.exit(ExitCodes.Success);
+})();

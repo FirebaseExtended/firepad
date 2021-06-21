@@ -1,48 +1,48 @@
 # CHANGELOG
 
-## v1.5.28 [#22](https://github.com/interviewstreet/firepad-x/pull/22)
-  ### Fixes -
-  - More `null` check for cursor before invoking `equals` method.
+<!--
+Read this section if it's your first time writing changelog, if not read anyway.
 
-## v1.5.27
-  ### Fixes -
-  - Add `null` check for cursor before invoking `equals` method.
+Guidelines:
+- Don't dump commit log diffs as changelogs. Bad idea, it is.
+- Changelogs are for humans, not machines.
+- There should be an entry for every single version.
+- The same types of changes should be grouped.
+- the latest version comes first.
 
-## v1.5.26 [#21](https://github.com/interviewstreet/firepad-x/pull/21)
-  ### Fixes -
-  - Sync Cursor with timeout in case of delayed initialisation.
-  - Persist Cursor information even after disposition.
-  - Maintain `sync` state on Cursor in Editor Client.
-  - Trigger `error` event if a valid Edit Operation transaction fails any reason other than client disconnection.
-  - Make default options of Firepad Constructor functions to allow lazy evaluation.
+Tags:
+- Added: for new features.
+- Changed: for changes in existing functionality.
+- Deprecated: for soon-to-be removed features.
+- Removed: for now removed features.
+- Fixed: for any bug fixes.
+- Security: in case of vulnerabilities.
 
-## v1.5.25 [#20](https://github.com/interviewstreet/firepad-x/pull/20)
-  ### Fixes -
-  - Remove Data Type Validation for Operation Actor (`op.a`) so that number can used as User ID.
+Good to have: commit or PR links.
 
-## v1.5.24 [#19](https://github.com/interviewstreet/firepad-x/pull/19)
-  ### Fixes -
-  - Send actual operation in strigified version on event-bus for `undo` and `redo` operation.
+-->
 
-## v1.5.23 [#18](https://github.com/interviewstreet/firepad-x/pull/18)
-  ### Fixes -
-  - Stop selecting text after first initialisation. Move cursor to begining after `setText` call.
+## v0.1.0 - [#24](https://github.com/interviewstreet/firepad-x/pull/24)
 
-## v1.5.22 [#17](https://github.com/interviewstreet/firepad-x/pull/17)
-  ### Improvements -
-  - Added Undo annd Redo event to EditorClient to assign event listener.
+### Added
 
-  ### Changes -
-  - Moved Firebase into peer dependency.
+- Cursor Widget that announces User's name in front of his/her cursor.
+- Github Action workflow to relase package seamlessly to NPM public Registry.
+- Support for separate Stable and Beta release to accomodate users for their specific usecases.
 
-## v1.5.21 [#16](https://github.com/interviewstreet/firepad-x/pull/16)
-  ### Fixes -
-  - Downgrade Firebase to 7.12 to avoid issues with Database.
+### Changed
 
-## v1.5.20 [#15](https://github.com/interviewstreet/firepad-x/pull/15)
-  ### Fixes -
-  - Model Change Event Hanndling when no Model Content has changed.
+- Renamed package from `firepad-x` to `@hackerrank/firepad`.
+- Migrated codebase to Typescript with emphasis upon Adapter Pattern (Hexagonal Architecture).
+- Exposed multiple interfaces to allow each moving parts to work sustainably without actually depending on them.
+- Interfaces also allows consumer application to put forward custom implementation of part of the product.
+- Migrated Build Environment to TypeScript-Webpack to facilitate for easier development experience wih hot-reloading and other features.
+- Build Environment produces ES Modules and Type Definition files along with existing Single JavaScript bundle.
+- Migrated Test Setup and Environment to Jest with Coverage report from Istanbul.
+- Moved Firebase Configuration to Runtime Environment to allow seamless customisation.
+- Added pre-commit hook with Prettier to maintain code quality.
 
-  ### Improvements -
-  - Move `jsdom` to devDependency of the project.
-  - Improve build step to optimize output chunk.
+### Removed
+
+- Grunt workflow is removed with all it's dependencies.
+- Removed unused modules and examples except for Firebase and Monaco related ones.

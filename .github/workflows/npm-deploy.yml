@@ -1,0 +1,57 @@
+---
+name: Deployment
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build and Deploy Package to NPM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14.x"
+          registry-url: "https://registry.npmjs.org"
+      - uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            $HOME/.npm
+            $HOME/.yarn-cache
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+            ${{ runner.OS }}-
+      - name: Register Token
+        run: |
+          echo "//registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN" >$NPM_RC
+          echo "_auth=$NODE_AUTH_TOKEN" >>$NPM_RC
+          echo "always-auth=true" >>$NPM_RC
+          echo "@hackerrank:registry=https://registry.npmjs.org" >>$NPM_RC
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_RC: /home/runner/work/_temp/.npmrc
+      - name: Installing Dependencies
+        run: yarn install --frozen-lockfile
+      - name: Unit Tests
+        run: yarn test:ci
+      - uses: paambaati/codeclimate-action@v2.7.5
+        with:
+          coverageLocations: ${{github.workspace}}/coverage/lcov.info:lcov
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+      - name: Generate Artifacts
+        run: yarn build
+      - name: Publish Package
+        run: yarn release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ENABLE_BETA: ${{ secrets.ENABLE_BETA }}
+          BRANCH: ${{ github.ref }}
