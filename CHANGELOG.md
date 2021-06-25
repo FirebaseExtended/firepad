@@ -22,6 +22,12 @@ Good to have: commit or PR links.
 
 -->
 
+## v0.1.1 - [#30](https://github.com/interviewstreet/firepad-x/pull/24)
+
+### Fixes
+
+- EOL Reset in Monaco Model content due to `setValue` call in `setInitiated` method, changed it to use existing `setText` call in Monaco Adapter.
+
 ## v0.1.0 - [#24](https://github.com/interviewstreet/firepad-x/pull/24)
 
 ### Added
