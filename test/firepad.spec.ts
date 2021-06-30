@@ -1,8 +1,18 @@
-import { DatabaseAdapterEvent, DatabaseAdapterStateType, IDatabaseAdapter } from '../src/database-adapter';
-import { EditorAdapterStateType, IEditorAdapter } from '../src/editor-adapter';
-import { EditorClientEvent } from '../src/editor-client';
-import { Firepad, FirepadEvent, IFirepad } from '../src/firepad';
-import { getDatabaseAdapter, getEditorAdapter, getEditorClient, IDatabaseAdapterMock, IEditorAdapterMock } from './factory';
+import {
+  DatabaseAdapterEvent,
+  DatabaseAdapterStateType,
+  IDatabaseAdapter,
+} from "../src/database-adapter";
+import { EditorAdapterStateType, IEditorAdapter } from "../src/editor-adapter";
+import { EditorClientEvent } from "../src/editor-client";
+import { Firepad, FirepadEvent, IFirepad } from "../src/firepad";
+import {
+  getDatabaseAdapter,
+  getEditorAdapter,
+  getEditorClient,
+  IDatabaseAdapterMock,
+  IEditorAdapterMock,
+} from "./factory";
 
 jest.mock("../src/editor-client", () => {
   const { EditorClientEvent } = jest.requireActual("../src/editor-client");
@@ -31,17 +41,21 @@ describe("Firepad", () => {
     databaseAdapter = getDatabaseAdapter();
     editorAdapter = getEditorAdapter();
 
-    firepad = new Firepad(databaseAdapter as IDatabaseAdapter, editorAdapter as IEditorAdapter, databaseAdapter.getUser())
+    firepad = new Firepad(
+      databaseAdapter as IDatabaseAdapter,
+      editorAdapter as IEditorAdapter,
+      databaseAdapter.getUser()
+    );
   });
 
   afterAll(() => {
     firepad.dispose();
-  })
+  });
 
   describe("#isHistoryEmpty", () => {
     it("should throw error if called before Firepad is Ready", () => {
       const fn = () => firepad.isHistoryEmpty();
-      expect(fn).toThrowError()
+      expect(fn).toThrowError();
     });
 
     it("should return true if no activity done yet by any user", () => {
@@ -54,17 +68,23 @@ describe("Firepad", () => {
   describe("#getConfiguration", () => {
     it("should return User Id of current Firepad", () => {
       databaseAdapter.trigger(DatabaseAdapterEvent.Ready);
-      expect(firepad.getConfiguration("userId")).toEqual(databaseAdapter.getUser().userId);
+      expect(firepad.getConfiguration("userId")).toEqual(
+        databaseAdapter.getUser().userId
+      );
     });
 
     it("should return User Name of current Firepad", () => {
       databaseAdapter.trigger(DatabaseAdapterEvent.Ready);
-      expect(firepad.getConfiguration("userName")).toEqual(databaseAdapter.getUser().userName);
+      expect(firepad.getConfiguration("userName")).toEqual(
+        databaseAdapter.getUser().userName
+      );
     });
 
     it("should return User Color of current Firepad", () => {
       databaseAdapter.trigger(DatabaseAdapterEvent.Ready);
-      expect(firepad.getConfiguration("userColor")).toEqual(databaseAdapter.getUser().userColor);
+      expect(firepad.getConfiguration("userColor")).toEqual(
+        databaseAdapter.getUser().userColor
+      );
     });
   });
 
@@ -117,7 +137,10 @@ describe("Firepad", () => {
     let onSyncListenerStub: jest.Mock<void, [boolean]>;
     let onUndoListenerStub: jest.Mock<void, [string]>;
     let onRedoListenerStub: jest.Mock<void, [string]>;
-    let onErrorListenerStub: jest.Mock<void, [Error, string, DatabaseAdapterStateType | EditorAdapterStateType]>;
+    let onErrorListenerStub: jest.Mock<
+      void,
+      [Error, string, DatabaseAdapterStateType | EditorAdapterStateType]
+    >;
 
     beforeAll(() => {
       onSyncListenerStub = jest.fn();
@@ -125,7 +148,7 @@ describe("Firepad", () => {
       onRedoListenerStub = jest.fn();
       onErrorListenerStub = jest.fn();
       jest.useFakeTimers();
-    })
+    });
 
     afterEach(() => {
       onSyncListenerStub.mockClear();
@@ -137,7 +160,7 @@ describe("Firepad", () => {
     afterAll(() => {
       jest.clearAllTimers();
       jest.useRealTimers();
-    })
+    });
 
     it("should listen to Synced event", () => {
       firepad.on(FirepadEvent.Synced, onSyncListenerStub);
@@ -167,9 +190,18 @@ describe("Firepad", () => {
       };
 
       firepad.on(FirepadEvent.Error, onErrorListenerStub);
-      getEditorClient().trigger(EditorClientEvent.Error, error, "Retain 120", state);
+      getEditorClient().trigger(
+        EditorClientEvent.Error,
+        error,
+        "Retain 120",
+        state
+      );
       jest.runAllTimers();
-      expect(onErrorListenerStub).toHaveBeenCalledWith(error, "Retain 120", state);
+      expect(onErrorListenerStub).toHaveBeenCalledWith(
+        error,
+        "Retain 120",
+        state
+      );
     });
   });
 
@@ -179,7 +211,7 @@ describe("Firepad", () => {
     beforeAll(() => {
       onSyncListenerStub = jest.fn();
       jest.useFakeTimers();
-    })
+    });
 
     afterEach(() => {
       onSyncListenerStub.mockClear();
@@ -188,7 +220,7 @@ describe("Firepad", () => {
     afterAll(() => {
       jest.clearAllTimers();
       jest.useRealTimers();
-    })
+    });
 
     it("should remove listener", () => {
       firepad.on(FirepadEvent.Synced, onSyncListenerStub);

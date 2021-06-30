@@ -12,7 +12,7 @@ types
 *.log
 _site/
 .firebase/
-config/firebase.json
+configs/firebase.json
 target
 .idea
 .vscode

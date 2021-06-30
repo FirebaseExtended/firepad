@@ -16,10 +16,7 @@ import {
 } from "./editor-client";
 import { EventEmitter, EventListenerType, IEventEmitter } from "./emitter";
 import { FirebaseAdapter } from "./firebase-adapter";
-import {
-  FirepadEvent as FirepadClassicEvent,
-  IFirepad,
-} from "./firepad";
+import { FirepadEvent as FirepadClassicEvent, IFirepad } from "./firepad";
 import { MonacoAdapter } from "./monaco-adapter";
 import * as Utils from "./utils";
 
@@ -145,17 +142,11 @@ export default class FirepadClassic implements IFirepad {
     }
   }
 
-  on(
-    event: FirepadClassicEvent,
-    listener: EventListenerType<any>
-  ): void {
+  on(event: FirepadClassicEvent, listener: EventListenerType<any>): void {
     return this._emitter?.on(event, listener);
   }
 
-  off(
-    event: FirepadClassicEvent,
-    listener: EventListenerType<any>
-  ): void {
+  off(event: FirepadClassicEvent, listener: EventListenerType<any>): void {
     return this._emitter?.off(event, listener);
   }
 

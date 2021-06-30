@@ -21,9 +21,9 @@ Utils.validateFalse(
 );
 
 type DatabaseAdapterConfigType = {
-  userId: string,
-  userName: string,
-  userColor: string,
+  userId: string;
+  userName: string;
+  userColor: string;
 };
 
 let databaseRef: string | firebase.database.Reference;
@@ -83,7 +83,9 @@ const databaseAdapter: IDatabaseAdapterMock = Object.freeze({
     user.userName = name;
   }),
   getUser: jest.fn<DatabaseAdapterConfigType, []>(() => user),
-  getDatabaseRef: jest.fn<string | firebase.database.Reference, []>(() => databaseRef),
+  getDatabaseRef: jest.fn<string | firebase.database.Reference, []>(
+    () => databaseRef
+  ),
 });
 
 afterEach(() => {
@@ -99,11 +101,14 @@ afterAll(() => {
  * Returns a mock implementation of IDatabaseAdapter interface.
  * Useful for testing Editor Client, Firepad and related helper functions.
  */
-export function getDatabaseAdapter(ref: string | firebase.database.Reference = ".root", userConfig: DatabaseAdapterConfigType = {
-  userId: "user",
-  userName: "User",
-  userColor: "#ff00f3",
-}): IDatabaseAdapterMock {
+export function getDatabaseAdapter(
+  ref: string | firebase.database.Reference = ".root",
+  userConfig: DatabaseAdapterConfigType = {
+    userId: "user",
+    userName: "User",
+    userColor: "#ff00f3",
+  }
+): IDatabaseAdapterMock {
   databaseRef ||= ref;
   user ||= userConfig;
   return databaseAdapter;

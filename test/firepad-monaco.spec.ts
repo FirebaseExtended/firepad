@@ -1,8 +1,6 @@
 import { editor } from "monaco-editor";
 import { fromMonaco } from "../src/firepad-monaco";
-import {
-  getDatabaseAdapter, getEditorAdapter
-} from "./factory";
+import { getDatabaseAdapter, getEditorAdapter } from "./factory";
 import { getMonacoEditor } from "./factory/monaco-editor.factory";
 
 jest.mock("../src/firebase-adapter", () => {
@@ -43,13 +41,13 @@ describe("fromMonaco", () => {
   beforeAll(() => {
     databaseRef = ".root/firepad";
     monacoEditor = getMonacoEditor();
-  })
+  });
 
   it("should allow passing additional configuration object", () => {
     const userId = "user";
     fromMonaco(databaseRef, monacoEditor, { userId });
     expect(getDatabaseAdapter().getUser().userId).toEqual(userId);
-  })
+  });
 
   it("should create database adapter from Firebase reference", () => {
     fromMonaco(databaseRef, monacoEditor);

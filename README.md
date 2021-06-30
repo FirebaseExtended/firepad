@@ -10,6 +10,7 @@
 [![Built With](https://img.shields.io/badge/built%20with-webpack-green)](https://webpack.js.org)
 [![Tested With](https://img.shields.io/badge/tested%20with-jest-yellowgreen)](https://jestjs.io)
 [![Types](https://img.shields.io/npm/types/@hackerrank/firepad?label=typed%20with)](https://www.typescriptlang.org)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://prettier.io)
 [![License](https://img.shields.io/npm/l/@hackerrank/firepad)](LICENSE)
 [![Open Issues](https://img.shields.io/github/issues-raw/interviewstreet/firepad-x)](https://github.com/interviewstreet/firepad-x/issues)
 [![Closed Issues](https://img.shields.io/github/issues-closed-raw/interviewstreet/firepad-x)](https://github.com/interviewstreet/firepad-x/issues?q=is%3Aissue+is%3Aclosed)

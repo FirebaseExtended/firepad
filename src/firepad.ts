@@ -5,21 +5,14 @@ import {
   IDatabaseAdapter,
   UserIDType,
 } from "./database-adapter";
-import {
-  EditorAdapterStateType,
-  IEditorAdapter,
-} from "./editor-adapter";
+import { EditorAdapterStateType, IEditorAdapter } from "./editor-adapter";
 import {
   EditorClient,
   EditorClientEvent,
   IEditorClient,
   IEditorClientEvent,
 } from "./editor-client";
-import {
-  EventEmitter,
-  EventListenerType,
-  IEventEmitter,
-} from "./emitter";
+import { EventEmitter, EventListenerType, IEventEmitter } from "./emitter";
 import * as Utils from "./utils";
 
 export enum FirepadEvent {
@@ -47,8 +40,14 @@ export interface IFirepad extends Utils.IDisposable {
    * @param event - Event name.
    * @param listener - Event handler callback.
    */
-  on(event: FirepadEvent.Ready | FirepadEvent.Synced, listener: EventListenerType<boolean>): void;
-  on(event: FirepadEvent.Undo | FirepadEvent.Redo, listener: EventListenerType<string>): void;
+  on(
+    event: FirepadEvent.Ready | FirepadEvent.Synced,
+    listener: EventListenerType<boolean>
+  ): void;
+  on(
+    event: FirepadEvent.Undo | FirepadEvent.Redo,
+    listener: EventListenerType<string>
+  ): void;
   on(event: FirepadEvent.Error, listener: EventListenerType<Error>): void;
   on(event: FirepadEvent, listener: EventListenerType<any>): void;
   /**
@@ -56,10 +55,16 @@ export interface IFirepad extends Utils.IDisposable {
    * @param event - Event name.
    * @param listener - Event handler callback.
    */
-   off(event: FirepadEvent.Ready | FirepadEvent.Synced, listener: EventListenerType<boolean>): void;
-   off(event: FirepadEvent.Undo | FirepadEvent.Redo, listener: EventListenerType<string>): void;
-   off(event: FirepadEvent.Error, listener: EventListenerType<Error>): void;
-   off(event: FirepadEvent, listener: EventListenerType<any>): void;
+  off(
+    event: FirepadEvent.Ready | FirepadEvent.Synced,
+    listener: EventListenerType<boolean>
+  ): void;
+  off(
+    event: FirepadEvent.Undo | FirepadEvent.Redo,
+    listener: EventListenerType<string>
+  ): void;
+  off(event: FirepadEvent.Error, listener: EventListenerType<Error>): void;
+  off(event: FirepadEvent, listener: EventListenerType<any>): void;
   /**
    * Tests if any operation has been performed in Firepad.
    */
