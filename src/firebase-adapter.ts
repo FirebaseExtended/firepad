@@ -1,6 +1,6 @@
 import "firebase/database";
 
-import * as firebase from "firebase/app";
+import firebase from "firebase/app";
 
 import { CursorType, ICursor } from "./cursor";
 import {

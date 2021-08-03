@@ -22,6 +22,19 @@ Good to have: commit or PR links.
 
 -->
 
+## v0.2.0 [#35](https://github.com/interviewstreet/firepad-x/pull/35)
+
+### Changed
+
+- Updated peer dependency from `firebase@7.12.0` to `firebase@8.8.1`.
+- No breaking change on API level.
+- Improve `README.md` with a beginner friendly guide as well.
+
+### Fixes
+
+- Fixed the issue when using firebase from regions other than US would throw [error](https://stackoverflow.com/a/66387384/8556127).
+  [solution](https://stackoverflow.com/questions/64545862/upgrade-to-firebase-js-8-0-0-attempted-import-error-app-is-not-exported-from/64545863).
+
 ## v0.1.1 - [#30](https://github.com/interviewstreet/firepad-x/pull/24)
 
 ### Fixes

@@ -1,3 +1,4 @@
+import firebase from "firebase";
 import { editor } from "monaco-editor";
 import { fromMonaco } from "../src/firepad-monaco";
 import { getDatabaseAdapter, getEditorAdapter } from "./factory";
