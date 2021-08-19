@@ -1,3 +1,5 @@
+const package = require('./package.json');
+
 module.exports = function (grunt) {
   grunt.initConfig({
     coffeelint: {
@@ -42,7 +44,7 @@ module.exports = function (grunt) {
             ' * it requires no server-side code and can be added to any web app simply by',
             ' * including a couple JavaScript files.',
             ' *',
-            ' * Firepad 0.0.0',
+            ' * Firepad ' + package.version,
             ' * http://www.firepad.io/',
             ' * License: MIT',
             ' * Copyright: 2014 Firebase',
