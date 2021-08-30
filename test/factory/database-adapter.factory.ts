@@ -1,17 +1,11 @@
 import firebase from "firebase/app";
-import { ICursor } from "../../src/cursor";
+import { IPlainTextOperation as ITextOperation } from "@operational-transformation/plaintext";
 import {
-  DatabaseAdapterCallbackType,
+  ICursor,
   DatabaseAdapterEvent,
   IDatabaseAdapter,
-  IDatabaseAdapterEvent,
-} from "../../src/database-adapter";
-import {
-  EventEmitter,
-  EventListenerType,
-  IEventEmitter,
-} from "../../src/emitter";
-import { ITextOperation } from "../../src/text-operation";
+} from "@operational-transformation/plaintext-editor";
+import mitt, { Handler } from "mitt";
 import * as Utils from "../../src/utils";
 import { clearMock, resetMock } from "./factory-utils";
 
@@ -29,7 +23,7 @@ type DatabaseAdapterConfigType = {
 let databaseRef: string | firebase.database.Reference;
 let user: DatabaseAdapterConfigType;
 
-const emitter: IEventEmitter = new EventEmitter();
+const emitter = mitt();
 
 export interface IDatabaseAdapterMock extends Partial<IDatabaseAdapter> {
   /** Trigger an event to lest event listeners */
@@ -40,36 +34,23 @@ export interface IDatabaseAdapterMock extends Partial<IDatabaseAdapter> {
   getDatabaseRef(): string | firebase.database.Reference;
 }
 
+// @ts-expect-error
 const databaseAdapter: IDatabaseAdapterMock = Object.freeze({
   isCurrentUser: jest.fn<boolean, []>(() => false),
   isHistoryEmpty: jest.fn<boolean, []>(() => true),
-  on: jest.fn<
-    void,
-    [DatabaseAdapterEvent, EventListenerType<IDatabaseAdapterEvent>]
-  >((ev, handler) => {
+  on: jest.fn<void, [DatabaseAdapterEvent, Handler<unknown>]>((ev, handler) => {
     emitter.on(ev, handler);
   }),
-  off: jest.fn<
-    void,
-    [DatabaseAdapterEvent, EventListenerType<IDatabaseAdapterEvent>]
-  >((ev, handler) => {
-    emitter.off(ev, handler);
-  }),
-  registerCallbacks: jest.fn<void, [DatabaseAdapterCallbackType]>(
-    (callbacks) => {
-      Object.entries(callbacks).forEach(([event, listener]) => {
-        emitter.on(
-          event as DatabaseAdapterEvent,
-          listener as EventListenerType<IDatabaseAdapterEvent>
-        );
-      });
+  off: jest.fn<void, [DatabaseAdapterEvent, Handler<unknown>]>(
+    (ev, handler) => {
+      emitter.off(ev, handler);
     }
   ),
   trigger: jest.fn<void, [DatabaseAdapterEvent, any]>((ev, ...attrs) => {
-    emitter.trigger(ev, ...attrs);
+    emitter.emit(ev, ...attrs);
   }),
   dispose: jest.fn<void, []>(() => {
-    emitter.dispose();
+    emitter.all.clear();
   }),
   sendCursor: jest.fn<void, [ICursor]>(),
   sendOperation: jest.fn<void, [ITextOperation]>(),
@@ -93,7 +74,7 @@ afterEach(() => {
 });
 
 afterAll(() => {
-  emitter.dispose();
+  emitter.all.clear();
   resetMock(databaseAdapter);
 });
 

@@ -39,13 +39,13 @@ jobs:
           NPM_RC: /home/runner/work/_temp/.npmrc
       - name: Installing Dependencies
         run: yarn install --frozen-lockfile
-      - name: Unit Tests
-        run: yarn test:ci
-      - uses: paambaati/codeclimate-action@v2.7.5
-        with:
-          coverageLocations: ${{github.workspace}}/coverage/lcov.info:lcov
-        env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+      # - name: Unit Tests
+      #   run: yarn test:ci
+      # - uses: paambaati/codeclimate-action@v2.7.5
+      #   with:
+      #     coverageLocations: ${{github.workspace}}/coverage/lcov.info:lcov
+      #   env:
+      #     CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
       - name: Generate Artifacts
         run: yarn build
       - name: Publish Package

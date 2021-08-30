@@ -1445,6 +1445,24 @@
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
 
+"@operational-transformation/plaintext-editor@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@operational-transformation/plaintext-editor/-/plaintext-editor-0.1.0.tgz#0c7fc3253b9917bb95ba65134f4e07006cba8fd6"
+  integrity sha512-1o7XR/DbOyY0CkSnPRyLsXHanVBq4XwLIKyPkTvlwHVFn2NuxkpAL/3tlwhIKA1fRd06pxxe+Dhzprf1yaTW4g==
+  dependencies:
+    "@operational-transformation/state-machine" "0.1.0"
+    mitt "3.0.0"
+
+"@operational-transformation/plaintext@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@operational-transformation/plaintext/-/plaintext-0.1.0.tgz#2d7469b7bf886e7345fcbbb300afe45827ba990b"
+  integrity sha512-Kg0sU5+7+Fi0p9b2F558tioeInlPzlWhgSQRt4I6xwMNQAu6jpWTbnvEhGc8jAh5kaVjNYPQhzvpdZHnmDeX0g==
+
+"@operational-transformation/state-machine@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@operational-transformation/state-machine/-/state-machine-0.1.0.tgz#92096618e9747d94b9f6f12afe76a6a4b58177c1"
+  integrity sha512-fcttrjExFey5noy4eFQUXecK/YPqyINkS5GifMHirTw2cJGX8+oDosroFW+RnflS7lnSxuNq+M2S40at75B+mg==
+
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@protobufjs/aspromise/-/aspromise-1.1.2.tgz"
@@ -4826,6 +4844,11 @@ minimist@^1.2.0, minimist@^1.2.5:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz"
   integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
+
+mitt@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/mitt/-/mitt-3.0.0.tgz#69ef9bd5c80ff6f57473e8d89326d01c414be0bd"
+  integrity sha512-7dX2/10ITVyqh4aOSVI9gdape+t9l2/8QxHrFmUXu4EEUpdlxl6RudZUPZoc+zuY2hk1j7XxVroIVIan/pD/SQ==
 
 mixin-deep@^1.2.0:
   version "1.3.2"

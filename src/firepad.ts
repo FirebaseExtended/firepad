@@ -1,18 +1,13 @@
-import { Cursor } from "./cursor";
 import {
+  Cursor,
   DatabaseAdapterEvent,
-  DatabaseAdapterStateType,
-  IDatabaseAdapter,
-  UserIDType,
-} from "./database-adapter";
-import { EditorAdapterStateType, IEditorAdapter } from "./editor-adapter";
-import {
   EditorClient,
   EditorClientEvent,
+  IDatabaseAdapter,
   IEditorClient,
-  IEditorClientEvent,
-} from "./editor-client";
-import { EventEmitter, EventListenerType, IEventEmitter } from "./emitter";
+  IEditorAdapter,
+} from "@operational-transformation/plaintext-editor";
+import mitt, { Emitter, Handler } from "mitt";
 import * as Utils from "./utils";
 
 export enum FirepadEvent {
@@ -23,9 +18,17 @@ export enum FirepadEvent {
   Error = "error",
 }
 
+export type TFirepadEventArgs = {
+  [FirepadEvent.Error]: Object;
+  [FirepadEvent.Ready]: boolean;
+  [FirepadEvent.Redo]: string;
+  [FirepadEvent.Synced]: boolean;
+  [FirepadEvent.Undo]: string;
+};
+
 export interface IFirepadConstructorOptions {
   /** Unique Identifier for current User */
-  userId: UserIDType;
+  userId: string | number;
   /** Unique Hexadecimal color code for current User */
   userColor: string;
   /** Name/Short Name of the current User (optional) */
@@ -40,31 +43,19 @@ export interface IFirepad extends Utils.IDisposable {
    * @param event - Event name.
    * @param listener - Event handler callback.
    */
-  on(
-    event: FirepadEvent.Ready | FirepadEvent.Synced,
-    listener: EventListenerType<boolean>
+  on<Key extends keyof TFirepadEventArgs>(
+    event: Key,
+    listener: Handler<TFirepadEventArgs[Key]>
   ): void;
-  on(
-    event: FirepadEvent.Undo | FirepadEvent.Redo,
-    listener: EventListenerType<string>
-  ): void;
-  on(event: FirepadEvent.Error, listener: EventListenerType<Error>): void;
-  on(event: FirepadEvent, listener: EventListenerType<any>): void;
   /**
    * Remove listener to Firepad.
    * @param event - Event name.
-   * @param listener - Event handler callback.
+   * @param listener - Event handler callback (optional).
    */
-  off(
-    event: FirepadEvent.Ready | FirepadEvent.Synced,
-    listener: EventListenerType<boolean>
+  off<Key extends keyof TFirepadEventArgs>(
+    event: Key,
+    listener?: Handler<TFirepadEventArgs[Key]>
   ): void;
-  off(
-    event: FirepadEvent.Undo | FirepadEvent.Redo,
-    listener: EventListenerType<string>
-  ): void;
-  off(event: FirepadEvent.Error, listener: EventListenerType<Error>): void;
-  off(event: FirepadEvent, listener: EventListenerType<any>): void;
   /**
    * Tests if any operation has been performed in Firepad.
    */
@@ -73,7 +64,7 @@ export interface IFirepad extends Utils.IDisposable {
    * Set User Id to Firepad to distinguish user.
    * @param userId - Unique Identifier for current User.
    */
-  setUserId(userId: UserIDType): void;
+  setUserId(userId: string): void;
   /**
    * Set User Color to identify current User's cursor or selection.
    * @param userColor - Hexadecimal color code.
@@ -112,7 +103,7 @@ export class Firepad implements IFirepad {
 
   protected _ready: boolean;
   protected _zombie: boolean;
-  protected _emitter: IEventEmitter | null;
+  protected _emitter: Emitter<TFirepadEventArgs> | null;
 
   /**
    * Creates modern Firepad.
@@ -138,13 +129,7 @@ export class Firepad implements IFirepad {
     this._editorAdapter = editorAdapter;
     this._editorClient = new EditorClient(databaseAdapter, editorAdapter);
 
-    this._emitter = new EventEmitter([
-      FirepadEvent.Ready,
-      FirepadEvent.Synced,
-      FirepadEvent.Undo,
-      FirepadEvent.Redo,
-      FirepadEvent.Error,
-    ]);
+    this._emitter = mitt();
 
     this._init();
   }
@@ -162,78 +147,54 @@ export class Firepad implements IFirepad {
       this._trigger(FirepadEvent.Ready, true);
     });
 
-    this._editorClient.on(
-      EditorClientEvent.Synced,
-      (synced: boolean | IEditorClientEvent) => {
-        setTimeout(() => {
-          this._trigger(FirepadEvent.Synced, synced as boolean);
-        });
-      }
-    );
+    this._editorClient.on(EditorClientEvent.Synced, (synced) => {
+      setTimeout(() => {
+        this._trigger(FirepadEvent.Synced, synced);
+      });
+    });
 
-    this._editorClient.on(
-      EditorClientEvent.Undo,
-      (undoOperation: string | IEditorClientEvent) => {
-        setTimeout(() => {
-          this._trigger(FirepadEvent.Undo, undoOperation as string);
-        });
-      }
-    );
+    this._editorClient.on(EditorClientEvent.Undo, (undoOperation) => {
+      setTimeout(() => {
+        this._trigger(FirepadEvent.Undo, undoOperation);
+      });
+    });
 
-    this._editorClient.on(
-      EditorClientEvent.Redo,
-      (redoOperation: string | IEditorClientEvent) => {
-        setTimeout(() => {
-          this._trigger(FirepadEvent.Redo, redoOperation as string);
-        });
-      }
-    );
+    this._editorClient.on(EditorClientEvent.Redo, (redoOperation) => {
+      setTimeout(() => {
+        this._trigger(FirepadEvent.Redo, redoOperation);
+      });
+    });
 
-    this._editorClient.on(
-      EditorClientEvent.Error,
-      (
-        error: Error | IEditorClientEvent,
-        operation: string,
-        state: DatabaseAdapterStateType | EditorAdapterStateType
-      ) => {
-        setTimeout(() => {
-          this._trigger(FirepadEvent.Error, error as Error, operation, state);
-        });
-      }
-    );
+    this._editorClient.on(EditorClientEvent.Error, (error) => {
+      setTimeout(() => {
+        this._trigger(FirepadEvent.Error, error);
+      });
+    });
   }
 
   getConfiguration(option: keyof IFirepadConstructorOptions): any {
     return option in this._options ? this._options[option] : null;
   }
 
-  on(event: FirepadEvent, listener: EventListenerType<any>): void {
+  on<Key extends keyof TFirepadEventArgs>(
+    event: Key,
+    listener: Handler<TFirepadEventArgs[Key]>
+  ): void {
     return this._emitter?.on(event, listener);
   }
 
-  off(event: FirepadEvent, listener: EventListenerType<any>): void {
+  off<Key extends keyof TFirepadEventArgs>(
+    event: Key,
+    listener: Handler<TFirepadEventArgs[Key]>
+  ): void {
     return this._emitter?.off(event, listener);
   }
 
-  protected _trigger(
-    event: FirepadEvent.Ready | FirepadEvent.Synced,
-    eventAttr: boolean
-  ): void;
-  protected _trigger(
-    event: FirepadEvent.Undo | FirepadEvent.Redo,
-    eventAttr: string
-  ): void;
-  protected _trigger(
-    event: FirepadEvent.Error,
-    eventAttr: Error,
-    ...extraArgs: [string, DatabaseAdapterStateType | EditorAdapterStateType]
-  ): void;
-  protected _trigger(
-    event: FirepadEvent,
-    eventAttr: any,
-    ...extraArgs: unknown[]
+  protected _trigger<Key extends keyof TFirepadEventArgs>(
+    event: Key,
+    payload: TFirepadEventArgs[Key]
   ): void {
-    return this._emitter?.trigger(event, eventAttr, ...extraArgs);
+    return this._emitter!.emit(event, payload);
   }
 
   isHistoryEmpty(): boolean {
@@ -242,7 +203,7 @@ export class Firepad implements IFirepad {
   }
 
   setUserId(userId: string | number): void {
-    this._databaseAdapter.setUserId(userId);
+    this._databaseAdapter.setUserId(userId as string);
     this._options.userId = userId;
   }
 
@@ -280,7 +241,7 @@ export class Firepad implements IFirepad {
 
     if (this._emitter) {
       this._trigger(FirepadEvent.Ready, false);
-      this._emitter.dispose();
+      this._emitter.all.clear();
       this._emitter = null;
     }
   }

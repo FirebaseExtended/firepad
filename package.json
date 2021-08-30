@@ -1,7 +1,7 @@
 {
   "name": "@hackerrank/firepad",
   "description": "Collaborative text editing powered by Firebase",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": {
     "email": "bprogyan@gmail.com",
     "name": "Progyan Bhattacharya",
@@ -59,6 +59,10 @@
     "monaco-editor": "0.18.1"
   },
   "dependencies": {
+    "@operational-transformation/plaintext": "0.1.0",
+    "@operational-transformation/plaintext-editor": "0.1.0",
+    "@operational-transformation/state-machine": "0.1.0",
+    "mitt": "3.0.0",
     "uuid": "8.3.2"
   },
   "devDependencies": {

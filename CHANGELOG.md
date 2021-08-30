@@ -22,6 +22,15 @@ Good to have: commit or PR links.
 
 -->
 
+## v0.3.0 [#42](https://github.com/interviewstreet/firepad-x/pull/42)
+
+### Changed
+
+- Moved OT Responsibility to 3rd Party Libs under `@operational-transformation` scope.
+- Using `mitt` for even emitter.
+- Remove unused modules and simplify implementations.
+- No breaking change on API level.
+
 ## v0.2.0 [#35](https://github.com/interviewstreet/firepad-x/pull/35)
 
 ### Changed

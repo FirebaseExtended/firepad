@@ -9,14 +9,13 @@
 
 import * as monaco from "monaco-editor";
 
-import { ClientIDType } from "./editor-adapter";
 import * as Utils from "./utils";
 
 type OnDisposed = Utils.VoidFunctionType;
 
 export interface ICursorWidgetConstructorOptions {
   codeEditor: monaco.editor.ICodeEditor;
-  widgetId: ClientIDType;
+  widgetId: string;
   color: string;
   label: string;
   range: monaco.Range;

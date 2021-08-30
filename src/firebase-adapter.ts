@@ -1,23 +1,18 @@
-import "firebase/database";
-
 import firebase from "firebase/app";
-
-import { CursorType, ICursor } from "./cursor";
+import "firebase/database";
 import {
-  DatabaseAdapterCallbackType,
+  IPlainTextOperation as ITextOperation,
+  PlainTextOperation as TextOperation,
+  TPlainTextOperation as TextOperationType,
+} from "@operational-transformation/plaintext";
+import {
+  TCursor,
+  ICursor,
   DatabaseAdapterEvent as FirebaseAdapterEvent,
   IDatabaseAdapter,
-  IDatabaseAdapterEvent,
-  SendCursorCallbackType,
-  SendOperationCallbackType,
-  UserIDType,
-} from "./database-adapter";
-import { EventEmitter, EventListenerType, IEventEmitter } from "./emitter";
-import {
-  ITextOperation,
-  TextOperation,
-  TextOperationType,
-} from "./text-operation";
+  TDatabaseAdapterEventArgs,
+} from "@operational-transformation/plaintext-editor";
+import mitt, { Emitter, Handler } from "mitt";
 import * as Utils from "./utils";
 
 type FirebaseRefCallbackType = (
@@ -33,7 +28,7 @@ type FirebaseRefCallbackHookType = {
 
 type RevisionType = {
   /** Author */
-  a: UserIDType;
+  a: string;
   /** Operation */
   o: TextOperationType;
 };
@@ -53,14 +48,12 @@ export type FirebaseCursorDataType = {
   /** Name of User */
   name: string;
   /** Position of Cursor/Selection */
-  cursor: CursorType;
+  cursor: TCursor;
 };
 
 // Based off ideas from http://www.zanopha.com/docs/elen.pdf
 const characters =
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
-export interface IFirebaseAdapterEvent extends IDatabaseAdapterEvent {}
 
 /** Copy of the Operation and Revision ID just sent */
 interface ISentOperation {
@@ -73,7 +66,7 @@ interface ISentOperation {
 /** Parsed Operation data from JSON representation */
 interface IRevision {
   /** Author */
-  author: UserIDType;
+  author: string;
   /** Operation */
   operation: ITextOperation;
 }
@@ -85,12 +78,12 @@ export class FirebaseAdapter implements IDatabaseAdapter {
   protected _revision: number;
   protected _sent: ISentOperation | null;
   protected _checkpointRevision: number;
-  protected _userId: UserIDType | null;
+  protected _userId: string | null;
   protected _userColor: string | null;
   protected _userName: string | null;
   protected _userCursor: ICursor | null;
   protected _pendingReceivedRevisions: RevisionHistoryType;
-  protected _emitter: IEventEmitter | null;
+  protected _emitter: Emitter<TDatabaseAdapterEventArgs> | null;
   protected _document: ITextOperation | null;
   protected _userRef: firebase.database.Reference | null;
   protected _databaseRef: firebase.database.Reference | null;
@@ -143,15 +136,7 @@ export class FirebaseAdapter implements IDatabaseAdapter {
     //    to handle it gracefully.]
     this._pendingReceivedRevisions = {};
 
-    this._emitter = new EventEmitter([
-      FirebaseAdapterEvent.Acknowledge,
-      FirebaseAdapterEvent.CursorChange,
-      FirebaseAdapterEvent.Error,
-      FirebaseAdapterEvent.Operation,
-      FirebaseAdapterEvent.Ready,
-      FirebaseAdapterEvent.Retry,
-      FirebaseAdapterEvent.InitialRevision,
-    ]);
+    this._emitter = mitt();
 
     this._init();
   }
@@ -189,7 +174,7 @@ export class FirebaseAdapter implements IDatabaseAdapter {
     }
 
     if (this._emitter) {
-      this._emitter.dispose();
+      this._emitter.all.clear();
       this._emitter = null;
     }
 
@@ -208,35 +193,25 @@ export class FirebaseAdapter implements IDatabaseAdapter {
     return this._userId == clientId;
   }
 
-  on(
-    event: FirebaseAdapterEvent,
-    listener: EventListenerType<IFirebaseAdapterEvent>
+  on<Key extends keyof TDatabaseAdapterEventArgs>(
+    event: Key,
+    listener: Handler<TDatabaseAdapterEventArgs[Key]>
   ): void {
     return this._emitter?.on(event, listener);
   }
 
-  off(
-    event: FirebaseAdapterEvent,
-    listener: EventListenerType<IFirebaseAdapterEvent>
+  off<Key extends keyof TDatabaseAdapterEventArgs>(
+    event: Key,
+    listener?: Handler<TDatabaseAdapterEventArgs[Key]>
   ): void {
     return this._emitter?.off(event, listener);
   }
 
-  registerCallbacks(callbacks: DatabaseAdapterCallbackType): void {
-    Object.entries(callbacks).forEach(([event, listener]) => {
-      this.on(
-        event as FirebaseAdapterEvent,
-        listener as EventListenerType<IFirebaseAdapterEvent>
-      );
-    });
-  }
-
-  protected _trigger(
-    event: FirebaseAdapterEvent,
-    eventArgs: IFirebaseAdapterEvent | void,
-    ...extraArgs: unknown[]
+  protected _trigger<Key extends keyof TDatabaseAdapterEventArgs>(
+    event: Key,
+    payload: TDatabaseAdapterEventArgs[Key]
   ): void {
-    return this._emitter?.trigger(event, eventArgs || {}, ...extraArgs);
+    return this._emitter!.emit(event, payload);
   }
 
   /**
@@ -263,7 +238,7 @@ export class FirebaseAdapter implements IDatabaseAdapter {
 
       const revisionId: string | null = snapshot.child("id").val();
       const op: TextOperationType | null = snapshot.child("o").val();
-      const author: UserIDType | null = snapshot.child("a").val();
+      const author: string | null = snapshot.child("a").val();
 
       if (op != null && revisionId != null && author !== null) {
         this._pendingReceivedRevisions[revisionId] = { o: op, a: author };
@@ -323,7 +298,7 @@ export class FirebaseAdapter implements IDatabaseAdapter {
 
     if (!this._initialRevisions) {
       this._initialRevisions = true;
-      this._trigger(FirebaseAdapterEvent.InitialRevision);
+      this._trigger(FirebaseAdapterEvent.InitialRevision, undefined);
     }
 
     // Compose the checkpoint and all subsequent revisions into a single operation to apply at once.
@@ -400,7 +375,7 @@ export class FirebaseAdapter implements IDatabaseAdapter {
               this._saveCheckpoint();
             }
             this._sent = null;
-            this._trigger(FirebaseAdapterEvent.Acknowledge);
+            this._trigger(FirebaseAdapterEvent.Acknowledge, undefined);
           } else {
             // our op failed.  Trigger a retry after we're done catching up on any incoming ops.
             triggerRetry = true;
@@ -417,30 +392,28 @@ export class FirebaseAdapter implements IDatabaseAdapter {
 
     if (triggerRetry) {
       this._sent = null;
-      this._trigger(FirebaseAdapterEvent.Retry);
+      this._trigger(FirebaseAdapterEvent.Retry, undefined);
     }
   }
 
-  sendOperation(
-    operation: TextOperation,
-    callback: SendOperationCallbackType = Utils.noop
-  ): void {
+  sendOperation(operation: TextOperation): void {
     // If we're not ready yet, do nothing right now, and trigger a retry when we're ready.
     if (!this._ready) {
       this.on(FirebaseAdapterEvent.Ready, () => {
-        this._trigger(FirebaseAdapterEvent.Retry);
+        this._trigger(FirebaseAdapterEvent.Retry, undefined);
       });
       return;
     }
 
     // Sanity check that this operation is valid.
     if (!this._document!.canMergeWith(operation)) {
-      const error = "sendOperation() called with invalid operation.";
-      this._trigger(FirebaseAdapterEvent.Error, error, operation.toString(), {
+      const error = new Error("sendOperation() called with invalid operation.");
+      this._trigger(FirebaseAdapterEvent.Error, {
+        err: error,
         operation: operation.toString(),
         document: this._document!.toString(),
       });
-      Utils.onInvalidOperationRecieve(error);
+      Utils.onInvalidOperationRecieve(error.message);
     }
 
     // Convert revision into an id that will sort properly lexicographically.
@@ -453,7 +426,7 @@ export class FirebaseAdapter implements IDatabaseAdapter {
       t: firebase.database.ServerValue.TIMESTAMP as number,
     };
 
-    this._doTransaction(revisionId, revisionData, callback);
+    this._doTransaction(revisionId, revisionData);
   }
 
   /**
@@ -464,8 +437,7 @@ export class FirebaseAdapter implements IDatabaseAdapter {
    */
   protected _doTransaction(
     revisionId: string,
-    revisionData: FirebaseOperationDataType,
-    callback: SendOperationCallbackType
+    revisionData: FirebaseOperationDataType
   ): void {
     this._databaseRef!.child("history")
       .child(revisionId)
@@ -475,32 +447,26 @@ export class FirebaseAdapter implements IDatabaseAdapter {
             return revisionData;
           }
         },
-        (error, committed) => {
+        (error) => {
           if (error) {
             if (error.message === "disconnect") {
               if (this._sent && this._sent.id === revisionId) {
                 // We haven't seen our transaction succeed or fail.  Send it again.
                 setTimeout(() => {
-                  this._doTransaction(revisionId, revisionData, callback);
+                  this._doTransaction(revisionId, revisionData);
                 });
               }
 
-              return callback(error, false);
+              return false;
             } else {
-              this._trigger(
-                FirebaseAdapterEvent.Error,
-                error,
-                revisionData.o.toString(),
-                {
-                  operation: revisionData.o.toString(),
-                  document: this._document!.toString(),
-                }
-              );
+              this._trigger(FirebaseAdapterEvent.Error, {
+                err: error,
+                operation: revisionData.o.toString(),
+                document: this._document!.toString(),
+              });
               Utils.onFailedDatabaseTransaction(error.message);
             }
           }
-
-          return callback(null, committed);
         },
         false
       );
@@ -551,7 +517,7 @@ export class FirebaseAdapter implements IDatabaseAdapter {
     return this._revision === 0;
   }
 
-  setUserId(userId: UserIDType): void {
+  setUserId(userId: string | number): void {
     Utils.validateTruth(
       typeof userId === "string" || typeof userId === "number",
       "User ID must be either String or Integer."
@@ -567,7 +533,7 @@ export class FirebaseAdapter implements IDatabaseAdapter {
       this._userRef = null;
     }
 
-    this._userId = userId;
+    this._userId = `${userId}`;
     this._userRef = this._databaseRef!.child("users").child(userId.toString());
 
     this._initializeUserData();
@@ -601,23 +567,14 @@ export class FirebaseAdapter implements IDatabaseAdapter {
     this._userName = userName;
   }
 
-  sendCursor(
-    cursor: ICursor | null,
-    callback: SendCursorCallbackType = Utils.noop
-  ): void {
+  sendCursor(cursor: ICursor | null): void {
     if (!this._userRef) {
       return;
     }
 
-    const cursorData: CursorType | null =
-      cursor != null ? cursor.toJSON() : null;
+    const cursorData: TCursor | null = cursor != null ? cursor.toJSON() : null;
 
-    this._userRef.child("cursor").set(cursorData, function (error) {
-      if (typeof callback === "function") {
-        callback(error, cursor);
-      }
-    });
-
+    this._userRef.child("cursor").set(cursorData);
     this._userCursor = cursor;
   }
 
@@ -634,13 +591,12 @@ export class FirebaseAdapter implements IDatabaseAdapter {
     const userId = childSnap.key as string;
     const userData = childSnap.val() as FirebaseCursorDataType;
 
-    this._trigger(
-      FirebaseAdapterEvent.CursorChange,
-      userId,
-      userData.cursor,
-      userData.color,
-      userData.name
-    );
+    this._trigger(FirebaseAdapterEvent.CursorChange, {
+      clientId: userId,
+      cursor: userData.cursor,
+      userColor: userData.color,
+      userName: userData.name,
+    });
   }
 
   /**
@@ -649,7 +605,10 @@ export class FirebaseAdapter implements IDatabaseAdapter {
    */
   protected _childRemoved(childSnap: firebase.database.DataSnapshot): void {
     const userId = childSnap.key as string;
-    this._trigger(FirebaseAdapterEvent.CursorChange, userId, null);
+    this._trigger(FirebaseAdapterEvent.CursorChange, {
+      clientId: userId,
+      cursor: null,
+    });
   }
 
   /**
