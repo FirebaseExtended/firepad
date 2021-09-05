@@ -22,6 +22,13 @@ Good to have: commit or PR links.
 
 -->
 
+## v0.3.1 [#44](https://github.com/interviewstreet/firepad-x/pull/44)
+
+### Changed
+
+- Bump version of `@operational-transformation` packages to `v0.1.1`.
+- This fixes [issue](https://github.com/interviewstreet/firepad-x/issues/43) with Universal Application building using this library.
+
 ## v0.3.0 [#42](https://github.com/interviewstreet/firepad-x/pull/42)
 
 ### Changed

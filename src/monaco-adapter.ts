@@ -609,7 +609,7 @@ export class MonacoAdapter implements IEditorAdapter {
 
     /** If no change information received */
     if (!ev.changes || ev.changes.length === 0) {
-      const op = new TextOperation().retain(contentLength, null);
+      const op = new TextOperation().retain(contentLength);
       this._trigger(EditorAdapterEvent.Change, {
         operation: op,
         inverse: op,
@@ -705,8 +705,8 @@ export class MonacoAdapter implements IEditorAdapter {
       const retain = rangeOffset - skippedChars;
 
       try {
-        mainOp = mainOp.retain(retain, null);
-        reverseOp = reverseOp.retain(retain, null);
+        mainOp = mainOp.retain(retain);
+        reverseOp = reverseOp.retain(retain);
       } catch (err) {
         this._trigger(EditorAdapterEvent.Error, {
           err,
@@ -718,17 +718,14 @@ export class MonacoAdapter implements IEditorAdapter {
 
       if (!text && !range.isEmpty()) {
         mainOp = mainOp.delete(rangeLength);
-        reverseOp = reverseOp.insert(
-          this._getPreviousContentInRange(range),
-          null
-        );
+        reverseOp = reverseOp.insert(this._getPreviousContentInRange(range));
       } else if (text && !range.isEmpty()) {
-        mainOp = mainOp.delete(rangeLength).insert(text, null);
+        mainOp = mainOp.delete(rangeLength).insert(text);
         reverseOp = reverseOp
-          .insert(this._getPreviousContentInRange(range), null)
+          .insert(this._getPreviousContentInRange(range))
           .delete(text);
       } else {
-        mainOp = mainOp.insert(text, null);
+        mainOp = mainOp.insert(text);
         reverseOp = reverseOp.delete(text);
       }
 
@@ -736,8 +733,8 @@ export class MonacoAdapter implements IEditorAdapter {
     }
 
     try {
-      mainOp = mainOp.retain(contentLength - skippedChars, null);
-      reverseOp = reverseOp.retain(contentLength - skippedChars, null);
+      mainOp = mainOp.retain(contentLength - skippedChars);
+      reverseOp = reverseOp.retain(contentLength - skippedChars);
     } catch (err) {
       this._trigger(EditorAdapterEvent.Error, {
         err,
