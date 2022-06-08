@@ -1,7 +1,7 @@
-import firebase from "firebase";
 import * as monaco from "monaco-editor";
 import { v4 as uuid } from "uuid";
 
+import { UserIDType } from "./database-adapter";
 import { FirebaseAdapter } from "./firebase-adapter";
 import { Firepad, IFirepad, IFirepadConstructorOptions } from "./firepad";
 import { MonacoAdapter } from "./monaco-adapter";
@@ -19,7 +19,7 @@ export function fromMonaco(
   options: Partial<IFirepadConstructorOptions> = {}
 ): IFirepad {
   // Initialize constructor options with their default values
-  const userId: string | number = options.userId || uuid();
+  const userId: UserIDType = options.userId || uuid();
   const userColor: string =
     options.userColor || Utils.colorFromUserId(userId.toString());
   const userName: string = options.userName || userId.toString();

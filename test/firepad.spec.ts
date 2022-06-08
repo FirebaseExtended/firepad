@@ -1,9 +1,10 @@
 import {
   DatabaseAdapterEvent,
-  EditorClientEvent,
+  DatabaseAdapterStateType,
   IDatabaseAdapter,
-  IEditorAdapter,
-} from "@operational-transformation/plaintext-editor";
+} from "../src/database-adapter";
+import { EditorAdapterStateType, IEditorAdapter } from "../src/editor-adapter";
+import { EditorClientEvent } from "../src/editor-client";
 import { Firepad, FirepadEvent, IFirepad } from "../src/firepad";
 import {
   getDatabaseAdapter,
@@ -13,10 +14,8 @@ import {
   IEditorAdapterMock,
 } from "./factory";
 
-jest.mock("@operational-transformation/plaintext-editor", () => {
-  const { DatabaseAdapterEvent, EditorClientEvent } = jest.requireActual(
-    "@operational-transformation/plaintext-editor"
-  );
+jest.mock("../src/editor-client", () => {
+  const { EditorClientEvent } = jest.requireActual("../src/editor-client");
   const { getEditorClient } = require("./factory/editor-client.factory");
   class EditorClientMock {
     constructor(
@@ -28,7 +27,6 @@ jest.mock("@operational-transformation/plaintext-editor", () => {
   }
   return {
     __esModule: true,
-    DatabaseAdapterEvent,
     EditorClientEvent,
     EditorClient: EditorClientMock,
   };
@@ -139,7 +137,10 @@ describe("Firepad", () => {
     let onSyncListenerStub: jest.Mock<void, [boolean]>;
     let onUndoListenerStub: jest.Mock<void, [string]>;
     let onRedoListenerStub: jest.Mock<void, [string]>;
-    let onErrorListenerStub: jest.Mock<void, [Object]>;
+    let onErrorListenerStub: jest.Mock<
+      void,
+      [Error, string, DatabaseAdapterStateType | EditorAdapterStateType]
+    >;
 
     beforeAll(() => {
       onSyncListenerStub = jest.fn();

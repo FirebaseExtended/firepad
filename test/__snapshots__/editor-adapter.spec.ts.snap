@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Editor Adapter should only listen to finite number of events 1`] = `
+Object {
+  "Blur": "blur",
+  "Change": "change",
+  "CursorActivity": "cursorActivity",
+  "Error": "error",
+  "Focus": "focus",
+  "Redo": "redo",
+  "Undo": "undo",
+}
+`;

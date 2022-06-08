@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Database Adapter should only listen to finite number of events 1`] = `
+Object {
+  "Acknowledge": "ack",
+  "CursorChange": "cursor",
+  "Error": "error",
+  "InitialRevision": "initialRevision",
+  "Operation": "operation",
+  "Ready": "ready",
+  "Retry": "retry",
+}
+`;

@@ -1,13 +1,17 @@
+import { ICursor } from "../../src/cursor";
 import {
-  IPlainTextOperation as ITextOperation,
-  ITextOperation as ITextOp,
-} from "@operational-transformation/plaintext";
-import {
-  ICursor,
+  ClientIDType,
   EditorAdapterEvent,
+  EditorEventCallbackType,
   IEditorAdapter,
-} from "@operational-transformation/plaintext-editor";
-import mitt, { Handler } from "mitt";
+  IEditorAdapterEvent,
+} from "../../src/editor-adapter";
+import {
+  EventEmitter,
+  EventListenerType,
+  IEventEmitter,
+} from "../../src/emitter";
+import { ITextOperation } from "../../src/text-operation";
 import * as Utils from "../../src/utils";
 import { clearMock, resetMock } from "./factory-utils";
 
@@ -16,7 +20,7 @@ Utils.validateFalse(
   "This factories can only be imported in Test environment"
 );
 
-const emitter = mitt();
+const emitter: IEventEmitter = new EventEmitter();
 
 export interface IEditorAdapterMock extends Partial<IEditorAdapter> {
   /** Trigger an event to lest event listeners */
@@ -32,16 +36,29 @@ let currentCursor: ICursor | null = null;
 let content: string = "";
 let editorInstance: any;
 
-// @ts-expect-error
 const editorAdapter: IEditorAdapterMock = Object.freeze({
-  on: jest.fn<void, [EditorAdapterEvent, Handler<unknown>]>((ev, handler) => {
+  on: jest.fn<
+    void,
+    [EditorAdapterEvent, EventListenerType<IEditorAdapterEvent>]
+  >((ev, handler) => {
     emitter.on(ev, handler);
   }),
-  off: jest.fn<void, [EditorAdapterEvent, Handler<unknown>]>((ev, handler) => {
+  off: jest.fn<
+    void,
+    [EditorAdapterEvent, EventListenerType<IEditorAdapterEvent>]
+  >((ev, handler) => {
     emitter.off(ev, handler);
   }),
+  registerCallbacks: jest.fn<void, [EditorEventCallbackType]>((callbacks) => {
+    Object.entries(callbacks).forEach(([event, listener]) => {
+      emitter.on(
+        event as EditorAdapterEvent,
+        listener as EventListenerType<IEditorAdapterEvent>
+      );
+    });
+  }),
   trigger: jest.fn<void, [EditorAdapterEvent, any]>((ev, ...attrs) => {
-    emitter.emit(ev, ...attrs);
+    emitter.trigger(ev, ...attrs);
   }),
   registerUndo: jest.fn<void, [VoidFunction]>((handler) => {
     emitter.on("undo", handler);
@@ -50,7 +67,7 @@ const editorAdapter: IEditorAdapterMock = Object.freeze({
     emitter.on("redo", handler);
   }),
   dispose: jest.fn<void, []>(() => {
-    emitter.all.clear();
+    emitter.dispose();
   }),
   setInitiated: jest.fn<void, [boolean]>(),
   getCursor: jest.fn<ICursor, []>(() => currentCursor),
@@ -59,7 +76,7 @@ const editorAdapter: IEditorAdapterMock = Object.freeze({
   }),
   setOtherCursor: jest.fn<
     Utils.IDisposable,
-    [string | number, ICursor, string, string | undefined]
+    [ClientIDType, ICursor, string, string | undefined]
   >(() => ({
     dispose: disposeRemoteCursorStub,
   })),
@@ -70,28 +87,24 @@ const editorAdapter: IEditorAdapterMock = Object.freeze({
     content = text;
   }),
   applyOperation: jest.fn<void, [ITextOperation]>((operation) => {
-    const contentArray = [...content];
-    const ops = operation.entries();
-
     let index = 0;
-    let opValue: IteratorResult<[number, ITextOp]>;
+    const contentArray = [...content];
+    const ops = operation.getOps();
 
-    while (!(opValue = ops.next()).done) {
-      const op: ITextOp = opValue.value[1];
+    for (const op of ops) {
+      if (op.isRetain()) {
+        index += op.chars;
+        continue;
+      }
 
-      switch (true) {
-        case op.isDelete():
-          contentArray.splice(index, op.characterCount());
-          break;
+      if (op.isDelete()) {
+        contentArray.splice(index, op.chars);
+        continue;
+      }
 
-        case op.isInsert():
-          contentArray.splice(index, 0, ...[...op.textContent()]);
-          index += op.textContent().length;
-          break;
-
-        case op.isRetain():
-          index += op.characterCount();
-          break;
+      if (op.isInsert()) {
+        contentArray.splice(index, 0, ...[...op.text]);
+        index += op.text.length;
       }
     }
 
@@ -107,7 +120,7 @@ afterEach(() => {
 });
 
 afterAll(() => {
-  emitter.all.clear();
+  emitter.dispose();
   resetMock(editorAdapter);
 });
 

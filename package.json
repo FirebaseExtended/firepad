@@ -1,7 +1,7 @@
 {
   "name": "@hackerrank/firepad",
   "description": "Collaborative text editing powered by Firebase",
-  "version": "0.3.1",
+  "version": "0.4.1-beta",
   "author": {
     "email": "bprogyan@gmail.com",
     "name": "Progyan Bhattacharya",
@@ -11,8 +11,7 @@
     "Michael Lehenbauer <michael@firebase.com>",
     "Brijesh Bittu <brijesh@hackerrank.com>",
     "Nishchay Kaushik <nishchay@hackerrank.com>",
-    "Mohanasundar <mohana.sundar@hackerrank.com>",
-    "Shubham Shekhar <shubhamshekhar567@gmail.com>"
+    "Mohanasundar <mohana.sundar@hackerrank.com>"
   ],
   "maintainers": [
     {
@@ -55,14 +54,10 @@
     "node": ">= 10.17.0"
   },
   "peerDependencies": {
-    "firebase": "8.8.1",
+    "firebase": "7.12.0",
     "monaco-editor": "0.18.1"
   },
   "dependencies": {
-    "@operational-transformation/plaintext": "0.1.1",
-    "@operational-transformation/plaintext-editor": "0.1.1",
-    "@operational-transformation/state-machine": "0.1.1",
-    "mitt": "3.0.0",
     "uuid": "8.3.2"
   },
   "devDependencies": {
@@ -78,7 +73,7 @@
     "child-process-promise": "2.2.1",
     "core-js": "3.11.0",
     "css-loader": "5.2.4",
-    "firebase": "8.8.1",
+    "firebase": "7.12.0",
     "git-format-staged": "2.1.1",
     "husky": "^7.0.0",
     "jest": "27.0.3",

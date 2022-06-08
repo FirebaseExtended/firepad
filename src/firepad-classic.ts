@@ -1,27 +1,28 @@
-import firebase from "firebase";
+import * as Firebase from "firebase";
 import * as monaco from "monaco-editor";
+
+import { Cursor } from "./cursor";
 import {
-  Cursor,
   DatabaseAdapterEvent,
+  IDatabaseAdapter,
+  IDatabaseAdapterEvent,
+  UserIDType,
+} from "./database-adapter";
+import { IEditorAdapter, IEditorAdapterEvent } from "./editor-adapter";
+import {
   EditorClient,
   EditorClientEvent,
-  IDatabaseAdapter,
   IEditorClient,
-  IEditorAdapter,
-} from "@operational-transformation/plaintext-editor";
+} from "./editor-client";
+import { EventEmitter, EventListenerType, IEventEmitter } from "./emitter";
 import { FirebaseAdapter } from "./firebase-adapter";
-import {
-  FirepadEvent as FirepadClassicEvent,
-  IFirepad,
-  TFirepadEventArgs,
-} from "./firepad";
+import { FirepadEvent as FirepadClassicEvent, IFirepad } from "./firepad";
 import { MonacoAdapter } from "./monaco-adapter";
 import * as Utils from "./utils";
-import mitt, { Emitter, Handler } from "mitt";
 
 interface IFirepadClassicConstructorOptions {
   /** Unique Identifier for current User */
-  userId?: string | number;
+  userId?: UserIDType;
   /** Unique Hexadecimal color code for current User */
   userColor?: string;
   /** Name/Short Name of the current User */
@@ -38,7 +39,7 @@ export default class FirepadClassic implements IFirepad {
 
   protected _ready: boolean;
   protected _zombie: boolean;
-  protected _emitter: Emitter<TFirepadEventArgs> | null;
+  protected _emitter: IEventEmitter | null;
 
   /**
    * Creates a classic Firepad
@@ -48,7 +49,7 @@ export default class FirepadClassic implements IFirepad {
    * @param options - Firepad constructor options (optional).
    */
   constructor(
-    databaseRef: firebase.database.Reference,
+    databaseRef: Firebase.database.Reference,
     editor: monaco.editor.IStandaloneCodeEditor,
     options: IFirepadClassicConstructorOptions = {}
   ) {
@@ -84,7 +85,12 @@ export default class FirepadClassic implements IFirepad {
       this._editorAdapter
     );
 
-    this._emitter = mitt();
+    this._emitter = new EventEmitter([
+      FirepadClassicEvent.Ready,
+      FirepadClassicEvent.Synced,
+      FirepadClassicEvent.Undo,
+      FirepadClassicEvent.Redo,
+    ]);
 
     this.init();
   }
@@ -102,17 +108,26 @@ export default class FirepadClassic implements IFirepad {
       this._trigger(FirepadClassicEvent.Ready, true);
     });
 
-    this._editorClient.on(EditorClientEvent.Synced, (synced: boolean) => {
-      this._trigger(FirepadClassicEvent.Synced, synced);
-    });
+    this._editorClient.on(
+      EditorClientEvent.Synced,
+      (synced: boolean | IDatabaseAdapterEvent) => {
+        this._trigger(FirepadClassicEvent.Synced, synced);
+      }
+    );
 
-    this._editorClient.on(EditorClientEvent.Undo, (undoOperation: string) => {
-      this._trigger(FirepadClassicEvent.Undo, undoOperation);
-    });
+    this._editorClient.on(
+      EditorClientEvent.Undo,
+      (undoOperation: string | IEditorAdapterEvent) => {
+        this._trigger(FirepadClassicEvent.Undo, undoOperation);
+      }
+    );
 
-    this._editorClient.on(EditorClientEvent.Redo, (redoOperation: string) => {
-      this._trigger(FirepadClassicEvent.Redo, redoOperation);
-    });
+    this._editorClient.on(
+      EditorClientEvent.Redo,
+      (redoOperation: string | IEditorAdapterEvent) => {
+        this._trigger(FirepadClassicEvent.Redo, redoOperation);
+      }
+    );
   }
 
   dispose(): void {
@@ -122,30 +137,25 @@ export default class FirepadClassic implements IFirepad {
 
     if (this._emitter) {
       this._trigger(FirepadClassicEvent.Ready, false);
-      this._emitter.all.clear();
+      this._emitter.dispose();
       this._emitter = null;
     }
   }
 
-  on<Key extends keyof TFirepadEventArgs>(
-    event: Key,
-    listener: Handler<TFirepadEventArgs[Key]>
-  ): void {
+  on(event: FirepadClassicEvent, listener: EventListenerType<any>): void {
     return this._emitter?.on(event, listener);
   }
 
-  off<Key extends keyof TFirepadEventArgs>(
-    event: Key,
-    listener: Handler<TFirepadEventArgs[Key]>
-  ): void {
+  off(event: FirepadClassicEvent, listener: EventListenerType<any>): void {
     return this._emitter?.off(event, listener);
   }
 
-  protected _trigger<Key extends keyof TFirepadEventArgs>(
-    event: Key,
-    payload: TFirepadEventArgs[Key]
+  protected _trigger(
+    event: FirepadClassicEvent,
+    eventAttr: any,
+    ...extraArgs: any[]
   ): void {
-    return this._emitter!.emit(event, payload);
+    return this._emitter?.trigger(event, eventAttr, ...extraArgs);
   }
 
   isHistoryEmpty(): boolean {
@@ -154,7 +164,7 @@ export default class FirepadClassic implements IFirepad {
   }
 
   setUserId(userId: string | number): void {
-    this._databaseAdapter.setUserId(`${userId}`);
+    this._databaseAdapter.setUserId(userId);
     this._options.userId = userId;
   }
 
@@ -213,7 +223,7 @@ export default class FirepadClassic implements IFirepad {
    * @param options - Firepad constructor options (optional).
    */
   static fromMonaco(
-    databaseRef: firebase.database.Reference,
+    databaseRef: Firebase.database.Reference,
     editor: monaco.editor.IStandaloneCodeEditor,
     options?: IFirepadClassicConstructorOptions
   ) {

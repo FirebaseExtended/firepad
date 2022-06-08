@@ -1,50 +1,48 @@
 import * as monaco from "monaco-editor";
 
-import {
-  IPlainTextOperation as ITextOperation,
-  PlainTextOperation as TextOperation,
-  ITextOperation as ITextOp,
-} from "@operational-transformation/plaintext";
-import {
-  Cursor,
-  ICursor,
-  EditorAdapterEvent,
-  IEditorAdapter,
-  TEditorAdapterEventArgs,
-  TEditorAdapterCursorParams,
-} from "@operational-transformation/plaintext-editor";
-import mitt, { Emitter, Handler } from "mitt";
+import { Cursor, ICursor } from "./cursor";
 import {
   CursorWidgetController,
   ICursorWidgetController,
 } from "./cursor-widget-controller";
+import {
+  ClientIDType,
+  EditorAdapterEvent,
+  EditorEventCallbackType,
+  IEditorAdapter,
+  IEditorAdapterEvent,
+  UndoRedoCallbackType,
+} from "./editor-adapter";
+import { EventEmitter, EventListenerType, IEventEmitter } from "./emitter";
+import { ITextOp } from "./text-op";
+import { ITextOperation, TextOperation } from "./text-operation";
 import * as Utils from "./utils";
 
 interface IRemoteCursor {
-  clientId: string;
+  clientID: ClientIDType;
   decoration: string[];
 }
 
 interface ITextModelWithUndoRedo extends monaco.editor.ITextModel {
-  undo: Handler<void> | null;
-  redo: Handler<void> | null;
+  undo: UndoRedoCallbackType | null;
+  redo: UndoRedoCallbackType | null;
 }
 
 export class MonacoAdapter implements IEditorAdapter {
   protected readonly _monaco: monaco.editor.IStandaloneCodeEditor;
   protected readonly _classNames: string[];
   protected readonly _disposables: monaco.IDisposable[];
-  protected readonly _remoteCursors: Map<string, IRemoteCursor>;
+  protected readonly _remoteCursors: Map<ClientIDType, IRemoteCursor>;
   protected readonly _cursorWidgetController: ICursorWidgetController;
 
   protected _ignoreChanges: boolean;
   protected _lastDocLines: string[];
   protected _lastCursorRange: monaco.Selection | null;
-  protected _emitter: Emitter<TEditorAdapterEventArgs> | null;
-  protected _undoCallback: Handler<void> | null;
-  protected _redoCallback: Handler<void> | null;
-  protected _originalUndo: Handler<void> | null;
-  protected _originalRedo: Handler<void> | null;
+  protected _emitter: IEventEmitter | null;
+  protected _undoCallback: UndoRedoCallbackType | null;
+  protected _redoCallback: UndoRedoCallbackType | null;
+  protected _originalUndo: UndoRedoCallbackType | null;
+  protected _originalRedo: UndoRedoCallbackType | null;
   protected _initiated: boolean;
 
   /**
@@ -61,7 +59,7 @@ export class MonacoAdapter implements IEditorAdapter {
     this._monaco = monacoInstance;
     this._lastDocLines = this._monaco.getModel()?.getLinesContent() || [""];
     this._lastCursorRange = this._monaco.getSelection();
-    this._remoteCursors = new Map<string, IRemoteCursor>();
+    this._remoteCursors = new Map<ClientIDType, IRemoteCursor>();
     this._cursorWidgetController = new CursorWidgetController(this._monaco);
 
     this._redoCallback = null;
@@ -75,34 +73,16 @@ export class MonacoAdapter implements IEditorAdapter {
     }
   }
 
-  deregisterUndo(callback?: any): void {
-    const model = this._getModel();
-    if (!model) {
-      return;
-    }
-
-    if (model.undo !== this._originalUndo) {
-      model.undo = this._originalUndo;
-    }
-
-    this._originalUndo = null;
-  }
-
-  deregisterRedo(callback?: any): void {
-    const model = this._getModel();
-    if (!model) {
-      return;
-    }
-
-    if (model.redo !== this._originalRedo) {
-      model.redo = this._originalRedo;
-    }
-
-    this._originalRedo = null;
-  }
-
   protected _init(): void {
-    this._emitter = mitt();
+    this._emitter = new EventEmitter([
+      EditorAdapterEvent.Blur,
+      EditorAdapterEvent.Change,
+      EditorAdapterEvent.CursorActivity,
+      EditorAdapterEvent.Error,
+      EditorAdapterEvent.Focus,
+      EditorAdapterEvent.Redo,
+      EditorAdapterEvent.Undo,
+    ]);
 
     this._disposables.push(
       this._cursorWidgetController,
@@ -134,7 +114,7 @@ export class MonacoAdapter implements IEditorAdapter {
     this._disposables.splice(0, this._disposables.length);
 
     if (this._emitter) {
-      this._emitter.all.clear();
+      this._emitter.dispose();
       this._emitter = null;
     }
 
@@ -162,7 +142,7 @@ export class MonacoAdapter implements IEditorAdapter {
     return this._monaco.getModel() as ITextModelWithUndoRedo;
   }
 
-  registerUndo(callback: Handler<void>): void {
+  registerUndo(callback: UndoRedoCallbackType): void {
     const model = this._getModel();
 
     if (!model) {
@@ -173,7 +153,7 @@ export class MonacoAdapter implements IEditorAdapter {
     model.undo = this._undoCallback = callback;
   }
 
-  registerRedo(callback: Handler<void>): void {
+  registerRedo(callback: UndoRedoCallbackType): void {
     const model = this._getModel();
 
     if (!model) {
@@ -184,25 +164,35 @@ export class MonacoAdapter implements IEditorAdapter {
     model.redo = this._redoCallback = callback;
   }
 
-  on<Key extends keyof TEditorAdapterEventArgs>(
-    event: Key,
-    listener: Handler<TEditorAdapterEventArgs[Key]>
+  on(
+    event: EditorAdapterEvent,
+    listener: EventListenerType<IEditorAdapterEvent>
   ): void {
     return this._emitter?.on(event, listener);
   }
 
-  off<Key extends keyof TEditorAdapterEventArgs>(
-    event: Key,
-    listener?: Handler<TEditorAdapterEventArgs[Key]>
+  off(
+    event: EditorAdapterEvent,
+    listener: EventListenerType<IEditorAdapterEvent>
   ): void {
     return this._emitter?.off(event, listener);
   }
 
-  protected _trigger<Key extends keyof TEditorAdapterEventArgs>(
-    event: Key,
-    payload: TEditorAdapterEventArgs[Key]
+  registerCallbacks(callbacks: EditorEventCallbackType): void {
+    Object.entries(callbacks).forEach(([event, listener]) => {
+      this.on(
+        event as EditorAdapterEvent,
+        listener as EventListenerType<IEditorAdapterEvent>
+      );
+    });
+  }
+
+  protected _trigger(
+    event: EditorAdapterEvent,
+    eventArgs: IEditorAdapterEvent | void,
+    ...extraArgs: unknown[]
   ): void {
-    return this._emitter!.emit(event, payload);
+    return this._emitter?.trigger(event, eventArgs || {}, ...extraArgs);
   }
 
   getCursor(): ICursor | null {
@@ -263,35 +253,35 @@ export class MonacoAdapter implements IEditorAdapter {
     );
   }
 
-  setOtherCursor({
-    clientId,
-    cursor,
-    userColor,
-    userName,
-  }: TEditorAdapterCursorParams): Utils.IDisposable {
+  setOtherCursor(
+    clientID: ClientIDType,
+    cursor: ICursor,
+    userColor: string,
+    userName?: string
+  ): Utils.IDisposable {
     /** House Keeping */
     Utils.validateTruth(
       typeof cursor === "object" &&
-        typeof cursor!.toJSON === "function" &&
+        typeof cursor.toJSON === "function" &&
         typeof userColor === "string" &&
-        (typeof clientId === "string" || typeof clientId === "number") &&
-        !!userColor!.match(/^#[a-fA-F0-9]{3,6}$/)
+        (typeof clientID === "string" || typeof clientID === "number") &&
+        !!userColor.match(/^#[a-fA-F0-9]{3,6}$/)
     );
 
     /** Extract Positions */
-    const { position, selectionEnd } = cursor!.toJSON();
+    const { position, selectionEnd } = cursor.toJSON();
     Utils.validateFalse(position < 0 || selectionEnd < 0);
 
     /** Fetch Client Cursor Information */
-    let remoteCursor: IRemoteCursor | void = this._remoteCursors.get(clientId);
+    let remoteCursor: IRemoteCursor | void = this._remoteCursors.get(clientID);
 
     if (!remoteCursor) {
       /** Initialize empty array, if client does not exist */
       remoteCursor = {
-        clientId,
+        clientID,
         decoration: [],
       };
-      this._remoteCursors.set(clientId, remoteCursor);
+      this._remoteCursors.set(clientID, remoteCursor);
     } else {
       /** Remove Earlier Decorations, if any, or initialize empty decor */
       remoteCursor.decoration = this._monaco.deltaDecorations(
@@ -300,8 +290,8 @@ export class MonacoAdapter implements IEditorAdapter {
       );
     }
 
-    let selectionColor = userColor!;
-    let className = `remote-client-selection-${userColor!.replace("#", "")}`;
+    let selectionColor = userColor;
+    let className = `remote-client-selection-${userColor.replace("#", "")}`;
 
     if (position === selectionEnd) {
       /** It's a single cursor */
@@ -310,7 +300,7 @@ export class MonacoAdapter implements IEditorAdapter {
     }
 
     /** Generate Style rules and add them to document */
-    this._addStyleRule(className, selectionColor, userColor!);
+    this._addStyleRule(className, selectionColor, userColor);
 
     /** Get co-ordinate position in Editor */
     const model = this._getModel();
@@ -354,15 +344,15 @@ export class MonacoAdapter implements IEditorAdapter {
     );
 
     this._cursorWidgetController.updateCursor(
-      clientId,
+      clientID,
       range,
-      userColor!,
+      userColor,
       userName
     );
 
     return {
       dispose: () => {
-        const cursor: IRemoteCursor | void = this._remoteCursors.get(clientId);
+        const cursor: IRemoteCursor | void = this._remoteCursors.get(clientID);
 
         if (!cursor) {
           // Already disposed, nothing to do.
@@ -457,19 +447,16 @@ export class MonacoAdapter implements IEditorAdapter {
    * @param model - Monaco Text Model.
    */
   protected _transformOpsIntoMonacoChanges(
-    ops: IterableIterator<[number, ITextOp]>,
+    ops: ITextOp[],
     model: monaco.editor.ITextModel
   ): monaco.editor.IIdentifiedSingleEditOperation[] {
     let index = 0;
     const changes: monaco.editor.IIdentifiedSingleEditOperation[] = [];
-    let opValue: IteratorResult<[number, ITextOp]>;
 
-    while (!(opValue = ops.next()).done) {
-      const op: ITextOp = opValue.value[1];
-
+    for (const op of ops) {
       /** Retain Operation */
       if (op.isRetain()) {
-        index += op.characterCount();
+        index += op.chars!;
         continue;
       }
 
@@ -483,7 +470,7 @@ export class MonacoAdapter implements IEditorAdapter {
             pos.lineNumber,
             pos.column
           ),
-          text: op.textContent(),
+          text: op.text!,
           forceMoveMarkers: true,
         });
         continue;
@@ -492,7 +479,7 @@ export class MonacoAdapter implements IEditorAdapter {
       if (op.isDelete()) {
         /** Delete Operation */
         const from = model.getPositionAt(index);
-        const to = model.getPositionAt(index + op.characterCount());
+        const to = model.getPositionAt(index + op.chars!);
 
         changes.push({
           range: new monaco.Range(
@@ -505,7 +492,7 @@ export class MonacoAdapter implements IEditorAdapter {
           forceMoveMarkers: true,
         });
 
-        index += op.characterCount();
+        index += op.chars!;
       }
     }
 
@@ -552,7 +539,7 @@ export class MonacoAdapter implements IEditorAdapter {
     }
 
     const changes: monaco.editor.IIdentifiedSingleEditOperation[] = this._transformOpsIntoMonacoChanges(
-      operation.entries(),
+      operation.getOps(),
       model
     );
 
@@ -577,12 +564,12 @@ export class MonacoAdapter implements IEditorAdapter {
     const currentSelecton = this._monaco.getSelection();
 
     if (!currentSelecton || currentSelecton.isEmpty()) {
-      this._trigger(EditorAdapterEvent.Blur, undefined);
+      this._trigger(EditorAdapterEvent.Blur);
     }
   }
 
   protected _onFocus(): void {
-    this._trigger(EditorAdapterEvent.Focus, undefined);
+    this._trigger(EditorAdapterEvent.Focus);
   }
 
   protected _onCursorActivity(
@@ -592,7 +579,7 @@ export class MonacoAdapter implements IEditorAdapter {
       return;
     }
 
-    this._trigger(EditorAdapterEvent.Cursor, undefined);
+    this._trigger(EditorAdapterEvent.CursorActivity);
   }
 
   protected _onChange(
@@ -609,11 +596,8 @@ export class MonacoAdapter implements IEditorAdapter {
 
     /** If no change information received */
     if (!ev.changes || ev.changes.length === 0) {
-      const op = new TextOperation().retain(contentLength);
-      this._trigger(EditorAdapterEvent.Change, {
-        operation: op,
-        inverse: op,
-      });
+      const op = new TextOperation().retain(contentLength, null);
+      this._trigger(EditorAdapterEvent.Change, op, op);
       return;
     }
 
@@ -625,10 +609,7 @@ export class MonacoAdapter implements IEditorAdapter {
     /** Cache current content to use during next change trigger */
     this._lastDocLines = model.getLinesContent();
 
-    this._trigger(EditorAdapterEvent.Change, {
-      operation: mainOp,
-      inverse: reverseOp,
-    });
+    this._trigger(EditorAdapterEvent.Change, mainOp, reverseOp);
   }
 
   protected _onModelChange(_ev: monaco.editor.IModelChangedEvent): void {
@@ -680,70 +661,78 @@ export class MonacoAdapter implements IEditorAdapter {
     contentLength: number
   ): [ITextOperation, ITextOperation] {
     /** Text Operation respective of current changes */
-    let mainOp: ITextOperation = new TextOperation();
+    let mainOp: ITextOperation = new TextOperation().retain(
+      contentLength,
+      null
+    );
 
     /** Text Operation respective of invert changes */
-    let reverseOp: ITextOperation = new TextOperation();
+    let reverseOp: ITextOperation = new TextOperation().retain(
+      contentLength,
+      null
+    );
 
-    if (changes.length > 1) {
-      const first = changes[0];
-      const last = changes[changes.length - 1];
+    let offset = 0;
+    /**
+     * To ensure that changes are sorted in descending order.
+     * Although monaco already returns changes in descending order,
+     * it's not a part of its API specs.
+     */
+    const sortedChanges = changes.sort((a, b) => b.rangeOffset - a.rangeOffset);
 
-      if (first.rangeOffset > last.rangeOffset) {
-        changes = changes.reverse();
-      }
-    }
+    for (const change of sortedChanges) {
+      let changeOp: ITextOperation = new TextOperation();
+      let changeInvOp: ITextOperation = new TextOperation();
 
-    let skippedChars = 0;
-
-    for (const change of changes) {
       const { range, text, rangeOffset, rangeLength } = <
         Omit<monaco.editor.IModelContentChange, "range"> & {
           range: monaco.Range;
         }
       >change;
-      const retain = rangeOffset - skippedChars;
+
+      const restLength = contentLength - rangeOffset - rangeLength + offset;
 
       try {
-        mainOp = mainOp.retain(retain);
-        reverseOp = reverseOp.retain(retain);
+        changeOp = changeOp.retain(rangeOffset, null);
+        changeInvOp = changeInvOp.retain(rangeOffset, null);
       } catch (err) {
-        this._trigger(EditorAdapterEvent.Error, {
-          err,
-          operation: mainOp.toString(),
-          retain,
+        this._trigger(EditorAdapterEvent.Error, err, changeOp.toString(), {
+          rangeOffset,
         });
         throw err;
       }
 
       if (!text && !range.isEmpty()) {
-        mainOp = mainOp.delete(rangeLength);
-        reverseOp = reverseOp.insert(this._getPreviousContentInRange(range));
+        changeOp = changeOp.delete(rangeLength);
+        changeInvOp = changeInvOp.insert(
+          this._getPreviousContentInRange(range),
+          null
+        );
       } else if (text && !range.isEmpty()) {
-        mainOp = mainOp.delete(rangeLength).insert(text);
-        reverseOp = reverseOp
-          .insert(this._getPreviousContentInRange(range))
+        changeOp = changeOp.delete(rangeLength).insert(text, null);
+        changeInvOp = changeInvOp
+          .insert(this._getPreviousContentInRange(range), null)
           .delete(text);
       } else {
-        mainOp = mainOp.insert(text);
-        reverseOp = reverseOp.delete(text);
+        changeOp = changeOp.insert(text, null);
+        changeInvOp = changeInvOp.delete(text);
       }
 
-      skippedChars = skippedChars + retain + rangeLength;
+      try {
+        changeOp = changeOp.retain(restLength, null);
+        changeInvOp = changeInvOp.retain(restLength, null);
+      } catch (err) {
+        this._trigger(EditorAdapterEvent.Error, err, changeOp.toString(), {
+          restLength,
+        });
+        throw err;
+      }
+
+      offset = offset + text.length - rangeLength;
+      mainOp = mainOp.compose(changeOp);
+      reverseOp = changeInvOp.compose(reverseOp);
     }
 
-    try {
-      mainOp = mainOp.retain(contentLength - skippedChars);
-      reverseOp = reverseOp.retain(contentLength - skippedChars);
-    } catch (err) {
-      this._trigger(EditorAdapterEvent.Error, {
-        err,
-        operation: mainOp.toString(),
-        contentLength,
-        skippedChars,
-      });
-      throw err;
-    }
     return [mainOp, reverseOp];
   }
 

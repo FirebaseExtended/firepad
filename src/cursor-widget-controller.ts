@@ -1,6 +1,7 @@
 import * as monaco from "monaco-editor";
 
 import { CursorWidget, ICursorWidget } from "./cursor-widget";
+import { ClientIDType } from "./editor-adapter";
 import { IDisposable } from "./utils";
 
 export interface ICursorWidgetController extends IDisposable {
@@ -12,7 +13,7 @@ export interface ICursorWidgetController extends IDisposable {
    * @param userName - User's name to show up in Widget. (optional, default is set to User ID).
    */
   addCursor(
-    clientId: string,
+    clientId: ClientIDType,
     range: monaco.Range,
     userColor: string,
     userName?: string
@@ -25,7 +26,7 @@ export interface ICursorWidgetController extends IDisposable {
    * @param userName - User's name to show up in Widget. (optional, default is set to User ID).
    */
   updateCursor(
-    clientId: string,
+    clientId: ClientIDType,
     range: monaco.Range,
     userColor: string,
     userName?: string
@@ -34,22 +35,22 @@ export interface ICursorWidgetController extends IDisposable {
    * Dispose Cursor Widget for existing User.
    * @param clientId - Unique Identifier for remote User.
    */
-  removeCursor(clientId: string): void;
+  removeCursor(clientId: ClientIDType): void;
 }
 
 export class CursorWidgetController implements ICursorWidgetController {
-  protected readonly _cursors: Map<string, ICursorWidget>;
+  protected readonly _cursors: Map<ClientIDType, ICursorWidget>;
   protected readonly _editor: monaco.editor.IStandaloneCodeEditor;
   protected readonly _tooltipDuration: number;
 
   constructor(editor: monaco.editor.IStandaloneCodeEditor) {
     this._editor = editor;
     this._tooltipDuration = 1000;
-    this._cursors = new Map<string, ICursorWidget>();
+    this._cursors = new Map<ClientIDType, ICursorWidget>();
   }
 
   addCursor(
-    clientId: string,
+    clientId: ClientIDType,
     range: monaco.Range,
     userColor: string,
     userName?: string
@@ -69,7 +70,7 @@ export class CursorWidgetController implements ICursorWidgetController {
     this._cursors.set(clientId, cursorWidget);
   }
 
-  removeCursor(clientId: string): void {
+  removeCursor(clientId: ClientIDType): void {
     const cursorWidget = this._cursors.get(clientId);
 
     if (!cursorWidget) {
@@ -82,7 +83,7 @@ export class CursorWidgetController implements ICursorWidgetController {
   }
 
   updateCursor(
-    clientId: string,
+    clientId: ClientIDType,
     range: monaco.Range,
     userColor: string,
     userName?: string

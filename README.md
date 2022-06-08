@@ -88,22 +88,6 @@ class MyEditorAdapter implements IEditorAdapter {
 
 Similar thing can be done for Database as well by implementing `IDatabaseAdapter` interface. Keep in mind, you might also need to implement event handlers and event triggers depending upon nature of the adapters.
 
-### Dispose
-
-After Firepad usecase is over, it is recommended to cleanup all the resources (e.g., memory, network etc.) using `dispose()` method. Note that, making any further API call after calling `dispose()` will result into error.
-
-```ts
-...
-
-const firepad = new Firepad(databaseAdapter, editorAdapter, options);
-
-...
-
-firepad.dispose();
-```
-
-Here is a beginner friendly guide on [How to setup Collaborative Editor Experience with Monaco Editor and Firebase](https://dev.to/shubham567/collaborative-coding-in-monaco-editor-4foa).
-
 ## Development
 
 We have used [`yarn`](https://yarnpkg.com/) as our package manager through out the project.

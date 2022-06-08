@@ -1,10 +1,6 @@
-import {
-  EditorClientEvent,
-  IDatabaseAdapter,
-  IEditorAdapter,
-  IEditorClient,
-} from "@operational-transformation/plaintext-editor";
-import mitt from "mitt";
+import { IDatabaseAdapter } from "../../src/database-adapter";
+import { IEditorAdapter } from "../../src/editor-adapter";
+import { EventEmitter, IEventEmitter } from "../../src/emitter";
 import * as Utils from "../../src/utils";
 
 Utils.validateFalse(
@@ -12,18 +8,16 @@ Utils.validateFalse(
   "This factories can only be imported in Test environment"
 );
 
-const emitter = mitt();
+const emitter: IEventEmitter = new EventEmitter();
 const clearUndoRedoStackStub = jest.fn<void, []>();
 
 let databaseAdapter: IDatabaseAdapter;
 let editorAdapter: IEditorAdapter;
 
-export interface IEditorClientMock extends IEditorClient {
-  /** Trigger an event to lest event listeners */
-  trigger(event: EditorClientEvent, ...eventAttributes: any[]): void;
+export interface IEditorClientMock extends IEventEmitter {
+  clearUndoRedoStack(): void;
 }
 
-// @ts-expect-error
 const editorClient: IEditorClientMock = new Proxy(emitter, {
   get: function (target, prop, receiver) {
     if (prop === "clearUndoRedoStack") {
