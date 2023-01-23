@@ -1,4 +1,4 @@
-import firebase from "firebase/app";
+import * as firebase from "firebase/app";
 import { ICursor } from "../../src/cursor";
 import {
   DatabaseAdapterCallbackType,

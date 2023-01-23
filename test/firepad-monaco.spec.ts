@@ -2,6 +2,7 @@ import { editor } from "monaco-editor";
 import { fromMonaco } from "../src/firepad-monaco";
 import { getDatabaseAdapter, getEditorAdapter } from "./factory";
 import { getMonacoEditor } from "./factory/monaco-editor.factory";
+import * as firebase from "firebase/app";
 
 jest.mock("../src/firebase-adapter", () => {
   const { getDatabaseAdapter } = require("./factory/database-adapter.factory");

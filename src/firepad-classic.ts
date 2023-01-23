@@ -1,4 +1,5 @@
 import * as Firebase from "firebase";
+
 import * as monaco from "monaco-editor";
 
 import { Cursor } from "./cursor";
