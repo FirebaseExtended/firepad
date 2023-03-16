@@ -302,7 +302,7 @@ export class FirestoreAdapter implements IDatabaseAdapter {
         }
       })
       .catch((error) => {
-        console.log("Error getting cached document:", error);
+        console.error("[firestore] Error getting checkpoint", error);
       });
   }
 
@@ -340,9 +340,14 @@ export class FirestoreAdapter implements IDatabaseAdapter {
       });
     });
 
-    historyRef.get().then(() => {
-      this._handleInitialRevisions();
-    });
+    historyRef
+      .get()
+      .then(() => {
+        this._handleInitialRevisions();
+      })
+      .catch((error) => {
+        console.error("[firestore] Error getting initial revisions", error);
+      });
   }
 
   /**
@@ -724,6 +729,8 @@ export class FirestoreAdapter implements IDatabaseAdapter {
         }
       })
       .catch((error) => {
+        console.error("[firestore] Error sending cursor", error);
+
         if (typeof callback === "function") {
           callback(error, cursor);
         }
